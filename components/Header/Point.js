@@ -25,6 +25,7 @@ export const Point = () => {
       <Text style={styles.title}>Nastavení NTRIP připojení:</Text>
       <Text >K155GNSS KRABIČKA - fázové centrum 42 mm</Text>
       <Text >K155GNSS VÁLEC - fázové centrum XX mm</Text>
+      <View style={styles.hrLine} />
       <TextInput
           style={styles.input}
           value={fazCentr}
@@ -67,5 +68,9 @@ const styles = {
     fontWeight: 'bold',
     marginBottom: 8,
   },
-
+  hrLine: {
+    borderBottomColor: '#ccc',
+    borderBottomWidth: 1,
+    marginBottom: 16,
+  },
 };

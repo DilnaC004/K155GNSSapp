@@ -131,7 +131,6 @@ const Mereni = () => {
           </View>
         </View>
       </View>
-      <View style={styles.hrLine} />
     </View>
   );
 };
