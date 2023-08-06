@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { SafeAreaView, View, Text, Button, PermissionsAndroid, Platform } from 'react-native';
+import { BleManager } from 'react-native-ble-plx';
 
 import NmeaViewer from './NmeaViewer';
 
@@ -20,6 +21,20 @@ const nmeaMessages = [
 
 
 export const Bluetooth = () => {
+
+  const [devices, setDevices] = useState([]);
+
+  const bleManager = new BleManager({
+    scanForPeripherals: true,
+    onDeviceFound: (device) => {
+      setDevices((devices) => [...devices, device]);
+    },
+    onScanFailed: (error) => {
+      console.log(error);
+    }
+  });
+
+
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentNmea, setCurrentNmea] = useState('');

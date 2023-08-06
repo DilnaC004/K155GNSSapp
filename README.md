@@ -4,6 +4,9 @@ How to set up development environment - https://reactnative.dev/docs/environment
 
 run project with - yarn start
 
+packages:
+yarn add react-native-vector-icons
+yarn add react-native-ble-plx
 
 Notes:
 Zuzka - původní apka
