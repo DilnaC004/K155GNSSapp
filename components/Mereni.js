@@ -1,12 +1,26 @@
 import React, {useState, useEffect} from 'react';
 import { View, Text, TextInput, Button, Switch } from 'react-native';
 
-const Mereni = () => {
+import GPS from 'gps';
+
+import { etrs2jtsk } from './Calculations/transformation';
+
+const Mereni = ({nmeaParsed}) => {
+  console.log(nmeaParsed);
   const [nazevBodu, setNazevBodu] = React.useState('');
   const [dobaMer, setDobaMer] = React.useState(10);
   const [autoSave, setAutoSave] = React.useState(false);
   const [boolRtk, setBoolRtk] = React.useState(false);
   const [boolRaw, setBoolRaw] = React.useState(false);
+
+  const [coordX, setCoordX] = React.useState(50);
+  const [coordY, setCoordY] = React.useState(14);
+  const [coordZ, setCoordZ] = React.useState(100);
+  const [coordPDOP, setcoordPDOP] = React.useState(nmeaParsed.hdop);
+  const [coordAccuX, setCoordAccuX] = React.useState(0.01);
+  const [coordAccuY, setCoordAccuY] = React.useState(0.02);
+  const [coordAccuZ, setCoordAccuZ] = React.useState(0.03);
+  
 
   const [isEnabled, setIsEnabled] = useState(false);
   const toggleSwitch = () => setIsEnabled(previousState => !previousState);
@@ -16,10 +30,16 @@ const Mereni = () => {
   const switchX = isEnabled ? 'B [°]' : 'X [m]';
   const switchY = isEnabled ? 'L [°]' : 'Y [m]';
   const switchZ = isEnabled ? 'H [m]' : 'H [m]';
+  const switchCoordX = isEnabled ? coordX : etrs2jtsk(coordX, coordY, coordZ).X;
+  const switchCoordY = isEnabled ? coordY : etrs2jtsk(coordX, coordY, coordZ).Y;
+  const switchCoordZ = isEnabled ? coordZ : etrs2jtsk(coordX, coordY, coordZ).Hbpv;
 
   const [startTime, setStartTime] = useState(null);
   const [endTime, setEndTime] = useState(null);
   const [formattedTime, setFormattedTime] = useState('00:00:00');
+
+  const gps = new GPS;
+
 
   const handleNazevBoduChange = (value) => {
     setNazevBodu(value);
@@ -57,14 +77,44 @@ const Mereni = () => {
 
     // Use useEffect to start and stop the timer
     useEffect(() => {
+      /*
+      // Add an event listener on all protocols
+      gps.on('data', parsed => {
+        console.log(parsed);
+        setCoordX(parsed.lat);
+        setCoordY(parsed.lon);
+        setCoordZ(parsed.alt);
+        setcoordPDOP(parsed.hdop);
+        if(parsed.quality == 'fix'){
+          setCoordStatus("green");
+        }
+        if(parsed.quality == 'float'){
+          setCoordStatus("orange");
+        }
+      });
+
+      // Call the update routine directly with a NMEA sentence, which would
+      // come from the serial port or stream-reader normally
+      gps.update(
+        '$GPGGA,224900.000,4832.3762,N,00903.5393,E,1,04,7.8,498.6,M,48.0,M,,0000*5E',
+      );
+
+*/
       let intervalId;
       if (startTime && !endTime) {
         // If the timer is running (start time is set, but end time is not)
         intervalId = setInterval(() => {
           const currentTime = new Date();
-          const timeDiffInSeconds = Math.floor((currentTime - startTime) / 1000);
-          const hours = String(Math.floor(timeDiffInSeconds / 3600)).padStart(2, '0');
-          const minutes = String(Math.floor((timeDiffInSeconds % 3600) / 60)).padStart(2, '0');
+          const timeDiffInSeconds = Math.floor(
+            (currentTime - startTime) / 1000,
+          );
+          const hours = String(Math.floor(timeDiffInSeconds / 3600)).padStart(
+            2,
+            '0',
+          );
+          const minutes = String(
+            Math.floor((timeDiffInSeconds % 3600) / 60),
+          ).padStart(2, '0');
           const seconds = String(timeDiffInSeconds % 60).padStart(2, '0');
           setFormattedTime(`${hours}:${minutes}:${seconds}`);
         }, 1000);
@@ -111,22 +161,22 @@ const Mereni = () => {
             </View>
             <View style={styles.tableRow}>
               <Text style={styles.tableHeader}>{switchY}</Text>
-              <Text style={styles.tableData} id="MERy"></Text>
-              <Text style={styles.tableData} id="MERyP"></Text>
+              <Text style={styles.tableData}>{switchCoordY}</Text>
+              <Text style={styles.tableData}>{coordAccuY}</Text>
             </View>
             <View style={styles.tableRow}>
               <Text style={styles.tableHeader}>{switchX}</Text>
-              <Text style={styles.tableData} id="MERx"></Text>
-              <Text style={styles.tableData} id="MERxP"></Text>
+              <Text style={styles.tableData}>{switchCoordX}</Text>
+              <Text style={styles.tableData}>{coordAccuX}</Text>
             </View>
             <View style={styles.tableRow}>
               <Text style={styles.tableHeader}>{switchZ}</Text>
-              <Text style={styles.tableData} id="MERh"></Text>
-              <Text style={styles.tableData} id="MERhP"></Text>
+              <Text style={styles.tableData}>{switchCoordZ}</Text>
+              <Text style={styles.tableData}>{coordAccuZ}</Text>
             </View>
             <View style={styles.tableRow}>
               <Text style={styles.tableHeader}>PDOP :</Text>
-              <Text style={styles.tableData} id="MERpdop"></Text>
+              <Text style={styles.tableData}>{coordPDOP}</Text>
             </View>
           </View>
         </View>

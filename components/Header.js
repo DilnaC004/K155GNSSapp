@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import { View, Text, Image, TouchableOpacity, Button, Modal } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'
 import IconFontAwesome5 from 'react-native-vector-icons/FontAwesome5'
@@ -10,7 +10,7 @@ import Skyplot from './Header/Skyplot';
 import Point from './Header/Point';
 import Map from './Header/Map';
 
-const Header = () => {
+const Header = ({nmeaParsed, setNmeaParsed, coordStatus}) => {
   const [isBLEModalVisible, setBLEModalVisible] = React.useState(false);
   const [isPointModalVisible, setPointModalVisible] = React.useState(false);
   const [isSkyplotModalVisible, setSkyplotModalVisible] = React.useState(false);
@@ -40,7 +40,8 @@ const Header = () => {
   return (
     <View style={styles.headerContainer}>
       <TouchableOpacity onPress={togglePointModal} >
-        <Icon name="dot-circle-o" size={32} color="black" />
+        <Icon name="dot-circle-o" size={32} color={coordStatus} />
+        <Text style={styles.infoText}>{nmeaParsed.quality}</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={toggleSkyplotModal} >
         <IconFontAwesome5 name="satellite" size={32} color="black" />
@@ -59,7 +60,7 @@ const Header = () => {
       </TouchableOpacity>
       
       <Modal visible={isBLEModalVisible} animationType="slide">
-        <Bluetooth />
+        <Bluetooth nmeaParsed={nmeaParsed} setNmeaParsed={setNmeaParsed}/>
         <TouchableOpacity style={styles.closeButton} onPress={toggleBLEModal}>
           <Icon name="close" size={24} color="black" />
         </TouchableOpacity>
@@ -118,9 +119,8 @@ const styles = {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  infoImage: {
-    width: 24,
-    height: 24,
+  infoText: {
+    fontSize: 10,
   },
   fixContainer: {
     marginLeft: 16,

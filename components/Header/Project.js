@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Button, ScrollView, TouchableOpacity, FlatList, Switch } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'
 import IconMaterialIcons from 'react-native-vector-icons/MaterialIcons'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import Importuj from './Import'
+
+
 
 const ItemProject = ({item, onPress, backgroundColor, textColor}) => (
   <TouchableOpacity onPress={onPress} style={[styles.boldText, {backgroundColor}]}>
@@ -34,94 +37,93 @@ const ItemPoint = ({ item, onPress, backgroundColor, textColor, textColor1 }) =>
 );
 
 const Project = () => {
-
-  const [data, setData] = useState( [
+  const [data, setData] = useState([
     {
-        title: 'Mereni 1',
-        description: 'null',
-        date: '21.7.2023 18:26:36',
-        points: [
-          {
-            title: 'Bod1',
-            x: 1,
-            y: 2,
-            z: 3,
-            b: 1,
-            l: 2,
-            h: 3,
-            ofset: 0.5,
-            antena: 1.5,
-            date: '21.7.2023 19:26:36',
-          },
-          {
-            title: 'Bod2',
-            x: 1,
-            y: 2,
-            z: 3,
-            b: 1,
-            l: 2,
-            h: 3,
-            ofset: 0.5,
-            antena: 1.5,
-            date: '21.7.2023 19:26:36',
-          },
-        ]
+      title: 'Mereni 1',
+      description: 'null',
+      date: '21.7.2023 18:26:36',
+      points: [
+        {
+          title: 'Bod1',
+          x: 1,
+          y: 2,
+          z: 3,
+          b: 1,
+          l: 2,
+          h: 3,
+          ofset: 0.5,
+          antena: 1.5,
+          date: '21.7.2023 19:26:36',
+        },
+        {
+          title: 'Bod2',
+          x: 1,
+          y: 2,
+          z: 3,
+          b: 1,
+          l: 2,
+          h: 3,
+          ofset: 0.5,
+          antena: 1.5,
+          date: '21.7.2023 19:26:36',
+        },
+      ],
     },
     {
       title: 'Mereni 2',
       description: 'nukll',
       date: '21.7.2023 19:26:36',
       points: [
-      {
-        title: 'Bod1',
-        x: 1,
-        y: 2,
-        z: 3,
-        b: 1,
-        l: 2,
-        h: 3,
-        ofset: 0.5,
-        antena: 1.5,
-        date: '21.7.2023 19:26:36',
-      },
-      {
-        title: 'Bod2',
-        x: 1,
-        y: 2,
-        z: 3,
-        b: 1,
-        l: 2,
-        h: 3,
-        ofset: 0.5,
-        antena: 1.5,
-        date: '21.7.2023 19:26:36',
-      },
-      {
-        title: 'Bod3',
-        x: 1,
-        y: 2,
-        z: 3,
-        b: 1,
-        l: 2,
-        h: 3,
-        ofset: 0.5,
-        antena: 1.5,
-        date: '21.7.2023 19:26:36',
-      },
-    ]
-  },
+        {
+          title: 'Bod1',
+          x: 1,
+          y: 2,
+          z: 3,
+          b: 1,
+          l: 2,
+          h: 3,
+          ofset: 0.5,
+          antena: 1.5,
+          date: '21.7.2023 19:26:36',
+        },
+        {
+          title: 'Bod2',
+          x: 1,
+          y: 2,
+          z: 3,
+          b: 1,
+          l: 2,
+          h: 3,
+          ofset: 0.5,
+          antena: 1.5,
+          date: '21.7.2023 19:26:36',
+        },
+        {
+          title: 'Bod3',
+          x: 1,
+          y: 2,
+          z: 3,
+          b: 1,
+          l: 2,
+          h: 3,
+          ofset: 0.5,
+          antena: 1.5,
+          date: '21.7.2023 19:26:36',
+        },
+      ],
+    },
     // more objects...
   ]);
 
   const [projectTitle, setprojectTitle] = useState('');
-  const [projectId, setprojectId] = useState("null");
+  const [projectId, setprojectId] = useState('null');
   const [projectDate, setprojectDate] = useState('');
   const [projectPointCount, setproctPointCount] = useState('');
   const [projectPoints, setProjectPoints] = useState([]);
-  const [showFlatList, setShowFlatList] = useState(false); 
-  const [showPointFlatList, setShowPointFlatList] = useState(false); 
+  const [showFlatList, setShowFlatList] = useState(false);
+  const [showPointFlatList, setShowPointFlatList] = useState(false);
   const [showCreateProject, setShowCreateProject] = useState(false);
-  const [showCreatePoint, setShowCreatePoint] = useState(false); 
+  const [showCreatePoint, setShowCreatePoint] = useState(false);
 
   // state for the text inputs
   const [newProjectTitle, setNewProjectTitle] = useState('');
@@ -129,9 +131,37 @@ const Project = () => {
   const [newProjectDescription, setNewProjectDescription] = useState('');
   const [newProjectPath, setNewProjectPath] = useState('');
 
-    // Function to handle picking the project path
-    const pickProjectPath = async () => {
-      /*
+  // functions to save measured point into AsyncStorage
+  const clearStorage = async () => {
+    try {
+      await AsyncStorage.clear();
+      alert('Storage successfully cleared!');
+    } catch (e) {
+      alert('Failed to clear the async storage.');
+    }
+  };
+
+  const getData = async () => {
+    try {
+      const jsonValue = await AsyncStorage.getItem('my-key');
+      return jsonValue != null ? JSON.parse(jsonValue) : null;
+    } catch (e) {
+      // error reading value
+    }
+  };
+
+  const storeData = async (value) => {
+    try {
+      const jsonValue = JSON.stringify(value);
+      await AsyncStorage.setItem('my-key', jsonValue);
+    } catch (e) {
+      // saving error
+    }
+  };
+
+  // Function to handle picking the project path
+  const pickProjectPath = async () => {
+    /*
       try {
         const result = await DocumentPicker.pick({
           type: [DocumentPickerUtil.allFiles()],
@@ -144,7 +174,7 @@ const Project = () => {
         console.log('Error while picking the project path:', error);
       }
       */
-    };
+  };
 
   // function to add the new project to the array
   const addProject = () => {
@@ -153,7 +183,7 @@ const Project = () => {
       title: newProjectTitle,
       description: newProjectDescription,
       date: new Date().toLocaleString(), // Assuming you want to add the current date/time
-      points: []  // add an empty array or whatever initial value you like
+      points: [], // add an empty array or whatever initial value you like
     };
 
     // add the new project to the data array
@@ -168,19 +198,23 @@ const Project = () => {
   };
 
   // Function to delete a project from the data array
-  const deleteProject = (projectTitleToDelete) => {
-      const updatedData = data.filter((project) => project.title !== projectTitleToDelete);
-      setData(updatedData);
+  const deleteProject = projectTitleToDelete => {
+    const updatedData = data.filter(
+      project => project.title !== projectTitleToDelete,
+    );
+    setData(updatedData);
   };
 
   // Function to delete a point from a project in the data array
   const deletePoint = (projectTitleToDelete, pointTitleToDelete) => {
-    const updatedData = data.map((project) => {
+    const updatedData = data.map(project => {
       if (project.title === projectTitleToDelete) {
-        const updatedPoints = project.points.filter((point) => point.title !== pointTitleToDelete);
+        const updatedPoints = project.points.filter(
+          point => point.title !== pointTitleToDelete,
+        );
         setProjectPoints(updatedPoints);
         setproctPointCount(projectPoints.length);
-        return { ...project, points: updatedPoints };
+        return {...project, points: updatedPoints};
       }
       return project;
     });
@@ -198,15 +232,15 @@ const Project = () => {
         <ItemProject
           item={item}
           onPress={() => {
-          setprojectTitle(item.title);
-          setprojectDate(item.date);
-          setproctPointCount(item.points.length);
-          // Find the index of the selected project in the data array
-          const index = data.indexOf(item);
-          setprojectId(index); // Set projectId to the index of the selected project
-          setProjectPoints(item.points);
+            setprojectTitle(item.title);
+            setprojectDate(item.date);
+            setproctPointCount(item.points.length);
+            // Find the index of the selected project in the data array
+            const index = data.indexOf(item);
+            setprojectId(index); // Set projectId to the index of the selected project
+            setProjectPoints(item.points);
 
-          setShowFlatList(false); // Hide the FlatList after an item is selected}
+            setShowFlatList(false); // Hide the FlatList after an item is selected}
           }}
           backgroundColor={backgroundColor}
           textColor={color}
@@ -214,7 +248,6 @@ const Project = () => {
         <TouchableOpacity onPress={() => deleteProject(item.title)}>
           <IconMaterialIcons name="delete" size={24} color="black" />
         </TouchableOpacity>
-
       </View>
     );
   };
@@ -238,27 +271,38 @@ const Project = () => {
     );
   };
 
-
   return (
     <View style={styles.domovContainer}>
       <View style={styles.zakazkaInfo}>
         <Text>
           <Text style={styles.boldText}>Informace o aktuální zakázce</Text>
-          {"\n"}
+          {'\n'}
           <Text id="INFOnazevZakazky">Název zakázky: {projectTitle}</Text>
-          {"\n"}
+          {'\n'}
           <Text id="INFOdatumVytvoreni">Datum vytvoření: {projectDate}</Text>
-          {"\n"}
-          <Text id="INFOpocetBodu">Počet změřených bodů: {projectPointCount}</Text>
+          {'\n'}
+          <Text id="INFOpocetBodu">
+            Počet změřených bodů: {projectPointCount}
+          </Text>
         </Text>
       </View>
       <View style={styles.hrLine} />
       <View style={styles.buttonContainer}>
-        <Button title="Vyber Zakázku" onPress={() => {setShowFlatList(!showFlatList);}} />
-        <Button title="Vytvoř zakázku" onPress={() => {setShowCreateProject(!showCreateProject);}} />
+        <Button
+          title="Vyber Zakázku"
+          onPress={() => {
+            setShowFlatList(!showFlatList);
+          }}
+        />
+        <Button
+          title="Vytvoř zakázku"
+          onPress={() => {
+            setShowCreateProject(!showCreateProject);
+          }}
+        />
       </View>
       {showFlatList && ( // conditional rendering based on the new piece of state
-        <View style={{ height: 100 }}>
+        <View style={{height: 100}}>
           <FlatList
             data={data}
             renderItem={renderItemProject}
@@ -268,20 +312,45 @@ const Project = () => {
         </View>
       )}
       {showCreateProject && ( // conditional rendering based on the new piece of state
-      <View>
-          <TextInput style={styles.textInput} placeholder="Název zakázky" value={newProjectTitle} onChangeText={setNewProjectTitle} />
-          <TextInput style={styles.textInput} placeholder="Popis" multiline={true} value={newProjectDescription} onChangeText={setNewProjectDescription}/>
+        <View>
+          <TextInput
+            style={styles.textInput}
+            placeholder="Název zakázky"
+            value={newProjectTitle}
+            onChangeText={setNewProjectTitle}
+          />
+          <TextInput
+            style={styles.textInput}
+            placeholder="Popis"
+            multiline={true}
+            value={newProjectDescription}
+            onChangeText={setNewProjectDescription}
+          />
           <Button title="Vyber cestu k projektu" onPress={pickProjectPath} />
           <Button title="Založ zakázku" onPress={addProject} />
         </View>
       )}
       <View style={styles.hrLine} />
       <View style={styles.buttonContainer}>
-        <Button title="Zobraz uložené body" onPress={() => {if (projectId != "null") {setShowPointFlatList(!showPointFlatList)}}}/>
-        <Button title="Vlož bod" onPress={() => {if (projectId != "null") {setShowCreatePoint(!showCreatePoint)}}} />
+        <Button
+          title="Zobraz uložené body"
+          onPress={() => {
+            if (projectId != 'null') {
+              setShowPointFlatList(!showPointFlatList);
+            }
+          }}
+        />
+        <Button
+          title="Vlož bod"
+          onPress={() => {
+            if (projectId != 'null') {
+              setShowCreatePoint(!showCreatePoint);
+            }
+          }}
+        />
       </View>
       {showPointFlatList && ( // conditional rendering based on the new piece of state
-        <View style={{ height: 100 }}>
+        <View style={{height: 100}}>
           <FlatList
             data={projectPoints}
             renderItem={renderItemPoint}
@@ -291,16 +360,30 @@ const Project = () => {
         </View>
       )}
       {showCreatePoint && ( // conditional rendering based on the new piece of state
-        <Importuj projectPoints={projectPoints} setProjectPoints={setProjectPoints} />
+        <Importuj
+          projectPoints={projectPoints}
+          setProjectPoints={setProjectPoints}
+        />
       )}
 
       <View style={styles.hrLine} />
 
       <View style={styles.buttonContainer}>
-        <Button title="Exportuj body" onPress={() => {if (projectId != "null") {}}}/>
-        <Button title="Importuj body" onPress={() => {if (projectId != "null") {}}} />
+        <Button
+          title="Exportuj body"
+          onPress={() => {
+            if (projectId != 'null') {
+            }
+          }}
+        />
+        <Button
+          title="Importuj body"
+          onPress={() => {
+            if (projectId != 'null') {
+            }
+          }}
+        />
       </View>
-
     </View>
   );
 };

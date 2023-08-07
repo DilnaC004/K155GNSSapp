@@ -20,10 +20,10 @@ const nmeaMessages = [
 ];
 
 
-export const Bluetooth = () => {
+export const Bluetooth = ({nmeaParsed, setNmeaParsed}) => {
 
   const [devices, setDevices] = useState([]);
-
+/*
   const bleManager = new BleManager({
     scanForPeripherals: true,
     onDeviceFound: (device) => {
@@ -34,21 +34,12 @@ export const Bluetooth = () => {
     }
   });
 
+*/
 
-
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [currentNmea, setCurrentNmea] = useState('');
 
-  useEffect(() => {
-    // Set an interval to update the currentNmea every second
-    const intervalId = setInterval(() => {
-      setCurrentNmea(nmeaMessages[currentIndex]);
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % nmeaMessages.length);
-    }, 1000);
 
-    // Clear the interval when the component is unmounted
-    return () => clearInterval(intervalId);
-  }, [currentIndex]);
+
 
   return (
     <SafeAreaView>
@@ -60,7 +51,6 @@ export const Bluetooth = () => {
       />
       <Button title="Stop" onPress={() => {
         }} />
-      <NmeaViewer nmeaMessages={nmeaMessages} />
     </SafeAreaView>
   );
 };
