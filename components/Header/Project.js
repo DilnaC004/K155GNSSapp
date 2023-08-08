@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, ScrollView, TouchableOpacity, FlatList, Switch } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'
 import IconMaterialIcons from 'react-native-vector-icons/MaterialIcons'
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {DocumentPicker, DocumentPickerUtil} from 'react-native-document-picker'
 
 import Importuj from './Import'
 
@@ -141,31 +142,34 @@ const Project = () => {
     }
   };
 
-  const getData = async () => {
+
+  setObjectValue = async (value) => {
     try {
-      const jsonValue = await AsyncStorage.getItem('my-key');
-      return jsonValue != null ? JSON.parse(jsonValue) : null;
-    } catch (e) {
-      // error reading value
+      const jsonValue = JSON.stringify(value)
+      await AsyncStorage.setItem('key', jsonValue)
+    } catch(e) {
+      // save error
     }
+  
+    console.log('Done.')
+  }
+
+  getObjectValue = async () => {
+    AsyncStorage.getItem('key')
+      .then(data => {
+        console.log(JSON.parse(data));
+        setData(JSON.parse(data));
+      })
+      .catch(e => {
+        console.log(e);
+      });
   };
 
-  const storeData = async (value) => {
-    try {
-      const jsonValue = JSON.stringify(value);
-      await AsyncStorage.setItem('my-key', jsonValue);
-    } catch (e) {
-      // saving error
-    }
-  };
 
   // Function to handle picking the project path
   const pickProjectPath = async () => {
-    /*
       try {
-        const result = await DocumentPicker.pick({
-          type: [DocumentPickerUtil.allFiles()],
-        });
+        const result = await DocumentPicker.pickDirectory();
   
         // Save the picked path to state
         setNewProjectPath(result.uri);
@@ -173,7 +177,6 @@ const Project = () => {
         // Handle any error that occurred during the picking process
         console.log('Error while picking the project path:', error);
       }
-      */
   };
 
   // function to add the new project to the array
@@ -220,8 +223,6 @@ const Project = () => {
     });
     setData(updatedData);
   };
-
-  const [isModalVisible, setModalVisible] = React.useState(false);
 
   const renderItemProject = ({item}) => {
     const backgroundColor = item.title === projectTitle ? '#ccc' : '#ccc1';
@@ -326,7 +327,7 @@ const Project = () => {
             value={newProjectDescription}
             onChangeText={setNewProjectDescription}
           />
-          <Button title="Vyber cestu k projektu" onPress={pickProjectPath} />
+          <Button title="Vyber cestu k projektu" onPress={() => {DocumentPicker.pickSingle()}} />
           <Button title="Založ zakázku" onPress={addProject} />
         </View>
       )}
@@ -371,10 +372,7 @@ const Project = () => {
       <View style={styles.buttonContainer}>
         <Button
           title="Exportuj body"
-          onPress={() => {
-            if (projectId != 'null') {
-            }
-          }}
+          onPress={() => {getObjectValue()}}
         />
         <Button
           title="Importuj body"
@@ -382,6 +380,10 @@ const Project = () => {
             if (projectId != 'null') {
             }
           }}
+        />
+        <Button
+          title="Vše vymaž"
+          onPress={() => {clearStorage()}}
         />
       </View>
     </View>

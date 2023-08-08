@@ -49,7 +49,6 @@ const Importuj = ({ projectPoints, setProjectPoints }) => {
         console.log(newPoint);
         // Adding the newPoint to the points array
         setProjectPoints([...projectPoints, newPoint]);
-        console.log(projectPoints);
       }
     } else {
       if (

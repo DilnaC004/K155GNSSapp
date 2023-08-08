@@ -9,6 +9,7 @@ yarn add react-native-vector-icons
 yarn add react-native-ble-plx
 npm i gps 
 yarn add @react-native-async-storage/async-storage - https://react-native-async-storage.github.io/async-storage/docs/api
+yarn add react-native-document-picker
 
 Notes:
 Zuzka - původní apka
