@@ -22,7 +22,7 @@ export const Point = () => {
 
   return (
     <SafeAreaView>
-      <Text style={styles.title}>Nastavení NTRIP připojení:</Text>
+      <Text style={styles.title}>Nastavení antény:</Text>
       <Text >K155GNSS KRABIČKA - fázové centrum 42 mm</Text>
       <Text >K155GNSS VÁLEC - fázové centrum XX mm</Text>
       <View style={styles.hrLine} />

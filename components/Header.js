@@ -9,6 +9,7 @@ import Project from './Header/Project'
 import Skyplot from './Header/Skyplot';
 import Point from './Header/Point';
 import Map from './Header/Map';
+import Placing from './Header/Placing';
 
 const Header = ({nmeaParsed, setNmeaParsed, coordStatus}) => {
   const [isBLEModalVisible, setBLEModalVisible] = React.useState(false);
@@ -17,6 +18,7 @@ const Header = ({nmeaParsed, setNmeaParsed, coordStatus}) => {
   const [isNtripModalVisible, setNtripModalVisible] = React.useState(false);
   const [isProjModalVisible, setProjModalVisible] = React.useState(false);
   const [isMapModalVisible, setMapModalVisible] = React.useState(false);
+  const [isPlacingModalVisible, setPlacingModalVisible] = React.useState(false);
 
   const toggleBLEModal = () => {
     setBLEModalVisible(!isBLEModalVisible);
@@ -36,12 +38,18 @@ const Header = ({nmeaParsed, setNmeaParsed, coordStatus}) => {
   const toggleMapModal = () => {
     setMapModalVisible(!isMapModalVisible);
   };
+  const togglePlacingModal = () => {
+    setPlacingModalVisible(!isPlacingModalVisible);
+  };
 
   return (
     <View style={styles.headerContainer}>
       <TouchableOpacity onPress={togglePointModal} >
         <Icon name="dot-circle-o" size={32} color={coordStatus} />
         <Text style={styles.infoText}>{nmeaParsed.quality}</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={togglePlacingModal} >
+        <Icon name="flag" size={32} color="black" />
       </TouchableOpacity>
       <TouchableOpacity onPress={toggleSkyplotModal} >
         <IconFontAwesome5 name="satellite" size={32} color="black" />
@@ -97,6 +105,13 @@ const Header = ({nmeaParsed, setNmeaParsed, coordStatus}) => {
       <Modal visible={isMapModalVisible} animationType="slide">
         <Map></Map>
         <TouchableOpacity style={styles.closeButton} onPress={toggleMapModal}>
+          <Icon name="close" size={24} color="black" />
+        </TouchableOpacity>
+      </Modal>
+
+      <Modal visible={isPlacingModalVisible} animationType="slide">
+        <Placing></Placing>
+        <TouchableOpacity style={styles.closeButton} onPress={togglePlacingModal}>
           <Icon name="close" size={24} color="black" />
         </TouchableOpacity>
       </Modal>

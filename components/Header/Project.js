@@ -3,7 +3,15 @@ import { View, Text, TextInput, Button, ScrollView, TouchableOpacity, FlatList, 
 import Icon from 'react-native-vector-icons/FontAwesome'
 import IconMaterialIcons from 'react-native-vector-icons/MaterialIcons'
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {DocumentPicker, DocumentPickerUtil} from 'react-native-document-picker'
+import DocumentPicker, {
+  DirectoryPickerResponse,
+  DocumentPickerResponse,
+  isCancel,
+  isInProgress,
+  types,
+} from 'react-native-document-picker'
+import RNFS from 'react-native-fs';
+
 
 import { etrs2jtsk, jtsk2etrs} from '../Calculations/transformation'
 
@@ -40,80 +48,36 @@ const ItemPoint = ({ item, onPress, backgroundColor, textColor, textColor1 }) =>
 const Project = () => {
   const [data, setData] = useState([
     {
-      title: 'Mereni 1',
-      description: 'null',
+      title: 'Test',
+      description: 'test',
       date: '21.7.2023 18:26:36',
       points: [
         {
           title: 'Bod1',
-          x: 1,
-          y: 2,
-          z: 3,
-          b: 1,
-          l: 2,
-          h: 3,
+          x: 1000000,
+          y: 700000,
+          z: 100,
+          b: 0,
+          l: 0,
+          h: 0,
           ofset: 0.5,
           antena: 1.5,
           date: '21.7.2023 19:26:36',
         },
         {
           title: 'Bod2',
-          x: 1,
-          y: 2,
-          z: 3,
-          b: 1,
-          l: 2,
-          h: 3,
+          x: 0,
+          y: 0,
+          z: 0,
+          b: 50,
+          l: 14,
+          h: 100,
           ofset: 0.5,
           antena: 1.5,
           date: '21.7.2023 19:26:36',
         },
       ],
-    },
-    {
-      title: 'Mereni 2',
-      description: 'nukll',
-      date: '21.7.2023 19:26:36',
-      points: [
-        {
-          title: 'Bod1',
-          x: 1,
-          y: 2,
-          z: 3,
-          b: 1,
-          l: 2,
-          h: 3,
-          ofset: 0.5,
-          antena: 1.5,
-          date: '21.7.2023 19:26:36',
-        },
-        {
-          title: 'Bod2',
-          x: 1,
-          y: 2,
-          z: 3,
-          b: 1,
-          l: 2,
-          h: 3,
-          ofset: 0.5,
-          antena: 1.5,
-          date: '21.7.2023 19:26:36',
-        },
-        {
-          title: 'Bod3',
-          x: 1,
-          y: 2,
-          z: 3,
-          b: 1,
-          l: 2,
-          h: 3,
-          ofset: 0.5,
-          antena: 1.5,
-          date: '21.7.2023 19:26:36',
-        },
-      ],
-    },
-    // more objects...
+    }
   ]);
 
   const [projectTitle, setprojectTitle] = useState('');
@@ -155,39 +119,19 @@ const Project = () => {
   };
 
   setObjectValue = async (value) => {
-    try {
-      const jsonValue = JSON.stringify(value)
-      await AsyncStorage.setItem('key', jsonValue)
-    } catch(e) {
-      // save error
-    }
-  
-    console.log('Done.')
+    const jsonValue = JSON.stringify(value)
+    AsyncStorage.setItem('key', jsonValue).then(console.log('Done.')).catch(e => {console.log(e)});
+
   }
 
   getObjectValue = async () => {
     AsyncStorage.getItem('key')
       .then(data => {
-        console.log(JSON.parse(data));
         setData(JSON.parse(data));
       })
       .catch(e => {
         console.log(e);
       });
-  };
-
-
-  // Function to handle picking the project path
-  const pickProjectPath = async () => {
-      try {
-        const result = await DocumentPicker.pickDirectory();
-  
-        // Save the picked path to state
-        setNewProjectPath(result.uri);
-      } catch (error) {
-        // Handle any error that occurred during the picking process
-        console.log('Error while picking the project path:', error);
-      }
   };
 
   // function to add the new project to the array
@@ -196,13 +140,20 @@ const Project = () => {
     const newProject = {
       title: newProjectTitle,
       description: newProjectDescription,
+      path: newProjectPath,
       date: new Date().toLocaleString(), // Assuming you want to add the current date/time
       points: [], // add an empty array or whatever initial value you like
     };
-
+    console.log(newProject);
     // add the new project to the data array
-    setData([...data, newProject]);
-    setObjectValue(data);
+    if(data.length === 0){
+      setData([...data, newProject]);
+      console.log(data);
+    } else {
+      setData([newProject]);
+      console.log(data);
+    }
+    console.log(data);
 
     // clear the text inputs
     setNewProjectTitle('');
@@ -212,6 +163,7 @@ const Project = () => {
     setShowCreateProject(!showCreateProject);
   };
 
+  // add point into list of points and async storage NEED TO OPTIMAZE
   const addPoint = () => {
     const x = parseFloat(pointX);
     const y = parseFloat(pointY);
@@ -254,7 +206,7 @@ const Project = () => {
         });
         setData(updatedData);
         setShowCreatePoint(!showCreatePoint);
-        setObjectValue(data);
+        console.log(data);
       }
     } else {
       if (
@@ -327,6 +279,17 @@ const Project = () => {
     setData(updatedData);
   };
 
+  // Function to export points into txt
+  const exportPoints = async () =>{
+    try {
+      const filePath = `${data[projectId].path.uri}/project.txt`;
+      await RNFS.writeFile(filePath, JSON.stringify(data), 'utf8');
+      console.log('Project data saved to file:', filePath);
+    } catch (error) {
+      console.error('Error saving project data:', error);
+    }
+  }
+
   const renderItemProject = ({item}) => {
     const backgroundColor = item.title === projectTitle ? '#ccc' : '#ccc1';
     const color = item.title === projectTitle ? 'white' : 'black';
@@ -343,7 +306,6 @@ const Project = () => {
             const index = data.indexOf(item);
             setprojectId(index); // Set projectId to the index of the selected project
             setProjectPoints(item.points);
-
             setShowFlatList(false); // Hide the FlatList after an item is selected}
           }}
           backgroundColor={backgroundColor}
@@ -433,10 +395,13 @@ const Project = () => {
           <Button
             title="Vyber cestu k projektu"
             onPress={() => {
-              DocumentPicker.pickSingle();
+              DocumentPicker.pickDirectory().then(setNewProjectPath).catch(e => {console.log(e)});
             }}
           />
-          <Button title="Založ zakázku" onPress={addProject} />
+          <Button title="Založ zakázku" onPress={() => {
+            addProject(); 
+            setObjectValue(data);
+            }} />
         </View>
       )}
       <View style={styles.hrLine} />
@@ -522,7 +487,7 @@ const Project = () => {
         <Button
           title="Exportuj body"
           onPress={() => {
-            getObjectValue();
+            exportPoints();
           }}
         />
         <Button
@@ -536,6 +501,8 @@ const Project = () => {
           title="Vše vymaž"
           onPress={() => {
             clearStorage();
+            setData([]);
+            setProjectPoints([]);
           }}
         />
       </View>
