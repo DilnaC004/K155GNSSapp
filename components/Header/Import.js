@@ -4,7 +4,7 @@ import { View, Text, TextInput, Button, Switch} from 'react-native';
 import { etrs2jtsk, jtsk2etrs} from '../Calculations/transformation'
 
 
-const Importuj = ({ projectPoints, setProjectPoints }) => {
+export default Importuj = ({ projectPoints, setProjectPoints }) => {
 
   const [isEnabled, setIsEnabled] = useState(false);
   const toggleSwitch = () => setIsEnabled(previousState => !previousState);
@@ -141,8 +141,6 @@ const Importuj = ({ projectPoints, setProjectPoints }) => {
     </View>
   );
 };
-
-export default Importuj;
 
 const styles = {
   input: {

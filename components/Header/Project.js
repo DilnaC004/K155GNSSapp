@@ -5,7 +5,7 @@ import IconMaterialIcons from 'react-native-vector-icons/MaterialIcons'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {DocumentPicker, DocumentPickerUtil} from 'react-native-document-picker'
 
-import Importuj from './Import'
+import { etrs2jtsk, jtsk2etrs} from '../Calculations/transformation'
 
 
 
@@ -132,6 +132,18 @@ const Project = () => {
   const [newProjectDescription, setNewProjectDescription] = useState('');
   const [newProjectPath, setNewProjectPath] = useState('');
 
+  // state point inputs
+  const [isEnabled, setIsEnabled] = useState(false);
+  const toggleSwitch = () => setIsEnabled(previousState => !previousState);
+  const switchCoordinates = isEnabled ? 'ETRS89' : 'S-JTSK';
+  const switchX = isEnabled ? 'L [DMS]' : 'X [m]';
+  const switchY = isEnabled ? 'B [DMS]' : 'Y [m]';
+  const switchZ = isEnabled ? 'H [DMS]' : 'H [m]';
+  const [pointTitle, setPointTitle] = useState('');
+  const [pointX, setPointX] = useState('');
+  const [pointY, setPointY] = useState('');
+  const [pointZ, setPointZ] = useState('');
+
   // functions to save measured point into AsyncStorage
   const clearStorage = async () => {
     try {
@@ -141,7 +153,6 @@ const Project = () => {
       alert('Failed to clear the async storage.');
     }
   };
-
 
   setObjectValue = async (value) => {
     try {
@@ -191,6 +202,7 @@ const Project = () => {
 
     // add the new project to the data array
     setData([...data, newProject]);
+    setObjectValue(data);
 
     // clear the text inputs
     setNewProjectTitle('');
@@ -198,6 +210,97 @@ const Project = () => {
     setNewProjectDescription('');
 
     setShowCreateProject(!showCreateProject);
+  };
+
+  const addPoint = () => {
+    const x = parseFloat(pointX);
+    const y = parseFloat(pointY);
+    const z = parseFloat(pointZ);
+
+    if (isEnabled) {
+      if (
+        y <= 51.1 &&
+        y >= 48.4 &&
+        x <= 19.5 &&
+        x >= 12 &&
+        z <= 1700 &&
+        z >= 0
+      ) {
+
+        const jtsk = etrs2jtsk(y, x, z);
+
+        const newPoint = {
+          title: pointTitle,
+          b: x,
+          l: y,
+          h: z,
+          x: jtsk.X,
+          y: jtsk.Y,
+          z: jtsk.Hbpv,
+          type: 1,
+          // Add other properties as needed...
+          date: new Date().toLocaleString(), // Assuming you want to add the current date/time
+        };
+        console.log(newPoint);
+        // Adding the newPoint to the points array
+        setProjectPoints([...projectPoints, newPoint]);
+
+        const updatedData = data.map((project, index) => {
+          if (index === projectId) {
+            const updatedPoints = [...project.points, newPoint];
+            return { ...project, points: updatedPoints };
+          }
+          return project;
+        });
+        setData(updatedData);
+        setShowCreatePoint(!showCreatePoint);
+        setObjectValue(data);
+      }
+    } else {
+      if (
+        y <= 945650 &&
+        y >= 373500 &&
+        x <= 1201640 &&
+        x >= 967980 &&
+        z <= 1700 &&
+        z >= 0
+      ) {
+        const etrs = jtsk2etrs(y, x, z);
+        const newPoint = {
+          title: pointTitle,
+          b: etrs.B,
+          l: etrs.L,
+          h: etrs.H,
+          x: x,
+          y: y,
+          z: z,
+          type: 1,
+          // Add other properties as needed...
+          date: new Date().toLocaleString(), // Assuming you want to add the current date/time
+        };
+        // Adding the newPoint to the points array
+        console.log(newPoint);
+        // Adding the newPoint to the points array
+        setProjectPoints([...projectPoints, newPoint]);
+
+        const updatedData = data.map((project, index) => {
+          if (index === projectId) {
+            const updatedPoints = [...project.points, newPoint];
+            return { ...project, points: updatedPoints };
+          }
+          return project;
+        });
+        setData(updatedData);
+        setShowCreatePoint(!showCreatePoint);
+        setObjectValue(data);
+      }
+    }
+
+    // Clear the input after adding the point
+    setPointTitle('');
+    setPointX('');
+    setPointY('');
+    setPointZ('');
   };
 
   // Function to delete a project from the data array
@@ -327,7 +430,12 @@ const Project = () => {
             value={newProjectDescription}
             onChangeText={setNewProjectDescription}
           />
-          <Button title="Vyber cestu k projektu" onPress={() => {DocumentPicker.pickSingle()}} />
+          <Button
+            title="Vyber cestu k projektu"
+            onPress={() => {
+              DocumentPicker.pickSingle();
+            }}
+          />
           <Button title="Založ zakázku" onPress={addProject} />
         </View>
       )}
@@ -351,20 +459,61 @@ const Project = () => {
         />
       </View>
       {showPointFlatList && ( // conditional rendering based on the new piece of state
-        <View style={{height: 100}}>
+        <View style={{height: 120}}>
           <FlatList
             data={projectPoints}
             renderItem={renderItemPoint}
             keyExtractor={item => item.title}
             extraData={projectTitle}
           />
+          <View style={styles.hrLine} />
         </View>
       )}
       {showCreatePoint && ( // conditional rendering based on the new piece of state
-        <Importuj
-          projectPoints={projectPoints}
-          setProjectPoints={setProjectPoints}
-        />
+        <View>
+          <View style={styles.buttonContainer}>
+            <TextInput
+              style={styles.textInput}
+              placeholder="Název bodu"
+              value={pointTitle}
+              onChangeText={setPointTitle}
+            />
+            <Text>{switchCoordinates}</Text>
+            <Switch
+              trackColor={{false: '#767577', true: '#81b0ff'}}
+              thumbColor={isEnabled ? '#f5dd4b' : '#f4f3f4'}
+              ios_backgroundColor="#3e3e3e"
+              onValueChange={toggleSwitch}
+              value={isEnabled}
+              style={styles.switch}
+            />
+          </View>
+          <TextInput
+            style={styles.textInput}
+            placeholder={switchY}
+            value={pointY}
+            onChangeText={setPointY}
+            maxLength={11} // Set the maximum number of characters allowed
+            keyboardType="numeric" // Set the keyboard to numeric mode
+          />
+          <TextInput
+            style={styles.textInput}
+            placeholder={switchX}
+            value={pointX}
+            onChangeText={setPointX}
+            maxLength={11} // Set the maximum number of characters allowed
+            keyboardType="numeric" // Set the keyboard to numeric mode
+          />
+          <TextInput
+            style={styles.textInput}
+            placeholder={switchZ}
+            value={pointZ}
+            onChangeText={setPointZ}
+            maxLength={7} // Set the maximum number of characters allowed
+            keyboardType="numeric" // Set the keyboard to numeric mode
+          />
+          <Button title="Ulož bod" onPress={addPoint} />
+        </View>
       )}
 
       <View style={styles.hrLine} />
@@ -372,7 +521,9 @@ const Project = () => {
       <View style={styles.buttonContainer}>
         <Button
           title="Exportuj body"
-          onPress={() => {getObjectValue()}}
+          onPress={() => {
+            getObjectValue();
+          }}
         />
         <Button
           title="Importuj body"
@@ -383,7 +534,9 @@ const Project = () => {
         />
         <Button
           title="Vše vymaž"
-          onPress={() => {clearStorage()}}
+          onPress={() => {
+            clearStorage();
+          }}
         />
       </View>
     </View>
