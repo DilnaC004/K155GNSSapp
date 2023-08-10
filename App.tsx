@@ -21,8 +21,11 @@ function App(): JSX.Element {
   const [ModalType, setModalType] = React.useState(String);
 
   const [coordStatus, setCoordStatus] = React.useState('black');
-  const [nmeaParsed, setNmeaParsed] = useState('');
+  const [nmeaParsed, setNmeaParsed] = React.useState('');
   const [newPoint, setNewPoint] = React.useState<any>(null);
+  const [heightAntena, setHeightAntena] = React.useState(0);
+  const [offsetAntena, setOffsetAntena] = React.useState(0);
+  const [codePoint, setCodePoint] = React.useState('');
 
   const [projectId, setprojectId] = useState('null');
   const [data, setData] = useState([
@@ -33,48 +36,40 @@ function App(): JSX.Element {
       points: [
         {
           title: 'Bod1',
-          x: 1000000,
-          y: 700000,
-          z: 100,
-          b: 0,
-          l: 0,
-          h: 0,
-          ofset: 0.5,
-          antena: 1.5,
-          date: '21.7.2023 19:26:36',
-        },
-        {
-          title: 'Bod2',
-          x: 0,
-          y: 0,
-          z: 0,
           b: 50,
           l: 14,
           h: 100,
+          accuB:0,
+          accuL:0,
+          accuH:0,
+          pdop:0,
+          time:0,
           ofset: 0.5,
           antena: 1.5,
+          code:'test',
           date: '21.7.2023 19:26:36',
         },
       ],
     }
   ]);
-/*
-  const setObjectValue = async (value) => {
+
+  const setObjectValue = async (value: any) => {
     const jsonValue = JSON.stringify(value)
-    AsyncStorage.setItem('key', jsonValue).then(console.log('Done.')).catch(e => {console.log(e)});
+    AsyncStorage.setItem('key', jsonValue).then(() => console.log('Done.')).catch(e => {console.log(e)});
 
   }
 
   const getObjectValue = async () => {
-    AsyncStorage.getItem('key')
-      .then(data => {
-        setData(JSON.parse(data));
-      })
-      .catch(e => {
-        console.log(e);
-      });
+    try {
+      const data = await AsyncStorage.getItem('key');
+      if (data) {
+        setData(JSON.parse(data)); // You need to have a state variable "data" to set the parsed data.
+      }
+    } catch (e) {
+      console.log(e);
+    }
   };
-*/
+
 
   const isDarkMode = useColorScheme() === 'dark';
 
@@ -93,14 +88,15 @@ function App(): JSX.Element {
       b: coordX,
       l: coordY,
       h: coordZ,
-      type: 2,
       accuB:coordAccuX,
       accuL:coordAccuY,
       accuH:coordAccuZ,
       pdop:coordPDOP,
       time:coordMeasuredTime,
-      // Add other properties as needed...
-      date: new Date().toLocaleString(), // Assuming you want to add the current date/time
+      ofset:offsetAntena,
+      antena: heightAntena,
+      code: codePoint,
+      date: new Date().toLocaleString(),
     };
 
     // Log the received values
@@ -113,8 +109,9 @@ function App(): JSX.Element {
         }
         return project;
       });
-      //setData(updatedData);
+      setData(updatedData);
       console.log(updatedData);
+      setObjectValue(updatedData); // save all data do asyncStorage
     } else {
       Alert.alert('Vyber zakázku');
     }
@@ -154,13 +151,14 @@ function App(): JSX.Element {
       setModalVisible={setModalVisible}
       isModalVisible={isModalVisible}
       setModalType={setModalType}
+      loadDataFromAsyncStorage={getObjectValue}
       ></Header>
       <Mereni nmeaParsed={nmeaParsed} updateCoordinates={updateCoordinates}></Mereni>
 
       <Modal visible={isModalVisible} animationType="slide">
           <Button title='↓ ↓ ↓' onPress={toggleModal}/>
         {ModalType == "point" && (
-          <Point/>
+          <Point setHeigthAntena={setHeightAntena} setOffsetAntena={setOffsetAntena} setCodePoint={setCodePoint}/>
         )}
         {ModalType == "bluetooth" && (
           <Bluetooth nmeaParsed={nmeaParsed}/>

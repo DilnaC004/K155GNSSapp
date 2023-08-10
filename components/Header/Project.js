@@ -30,12 +30,6 @@ const ItemPoint = ({ item, onPress, backgroundColor, textColor, textColor1 }) =>
     showsHorizontalScrollIndicator={false}
   >
     <Text style={[styles.title, { color: textColor1 }]}>{item.title} </Text>
-    <Text style={[styles.title, { color: textColor1 }]}>X </Text>
-    <Text style={[styles.title, { color: textColor }]}>{item.x.toFixed(3)} </Text>
-    <Text style={[styles.title, { color: textColor1 }]}>Y </Text>
-    <Text style={[styles.title, { color: textColor }]}>{item.y.toFixed(3)} </Text>
-    <Text style={[styles.title, { color: textColor1 }]}>H Bpv </Text>
-    <Text style={[styles.title, { color: textColor }]}>{item.z.toFixed(3)} </Text>
     <Text style={[styles.title, { color: textColor1 }]}>B </Text>
     <Text style={[styles.title, { color: textColor }]}>{item.b.toFixed(7)} </Text>
     <Text style={[styles.title, { color: textColor1 }]}>L </Text>
@@ -45,7 +39,7 @@ const ItemPoint = ({ item, onPress, backgroundColor, textColor, textColor1 }) =>
   </ScrollView>
 );
 
-const Project = ({data, setData, projectId, setprojectId}) => {
+const Project = ({data, setData, projectId, setprojectId, saveDataToAsyncStorage}) => {
 
   const [projectTitle, setprojectTitle] = useState('');
   const [projectDate, setprojectDate] = useState('');
@@ -115,7 +109,7 @@ const Project = ({data, setData, projectId, setprojectId}) => {
     });
     setData(updatedData);
     setShowCreatePoint(!showCreatePoint);
-    setObjectValue(data);
+    saveDataToAsyncStorage(updatedData);
   };
 
   // function to add the new project to the array
@@ -128,16 +122,19 @@ const Project = ({data, setData, projectId, setprojectId}) => {
       date: new Date().toLocaleString(), // Assuming you want to add the current date/time
       points: [], // add an empty array or whatever initial value you like
     };
-    console.log(newProject);
     // add the new project to the data array
     if(data.length === 0){
-      setData([...data, newProject]);
-      console.log(data);
+      const updatedData = [...data, newProject];
+      setData(updatedData);
+      saveDataToAsyncStorage(updatedData);
+
     } else {
-      setData([newProject]);
-      console.log(data);
+      const updatedData = newProject;
+      setData(updatedData);
+      saveDataToAsyncStorage(updatedData);
+
     }
-    console.log(data);
+
 
     // clear the text inputs
     setNewProjectTitle('');
@@ -154,18 +151,20 @@ const Project = ({data, setData, projectId, setprojectId}) => {
     const z = parseFloat(pointZ);
 
     if (isEnabled) {
-      const jtsk = etrs2jtsk(y, x, z);
       const newPoint = {
         title: pointTitle,
         b: x,
         l: y,
         h: z,
-        x: jtsk.X,
-        y: jtsk.Y,
-        z: jtsk.Hbpv,
-        type: 1,
-        // Add other properties as needed...
-        date: new Date().toLocaleString(), // Assuming you want to add the current date/time
+        accuB:0,
+        accuL:0,
+        accuH:0,
+        pdop:0,
+        time:0,
+        ofset: 0,
+        antena: 0,
+        code:'input',
+        date: new Date().toLocaleString(), 
       };
       updateAsyncStorage(newPoint);
     } else {
@@ -175,11 +174,14 @@ const Project = ({data, setData, projectId, setprojectId}) => {
         b: etrs.B,
         l: etrs.L,
         h: etrs.H,
-        x: x,
-        y: y,
-        z: z,
-        type: 1,
-        // Add other properties as needed...
+        accuB:0,
+        accuL:0,
+        accuH:0,
+        pdop:0,
+        time:0,
+        ofset: 0,
+        antena: 0,
+        code:'input',
         date: new Date().toLocaleString(), // Assuming you want to add the current date/time
       };
       updateAsyncStorage(newPoint);

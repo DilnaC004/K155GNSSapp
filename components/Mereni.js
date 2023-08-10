@@ -5,8 +5,6 @@ import { etrs2jtsk } from './Calculations/transformation';
 
 const Mereni = ({nmeaParsed, updateCoordinates}) => {
   const [nazevBodu, setNazevBodu] = React.useState('');
-  const [dobaMer, setDobaMer] = React.useState(10);
-  const [autoSave, setAutoSave] = React.useState(false);
   const [boolRtk, setBoolRtk] = React.useState(false);
   const [boolRaw, setBoolRaw] = React.useState(false);
 

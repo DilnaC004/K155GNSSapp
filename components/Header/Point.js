@@ -2,21 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { SafeAreaView, View, Text, TextInput, Button, PermissionsAndroid, Platform } from 'react-native';
 
 
-export const Point = () => {
-  const [fazCentr, setfazCetntr] = React.useState('');
-  const [kodPoint, setkodPoint] = React.useState('');
-  const [vyskaAnteny, setVyskaAnteny] = React.useState('');
+export const Point = ({setHeigthAntena, setOffsetAntena, setCodePoint}) => {
+
 
   const handleFazCentrChange = (value) => {
-    setFazCentr(value);
+    setOffsetAntena(value);
   };
 
   const handlekodPointChange = (value) => {
-    setkodPoint(value);
+    setCodePoint(value);
   };
 
   const handleVyskaAntenyChange = (value) => {
-    setVyskaAnteny(value);
+    setHeigthAntena(value);
   };
 
 
@@ -28,7 +26,7 @@ export const Point = () => {
       <View style={styles.hrLine} />
       <TextInput
           style={styles.input}
-          value={fazCentr}
+          value={0}
           placeholder="Fázové centrum [m]"
           onChangeText={handleFazCentrChange}
           maxLength={5} // Set the maximum number of characters allowed
@@ -36,18 +34,17 @@ export const Point = () => {
         />
       <TextInput
         style={styles.input}
-        value={vyskaAnteny}
+        value={0}
         onChangeText={handleVyskaAntenyChange}
         placeholder="Výška antény [m]"
         maxLength={5} // Set the maximum number of characters allowed
         keyboardType="numeric" // Set the keyboard to numeric mode
       />
-            <TextInput
+      <TextInput
         style={styles.input}
-        value={vyskaAnteny}
+        value={'VB'}
         onChangeText={handlekodPointChange}
         placeholder="Kód"
-
       />
 
     </SafeAreaView>
