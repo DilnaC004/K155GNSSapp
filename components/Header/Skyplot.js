@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Dimensions, Animated } from 'react-native';
 
-const Skyplot = ({ data }) => {
+const Skyplot = () => {
 
   return (
     <View style={styles.container}>

@@ -3,16 +3,30 @@ import {dydx_grid} from './dydx_grid';
 import { dh_grid } from './dh_grid';
 
 export function etrs2jtsk(B, L, H_ellips) {
-  const S_jtsk05 = transform_etrs_jtsk05(B, L, H_ellips);
-  const diff = interpolate_dydx(S_jtsk05);
-  const dh = interpolate_dh(B, L);
+  if (
+    B <= 51.1 &&
+    B >= 48.4 &&
+    L <= 19.5 &&
+    L >= 12 &&
+    H_ellips <= 1700 &&
+    H_ellips >= 0
+  ) {
+    const S_jtsk05 = transform_etrs_jtsk05(B, L, H_ellips);
+    const diff = interpolate_dydx(S_jtsk05);
+    const dh = interpolate_dh(B, L);
 
-
-  return {
-    Y: S_jtsk05.y - diff.dY,
-    X: S_jtsk05.x - diff.dX,
-    Hbpv: H_ellips - dh,
-  };
+    return {
+      Y: S_jtsk05.y - diff.dY,
+      X: S_jtsk05.x - diff.dX,
+      Hbpv: H_ellips - dh,
+    };
+  } else{
+    return {
+      Y: 0,
+      X: 0,
+      Hbpv: 0,
+    };
+  }
 }
 
 export function interpolate_dydx(point) {
@@ -278,137 +292,153 @@ export function jtsk2etrs(Y, X, H_bpv) {
       H: Elipsoidal height [m] (float)
       }
    */
+  if (
+    Y <= 945650 &&
+    Y >= 373500 &&
+    X <= 1201640 &&
+    X >= 967980 &&
+    H_bpv <= 1700 &&
+    H_bpv >= 0
+  ){
+    const A_GRS80 = 6378137;
+    const E2_GRS80 = 0.006694380022901;
 
-  const A_GRS80 = 6378137;
-  const E2_GRS80 = 0.006694380022901;
+    const A_BESSEL = 6377397.155;
+    const E2_BESSEL = 0.00667437223062;
+    const E_BESSEL = Math.sqrt(E2_BESSEL);
 
-  const A_BESSEL = 6377397.155;
-  const E2_BESSEL = 0.00667437223062;
-  const E_BESSEL = Math.sqrt(E2_BESSEL);
+    const RHO = Math.PI / 180;
 
-  const RHO = Math.PI / 180;
+    const S_0 = 78.5 * RHO;
+    const Fi_0 = 49.5 * RHO;
+    const n = Math.sin(S_0);
 
-  const S_0 = 78.5 * RHO;
-  const Fi_0 = 49.5 * RHO;
-  const n = Math.sin(S_0);
+    const N_0 =
+      (A_BESSEL * Math.sqrt(1 - E2_BESSEL)) /
+      (1 - E2_BESSEL * Math.sin(Fi_0) ** 2);
 
-  const N_0 =
-    (A_BESSEL * Math.sqrt(1 - E2_BESSEL)) /
-    (1 - E2_BESSEL * Math.sin(Fi_0) ** 2);
-
-  const Ro0 = 0.9999 * N_0 * (1 / Math.tan(S_0));
-  const a_ = (90 - (59 + 42 / 60 + 42.69689 / 3600)) * RHO;
-  const alfa = Math.sqrt(
-    1 + (E2_BESSEL * Math.cos(Fi_0) ** 4) / (1 - E2_BESSEL)
-  );
-  const U_0 = Math.asin(Math.sin(Fi_0) / alfa);
-  const k_ =
-    Math.tan(U_0 / 2 + Math.PI / 4) *
-    (1 / Math.tan(Fi_0 / 2 + Math.PI / 4)) ** alfa *
-    ((1 + E_BESSEL * Math.sin(Fi_0)) / (1 - E_BESSEL * Math.sin(Fi_0))) **
-      ((alfa * E_BESSEL) / 2);
-
-  // Re-introduction of S-JTSK05->S-JTSK corrections
-
-  const corrections = interpolate_dydx({ x: X, y: Y });
-  const Y05 = Y + corrections.dY;
-  const X05 = X + corrections.dX;
-
-  // Re-introduction of bicubic dotransformation
-  const bicubic = bicub_dotr(X05, Y05);
-
-  const Y_ = Y05 + bicubic.deltaY;
-  const X_ = X05 + bicubic.deltaX;
-
-  // Conversion from plane to cone shell
-  const Ro = Math.sqrt(X_ ** 2 + Y_ ** 2);
-  const Epsilon = Math.atan(Y_ / X_);
-
-  // Conversion from a cone shell to a sphere (cartographic coordinates) -> S,D
-
-  const D = Epsilon / Math.sin(S_0);
-  const S =
-    2 *
-    (Math.atan((Ro0 / Ro) ** (1 / n) * Math.tan(S_0 / 2 + Math.PI / 4)) -
-      Math.PI / 4);
-
-  // Cartographic coordinates -> geographical coordinates -> U,V
-
-  const U = Math.asin(
-    Math.cos(a_) * Math.sin(S) - Math.sin(a_) * Math.cos(S) * Math.cos(D)
-  );
-  const dV = Math.asin((Math.cos(S) * Math.sin(D)) / Math.cos(U));
-
-  // Sphere to Besseluv elipsoid -> B_bessel, L_Bessel
-
-  const L_bessel = (24 + 50 / 60) * RHO - dV / alfa;
-
-  let B_0 = 0;
-  let B_i = U;
-
-  while (Math.abs(B_0 - B_i) > 1e-15) {
-    B_0 = B_i;
-    B_i =
-      2 *
-      (Math.atan(
-        k_ ** (-1 / alfa) *
-          Math.tan(U / 2 + Math.PI / 4) ** (1 / alfa) *
-          ((1 + E_BESSEL * Math.sin(B_0)) / (1 - E_BESSEL * Math.sin(B_0))) **
-            (E_BESSEL / 2)
-      ) -
-        Math.PI / 4);
-  }
-
-  const B_bessel = B_i;
-
-  // Conversion to rectangular coordinates
-  const HH = H_bpv + interpolate_dh(B_bessel / RHO, L_bessel / RHO);
-
-  const NN = A_BESSEL / Math.sqrt(1 - E2_BESSEL * Math.sin(B_bessel) ** 2);
-
-  const X_bessel = (NN + HH) * Math.cos(B_bessel) * Math.cos(L_bessel);
-  const Y_bessel = (NN + HH) * Math.cos(B_bessel) * Math.sin(L_bessel);
-  const Z_bessel = (NN * (1 - E2_BESSEL) + HH) * Math.sin(B_bessel);
-
-  // Conversion to elipsoid GRS80 - helmertov transformation
-  // parameters:
-  const r_ = 206264.806;
-  const pp1 = 572.213;
-  const pp2 = 85.334;
-  const pp3 = 461.94;
-  const pp4 = 1 + 3.5378 * 1e-6;
-  const pp5 = -5.24836073 / r_;
-  const pp6 = -1.52899176 / r_;
-  const pp7 = -4.97316164 / r_;
-
-  const X_grs = pp1 + pp4 * (X_bessel + pp5 * Y_bessel - pp6 * Z_bessel);
-  const Y_grs = pp2 + pp4 * (-pp5 * X_bessel + Y_bessel + pp7 * Z_bessel);
-  const Z_grs = pp3 + pp4 * (pp6 * X_bessel - pp7 * Y_bessel + Z_bessel);
-
-  // Conversion to geographical coordinates
-
-  const grs_dist = Math.sqrt(X_grs ** 2 + Y_grs ** 2);
-  let B_grs_0 = 1;
-  let B_grs_i = Math.atan((Z_grs / grs_dist) * (1 + E2_GRS80 / (1 - E2_GRS80)));
-
-  while (Math.abs(B_grs_0 - B_grs_i) > 1e-15) {
-    B_grs_0 = B_grs_i;
-
-    NN_i = A_GRS80 / Math.sqrt(1 - E2_GRS80 * Math.sin(B_grs_0) ** 2);
-    HH_e = grs_dist / Math.cos(B_grs_0) - NN_i;
-    B_grs_i = Math.atan(
-      (Z_grs / grs_dist) * (1 - (NN_i * E2_GRS80) / (NN_i + HH_e)) ** -1
+    const Ro0 = 0.9999 * N_0 * (1 / Math.tan(S_0));
+    const a_ = (90 - (59 + 42 / 60 + 42.69689 / 3600)) * RHO;
+    const alfa = Math.sqrt(
+      1 + (E2_BESSEL * Math.cos(Fi_0) ** 4) / (1 - E2_BESSEL),
     );
+    const U_0 = Math.asin(Math.sin(Fi_0) / alfa);
+    const k_ =
+      Math.tan(U_0 / 2 + Math.PI / 4) *
+      (1 / Math.tan(Fi_0 / 2 + Math.PI / 4)) ** alfa *
+      ((1 + E_BESSEL * Math.sin(Fi_0)) / (1 - E_BESSEL * Math.sin(Fi_0))) **
+        ((alfa * E_BESSEL) / 2);
+
+    // Re-introduction of S-JTSK05->S-JTSK corrections
+
+    const corrections = interpolate_dydx({x: X, y: Y});
+    const Y05 = Y + corrections.dY;
+    const X05 = X + corrections.dX;
+
+    // Re-introduction of bicubic dotransformation
+    const bicubic = bicub_dotr(X05, Y05);
+
+    const Y_ = Y05 + bicubic.deltaY;
+    const X_ = X05 + bicubic.deltaX;
+
+    // Conversion from plane to cone shell
+    const Ro = Math.sqrt(X_ ** 2 + Y_ ** 2);
+    const Epsilon = Math.atan(Y_ / X_);
+
+    // Conversion from a cone shell to a sphere (cartographic coordinates) -> S,D
+
+    const D = Epsilon / Math.sin(S_0);
+    const S =
+      2 *
+      (Math.atan((Ro0 / Ro) ** (1 / n) * Math.tan(S_0 / 2 + Math.PI / 4)) -
+        Math.PI / 4);
+
+    // Cartographic coordinates -> geographical coordinates -> U,V
+
+    const U = Math.asin(
+      Math.cos(a_) * Math.sin(S) - Math.sin(a_) * Math.cos(S) * Math.cos(D),
+    );
+    const dV = Math.asin((Math.cos(S) * Math.sin(D)) / Math.cos(U));
+
+    // Sphere to Besseluv elipsoid -> B_bessel, L_Bessel
+
+    const L_bessel = (24 + 50 / 60) * RHO - dV / alfa;
+
+    let B_0 = 0;
+    let B_i = U;
+
+    while (Math.abs(B_0 - B_i) > 1e-15) {
+      B_0 = B_i;
+      B_i =
+        2 *
+        (Math.atan(
+          k_ ** (-1 / alfa) *
+            Math.tan(U / 2 + Math.PI / 4) ** (1 / alfa) *
+            ((1 + E_BESSEL * Math.sin(B_0)) / (1 - E_BESSEL * Math.sin(B_0))) **
+              (E_BESSEL / 2),
+        ) -
+          Math.PI / 4);
+    }
+
+    const B_bessel = B_i;
+
+    // Conversion to rectangular coordinates
+    const HH = H_bpv + interpolate_dh(B_bessel / RHO, L_bessel / RHO);
+
+    const NN = A_BESSEL / Math.sqrt(1 - E2_BESSEL * Math.sin(B_bessel) ** 2);
+
+    const X_bessel = (NN + HH) * Math.cos(B_bessel) * Math.cos(L_bessel);
+    const Y_bessel = (NN + HH) * Math.cos(B_bessel) * Math.sin(L_bessel);
+    const Z_bessel = (NN * (1 - E2_BESSEL) + HH) * Math.sin(B_bessel);
+
+    // Conversion to elipsoid GRS80 - helmertov transformation
+    // parameters:
+    const r_ = 206264.806;
+    const pp1 = 572.213;
+    const pp2 = 85.334;
+    const pp3 = 461.94;
+    const pp4 = 1 + 3.5378 * 1e-6;
+    const pp5 = -5.24836073 / r_;
+    const pp6 = -1.52899176 / r_;
+    const pp7 = -4.97316164 / r_;
+
+    const X_grs = pp1 + pp4 * (X_bessel + pp5 * Y_bessel - pp6 * Z_bessel);
+    const Y_grs = pp2 + pp4 * (-pp5 * X_bessel + Y_bessel + pp7 * Z_bessel);
+    const Z_grs = pp3 + pp4 * (pp6 * X_bessel - pp7 * Y_bessel + Z_bessel);
+
+    // Conversion to geographical coordinates
+
+    const grs_dist = Math.sqrt(X_grs ** 2 + Y_grs ** 2);
+    let B_grs_0 = 1;
+    let B_grs_i = Math.atan(
+      (Z_grs / grs_dist) * (1 + E2_GRS80 / (1 - E2_GRS80)),
+    );
+
+    while (Math.abs(B_grs_0 - B_grs_i) > 1e-15) {
+      B_grs_0 = B_grs_i;
+
+      NN_i = A_GRS80 / Math.sqrt(1 - E2_GRS80 * Math.sin(B_grs_0) ** 2);
+      HH_e = grs_dist / Math.cos(B_grs_0) - NN_i;
+      B_grs_i = Math.atan(
+        (Z_grs / grs_dist) * (1 - (NN_i * E2_GRS80) / (NN_i + HH_e)) ** -1,
+      );
+    }
+
+    const B_etrs = B_grs_i / RHO;
+    const L_etrs = Math.atan(Y_grs / X_grs) / RHO;
+    const H_etrs = H_bpv + interpolate_dh(B_etrs, L_etrs);
+
+    return {
+      B: B_etrs,
+      L: L_etrs,
+      H: H_etrs,
+    };
+  } else {
+    return {
+      B: 0,
+      L: 0,
+      H: 0,
+    };
   }
-
-  const B_etrs = B_grs_i / RHO;
-  const L_etrs = Math.atan(Y_grs / X_grs) / RHO;
-  const H_etrs = H_bpv + interpolate_dh(B_etrs, L_etrs);
-
-  return {
-    B: B_etrs,
-    L: L_etrs,
-    H: H_etrs,
-  };
 }
 

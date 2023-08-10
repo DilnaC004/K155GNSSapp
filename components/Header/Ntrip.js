@@ -6,7 +6,7 @@ import axios from 'axios';
 const DATA = [
   {
     id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
-    title: 'First Item',
+    title: 'RTK3-MSM',
   },
   {
     id: '3ac68afc-c605-48d3-a4f8-fbd91aa97f63',
@@ -35,11 +35,11 @@ const Item = ({item, onPress, backgroundColor, textColor}) => (
 
 
 const Ntrip = () => {
-  const [ntripIp, setNtripIp] = useState('195.245.209.181');
-  const [ntripPort, setNtripPort] = useState('2101');
+  const [ntripIp, setNtripIp] = useState('http://195.245.209.181:2101');//http://euref-ip.net 195.245.209.181
+  const [ntripPort, setNtripPort] = useState('80'); //80 2101 
   const [ntripUsername, setNtripUsername] = useState('cvutvyuka');
   const [ntripPassword, setNtripPassword] = useState('k155dremejakokone');
-  const [mountpoint, setmountpoint] = useState('CPRG3');
+  const [mountpoint, setmountpoint] = useState('CPRG3-MSM'); //CPRG3-MSM
 
   const [selectedId, setSelectedId] = useState();
   const [showFlatList, setShowFlatList] = useState(false); 
@@ -102,28 +102,26 @@ const Ntrip = () => {
 
   };
 
-  const handleMntpSelectChange = (ntripIp,ntripPort) => {
+  const handleMntpSelectChange = () => {
     // Perform logic based on MNTP selection change
-    setShowFlatList(true); // set to true when button is clicked
+    //setShowFlatList(true); // set to true when button is clicked
 
-    const configurationObject = {
-      headers: {
-        'User-Agent': 'NTRIPClient for React Native v1.0',
-        'Authorization': 'Basic Y3Z1dHZ5dWthOmsxNTVkcmVtZWpha29rb25l',
-      }
-    };
-
-    axios
-    .get("http://czeposr.cuzk.cz:2101", configurationObject)
+    console.log('Zkouším se připojit k Czepos');
+    
+    console.log(`${ntripIp}`);
+    axios.get(`${ntripIp}`)
     .then((response) => {
-        setAdvice(response.data);
-    }).catch(err=> console.log(err))
+        console.log(response);
+    }).catch(
+      err=> console.log(err)
+      );
 
-    /* THIS IS WORKING 
+
+ /*
     axios
     .get("http://euref-ip.net")
     .then((response) => {
-        setAdvice(response.data);
+      console.log(response);
     });
 */
   };

@@ -19,8 +19,7 @@ const nmeaMessages = [
   "$GPBOD,045658.000,T,90.0,M,90.0,N,*47",
 ];
 
-
-export const Bluetooth = ({nmeaParsed, setNmeaParsed}) => {
+export const Bluetooth = () => {
 
   const [devices, setDevices] = useState([]);
 /*
@@ -39,8 +38,6 @@ export const Bluetooth = ({nmeaParsed, setNmeaParsed}) => {
   const [currentNmea, setCurrentNmea] = useState('');
 
 
-
-
   return (
     <SafeAreaView>
       <Text style={styles.title}>Nastavení Bluetooth připojení:</Text>
@@ -51,6 +48,7 @@ export const Bluetooth = ({nmeaParsed, setNmeaParsed}) => {
       />
       <Button title="Stop" onPress={() => {
         }} />
+      <NmeaViewer nmeaMessages={nmeaMessages}/>
     </SafeAreaView>
   );
 };

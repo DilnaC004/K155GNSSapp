@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { View, Text, TextInput, Button, ScrollView, TouchableOpacity, FlatList, Switch } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'
 import IconMaterialIcons from 'react-native-vector-icons/MaterialIcons'
@@ -45,43 +45,9 @@ const ItemPoint = ({ item, onPress, backgroundColor, textColor, textColor1 }) =>
   </ScrollView>
 );
 
-const Project = () => {
-  const [data, setData] = useState([
-    {
-      title: 'Test',
-      description: 'test',
-      date: '21.7.2023 18:26:36',
-      points: [
-        {
-          title: 'Bod1',
-          x: 1000000,
-          y: 700000,
-          z: 100,
-          b: 0,
-          l: 0,
-          h: 0,
-          ofset: 0.5,
-          antena: 1.5,
-          date: '21.7.2023 19:26:36',
-        },
-        {
-          title: 'Bod2',
-          x: 0,
-          y: 0,
-          z: 0,
-          b: 50,
-          l: 14,
-          h: 100,
-          ofset: 0.5,
-          antena: 1.5,
-          date: '21.7.2023 19:26:36',
-        },
-      ],
-    }
-  ]);
+const Project = ({data, setData, projectId, setprojectId}) => {
 
   const [projectTitle, setprojectTitle] = useState('');
-  const [projectId, setprojectId] = useState('null');
   const [projectDate, setprojectDate] = useState('');
   const [projectPointCount, setproctPointCount] = useState('');
   const [projectPoints, setProjectPoints] = useState([]);
@@ -134,6 +100,24 @@ const Project = () => {
       });
   };
 
+  const updateAsyncStorage = (newPoint) => {
+    // Adding the newPoint to the points array
+    console.log(newPoint);
+    // Adding the newPoint to the points array
+    setProjectPoints([...projectPoints, newPoint]);
+
+    const updatedData = data.map((project, index) => {
+      if (index === projectId) {
+        const updatedPoints = [...project.points, newPoint];
+        return {...project, points: updatedPoints};
+      }
+      return project;
+    });
+    setData(updatedData);
+    setShowCreatePoint(!showCreatePoint);
+    setObjectValue(data);
+  };
+
   // function to add the new project to the array
   const addProject = () => {
     // construct the new project object
@@ -170,82 +154,35 @@ const Project = () => {
     const z = parseFloat(pointZ);
 
     if (isEnabled) {
-      if (
-        y <= 51.1 &&
-        y >= 48.4 &&
-        x <= 19.5 &&
-        x >= 12 &&
-        z <= 1700 &&
-        z >= 0
-      ) {
-
-        const jtsk = etrs2jtsk(y, x, z);
-
-        const newPoint = {
-          title: pointTitle,
-          b: x,
-          l: y,
-          h: z,
-          x: jtsk.X,
-          y: jtsk.Y,
-          z: jtsk.Hbpv,
-          type: 1,
-          // Add other properties as needed...
-          date: new Date().toLocaleString(), // Assuming you want to add the current date/time
-        };
-        console.log(newPoint);
-        // Adding the newPoint to the points array
-        setProjectPoints([...projectPoints, newPoint]);
-
-        const updatedData = data.map((project, index) => {
-          if (index === projectId) {
-            const updatedPoints = [...project.points, newPoint];
-            return { ...project, points: updatedPoints };
-          }
-          return project;
-        });
-        setData(updatedData);
-        setShowCreatePoint(!showCreatePoint);
-        console.log(data);
-      }
+      const jtsk = etrs2jtsk(y, x, z);
+      const newPoint = {
+        title: pointTitle,
+        b: x,
+        l: y,
+        h: z,
+        x: jtsk.X,
+        y: jtsk.Y,
+        z: jtsk.Hbpv,
+        type: 1,
+        // Add other properties as needed...
+        date: new Date().toLocaleString(), // Assuming you want to add the current date/time
+      };
+      updateAsyncStorage(newPoint);
     } else {
-      if (
-        y <= 945650 &&
-        y >= 373500 &&
-        x <= 1201640 &&
-        x >= 967980 &&
-        z <= 1700 &&
-        z >= 0
-      ) {
-        const etrs = jtsk2etrs(y, x, z);
-        const newPoint = {
-          title: pointTitle,
-          b: etrs.B,
-          l: etrs.L,
-          h: etrs.H,
-          x: x,
-          y: y,
-          z: z,
-          type: 1,
-          // Add other properties as needed...
-          date: new Date().toLocaleString(), // Assuming you want to add the current date/time
-        };
-        // Adding the newPoint to the points array
-        console.log(newPoint);
-        // Adding the newPoint to the points array
-        setProjectPoints([...projectPoints, newPoint]);
-
-        const updatedData = data.map((project, index) => {
-          if (index === projectId) {
-            const updatedPoints = [...project.points, newPoint];
-            return { ...project, points: updatedPoints };
-          }
-          return project;
-        });
-        setData(updatedData);
-        setShowCreatePoint(!showCreatePoint);
-        setObjectValue(data);
-      }
+      const etrs = jtsk2etrs(y, x, z);
+      const newPoint = {
+        title: pointTitle,
+        b: etrs.B,
+        l: etrs.L,
+        h: etrs.H,
+        x: x,
+        y: y,
+        z: z,
+        type: 1,
+        // Add other properties as needed...
+        date: new Date().toLocaleString(), // Assuming you want to add the current date/time
+      };
+      updateAsyncStorage(newPoint);
     }
 
     // Clear the input after adding the point
@@ -487,7 +424,7 @@ const Project = () => {
         <Button
           title="Exportuj body"
           onPress={() => {
-            exportPoints();
+            //exportPoints();
           }}
         />
         <Button

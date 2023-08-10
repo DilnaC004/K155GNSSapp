@@ -1,121 +1,33 @@
-import React, {useState, useEffect} from 'react';
-import { View, Text, Image, TouchableOpacity, Button, Modal } from 'react-native';
+import React from 'react';
+import { View, Text, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'
 import IconFontAwesome5 from 'react-native-vector-icons/FontAwesome5'
 
-import Bluetooth from './Header/Bluetooth'
-import Ntrip from './Header/Ntrip'
-import Project from './Header/Project'
-import Skyplot from './Header/Skyplot';
-import Point from './Header/Point';
-import Map from './Header/Map';
-import Placing from './Header/Placing';
-
-const Header = ({nmeaParsed, setNmeaParsed, coordStatus}) => {
-  const [isBLEModalVisible, setBLEModalVisible] = React.useState(false);
-  const [isPointModalVisible, setPointModalVisible] = React.useState(false);
-  const [isSkyplotModalVisible, setSkyplotModalVisible] = React.useState(false);
-  const [isNtripModalVisible, setNtripModalVisible] = React.useState(false);
-  const [isProjModalVisible, setProjModalVisible] = React.useState(false);
-  const [isMapModalVisible, setMapModalVisible] = React.useState(false);
-  const [isPlacingModalVisible, setPlacingModalVisible] = React.useState(false);
-
-  const toggleBLEModal = () => {
-    setBLEModalVisible(!isBLEModalVisible);
-  };
-  const togglePointModal = () => {
-    setPointModalVisible(!isPointModalVisible);
-  };
-  const toggleSkyplotModal = () => {
-    setSkyplotModalVisible(!isSkyplotModalVisible);
-  };
-  const toggleNtripModal = () => {
-    setNtripModalVisible(!isNtripModalVisible);
-  };
-  const toggleProjModal = () => {
-    setProjModalVisible(!isProjModalVisible);
-  };
-  const toggleMapModal = () => {
-    setMapModalVisible(!isMapModalVisible);
-  };
-  const togglePlacingModal = () => {
-    setPlacingModalVisible(!isPlacingModalVisible);
-  };
-
+const Header = ({nmeaParsed, coordStatus, setModalVisible, isModalVisible, setModalType}) => {
   return (
     <View style={styles.headerContainer}>
-      <TouchableOpacity onPress={togglePointModal} >
+      <TouchableOpacity onPress={() => {setModalVisible(!isModalVisible); setModalType("point");}} >
         <Icon name="dot-circle-o" size={32} color={coordStatus} />
         <Text style={styles.infoText}>{nmeaParsed.quality}</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={togglePlacingModal} >
+      <TouchableOpacity onPress={() => {setModalVisible(!isModalVisible); setModalType("placing");}} >
         <Icon name="flag" size={32} color="black" />
       </TouchableOpacity>
-      <TouchableOpacity onPress={toggleSkyplotModal} >
+      <TouchableOpacity onPress={() => {setModalVisible(!isModalVisible); setModalType("skyplot");}} >
         <IconFontAwesome5 name="satellite" size={32} color="black" />
       </TouchableOpacity>
-      <TouchableOpacity onPress={toggleBLEModal} >
+      <TouchableOpacity onPress={() => {setModalVisible(!isModalVisible); setModalType("bluetooth");}} >
         <Icon name="bluetooth" size={32} color="black" />
       </TouchableOpacity>
-      <TouchableOpacity onPress={toggleNtripModal} >
+      <TouchableOpacity onPress={() => {setModalVisible(!isModalVisible); setModalType("ntrip");}} >
         <IconFontAwesome5  name="server" size={32} color="black" />
       </TouchableOpacity>
-      <TouchableOpacity onPress={toggleProjModal} >
+      <TouchableOpacity onPress={() => {setModalVisible(!isModalVisible); setModalType("project");}} >
         <Icon name="folder" size={32} color="black" />
       </TouchableOpacity>
-      <TouchableOpacity onPress={toggleMapModal} >
+      <TouchableOpacity onPress={() => {setModalVisible(!isModalVisible); setModalType("map");}} >
         <Icon name="map" size={32} color="black" />
       </TouchableOpacity>
-      
-      <Modal visible={isBLEModalVisible} animationType="slide">
-        <Bluetooth nmeaParsed={nmeaParsed} setNmeaParsed={setNmeaParsed}/>
-        <TouchableOpacity style={styles.closeButton} onPress={toggleBLEModal}>
-          <Icon name="close" size={24} color="black" />
-        </TouchableOpacity>
-      </Modal>
-
-      <Modal visible={isPointModalVisible} animationType="slide">
-        <Point></Point>
-        <TouchableOpacity style={styles.closeButton} onPress={togglePointModal}>
-          <Icon name="close" size={24} color="black" />
-        </TouchableOpacity>
-      </Modal>
-
-      <Modal visible={isSkyplotModalVisible} animationType="slide">
-        <Skyplot></Skyplot>
-        <TouchableOpacity style={styles.closeButton} onPress={toggleSkyplotModal}>
-          <Icon name="close" size={24} color="black" />
-        </TouchableOpacity>
-      </Modal>
-
-      <Modal visible={isNtripModalVisible} animationType="slide">
-        <Ntrip />
-        <TouchableOpacity style={styles.closeButton} onPress={toggleNtripModal}>
-          <Icon name="close" size={24} color="black" />
-        </TouchableOpacity>
-      </Modal>
-
-      <Modal visible={isProjModalVisible} animationType="slide">
-        <Project />
-        <TouchableOpacity style={styles.closeButton} onPress={toggleProjModal}>
-          <Icon name="close" size={24} color="black" />
-        </TouchableOpacity>
-      </Modal>
-
-      <Modal visible={isMapModalVisible} animationType="slide">
-        <Map></Map>
-        <TouchableOpacity style={styles.closeButton} onPress={toggleMapModal}>
-          <Icon name="close" size={24} color="black" />
-        </TouchableOpacity>
-      </Modal>
-
-      <Modal visible={isPlacingModalVisible} animationType="slide">
-        <Placing></Placing>
-        <TouchableOpacity style={styles.closeButton} onPress={togglePlacingModal}>
-          <Icon name="close" size={24} color="black" />
-        </TouchableOpacity>
-      </Modal>
-
     </View>
   );
 };
@@ -130,41 +42,7 @@ const styles = {
     justifyContent: 'space-around',
     marginVertical: 10,
   },
-  infoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
   infoText: {
     fontSize: 10,
-  },
-  fixContainer: {
-    marginLeft: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  fixImage: {
-    width: 24,
-    height: 24,
-  },
-  satContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginLeft: 16,
-  },
-  satImage: {
-    width: 24,
-    height: 24,
-  },
-  satText: {
-    marginLeft: 8,
-  },
-  settingsButton: {
-    width: 24,
-    height: 24,
-  },
-    closeButton: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
   },
 };

@@ -1,26 +1,27 @@
 import React, {useState, useEffect} from 'react';
 import { View, Text, TextInput, Button, Switch } from 'react-native';
 
-import GPS from 'gps';
-
 import { etrs2jtsk } from './Calculations/transformation';
 
-const Mereni = ({nmeaParsed}) => {
-  console.log(nmeaParsed);
+const Mereni = ({nmeaParsed, updateCoordinates}) => {
   const [nazevBodu, setNazevBodu] = React.useState('');
   const [dobaMer, setDobaMer] = React.useState(10);
   const [autoSave, setAutoSave] = React.useState(false);
   const [boolRtk, setBoolRtk] = React.useState(false);
   const [boolRaw, setBoolRaw] = React.useState(false);
 
-  const [coordX, setCoordX] = React.useState(50);
-  const [coordY, setCoordY] = React.useState(14);
-  const [coordZ, setCoordZ] = React.useState(100);
+  const [coordX, setCoordX] = React.useState(nmeaParsed.lat);
+  const [coordY, setCoordY] = React.useState(nmeaParsed.lon);
+  const [coordZ, setCoordZ] = React.useState(nmeaParsed.alt);
   const [coordPDOP, setcoordPDOP] = React.useState(nmeaParsed.hdop);
-  const [coordAccuX, setCoordAccuX] = React.useState(0.01);
-  const [coordAccuY, setCoordAccuY] = React.useState(0.02);
-  const [coordAccuZ, setCoordAccuZ] = React.useState(0.03);
-  
+  const [coordAccuX, setCoordAccuX] = React.useState(0);
+  const [coordAccuY, setCoordAccuY] = React.useState(0);
+  const [coordAccuZ, setCoordAccuZ] = React.useState(0);
+  const [coordMeasuredTime, setCoordMeasuredTime] = React.useState(0);
+  const [sumCoordX, setSumCoordX] = React.useState(0);
+  const [sumCoordY, setSumCoordY] = React.useState(0);
+  const [sumCoordZ, setSumCoordZ] = React.useState(0);
+
 
   const [isEnabled, setIsEnabled] = useState(false);
   const toggleSwitch = () => setIsEnabled(previousState => !previousState);
@@ -38,9 +39,6 @@ const Mereni = ({nmeaParsed}) => {
   const [endTime, setEndTime] = useState(null);
   const [formattedTime, setFormattedTime] = useState('00:00:00');
 
-  const gps = new GPS;
-
-
   const handleNazevBoduChange = (value) => {
     setNazevBodu(value);
   };
@@ -56,6 +54,16 @@ const Mereni = ({nmeaParsed}) => {
       setBoolRtk(!boolRtk);
       setFormattedTime('00:00:00');
       setStartTime(null);
+
+      setCoordX(sumCoordX/coordMeasuredTime)
+      setCoordY(sumCoordY/coordMeasuredTime)
+      setCoordZ(sumCoordZ/coordMeasuredTime)
+      setCoordAccuX(0);
+      setCoordAccuY(0);
+      setCoordAccuZ(0);
+      setcoordPDOP(nmeaParsed.hdop);
+      updateCoordinates(nazevBodu, coordX, coordY, coordZ, coordAccuX, coordAccuY, coordAccuZ, coordPDOP, coordMeasuredTime);
+
     }
   };
 
@@ -77,50 +85,40 @@ const Mereni = ({nmeaParsed}) => {
 
     // Use useEffect to start and stop the timer
     useEffect(() => {
-      /*
-      // Add an event listener on all protocols
-      gps.on('data', parsed => {
-        console.log(parsed);
-        setCoordX(parsed.lat);
-        setCoordY(parsed.lon);
-        setCoordZ(parsed.alt);
-        setcoordPDOP(parsed.hdop);
-        if(parsed.quality == 'fix'){
-          setCoordStatus("green");
-        }
-        if(parsed.quality == 'float'){
-          setCoordStatus("orange");
-        }
-      });
-
-      // Call the update routine directly with a NMEA sentence, which would
-      // come from the serial port or stream-reader normally
-      gps.update(
-        '$GPGGA,224900.000,4832.3762,N,00903.5393,E,1,04,7.8,498.6,M,48.0,M,,0000*5E',
-      );
-
-*/
       let intervalId;
+      let measuredTime = 0;
+
       if (startTime && !endTime) {
         // If the timer is running (start time is set, but end time is not)
         intervalId = setInterval(() => {
           const currentTime = new Date();
-          const timeDiffInSeconds = Math.floor(
+          measuredTime = Math.floor(
             (currentTime - startTime) / 1000,
           );
-          const hours = String(Math.floor(timeDiffInSeconds / 3600)).padStart(
+          const hours = String(Math.floor(measuredTime / 3600)).padStart(
             2,
             '0',
           );
           const minutes = String(
-            Math.floor((timeDiffInSeconds % 3600) / 60),
+            Math.floor((measuredTime % 3600) / 60),
           ).padStart(2, '0');
-          const seconds = String(timeDiffInSeconds % 60).padStart(2, '0');
+          const seconds = String(measuredTime % 60).padStart(2, '0');
           setFormattedTime(`${hours}:${minutes}:${seconds}`);
+
+          //Measure RTK point
+          setSumCoordX(prevSumCoordX => prevSumCoordX + parseFloat(nmeaParsed.lat));
+          setSumCoordY(prevSumCoordY => prevSumCoordY + parseFloat(nmeaParsed.lon));
+          setSumCoordZ(prevSumCoordZ => prevSumCoordZ + parseFloat(nmeaParsed.alt));
+          setCoordMeasuredTime(measuredTime);
+
         }, 1000);
+
       } else {
         // Clear the interval if the timer is not running
         clearInterval(intervalId);
+        setSumCoordX(0);
+        setSumCoordY(0);
+        setSumCoordZ(0);
       }
       // Clean up the interval when the component unmounts
       return () => clearInterval(intervalId);
