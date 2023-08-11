@@ -79,8 +79,6 @@ const Ntrip = () => {
     );
   };
 
-
-
   const handleNtripIpChange = (value) => {
     setNtripIp(value);
   };

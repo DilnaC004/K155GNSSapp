@@ -100,7 +100,6 @@ function App(): JSX.Element {
     };
 
     // Log the received values
-    setNewPoint(newPoint);
     if(!projectId){
       const updatedData = data.map((project, index) => {
         if (index === parseInt(projectId)) {
@@ -173,7 +172,7 @@ function App(): JSX.Element {
           <Ntrip/>
         )}
         {ModalType == "project" && (
-          <Project data={data} setData={setData} projectId={projectId} setprojectId={setprojectId}/>
+          <Project data={data} setData={setData} projectId={projectId} setprojectId={setprojectId} saveDataToAsyncStorage={setObjectValue}/>
         )}
         {ModalType == "map" && (
           <Map/>

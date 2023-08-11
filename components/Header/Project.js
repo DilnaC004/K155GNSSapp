@@ -2,7 +2,6 @@ import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'rea
 import { View, Text, TextInput, Button, ScrollView, TouchableOpacity, FlatList, Switch } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'
 import IconMaterialIcons from 'react-native-vector-icons/MaterialIcons'
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import DocumentPicker, {
   DirectoryPickerResponse,
   DocumentPickerResponse,
@@ -78,22 +77,6 @@ const Project = ({data, setData, projectId, setprojectId, saveDataToAsyncStorage
     }
   };
 
-  setObjectValue = async (value) => {
-    const jsonValue = JSON.stringify(value)
-    AsyncStorage.setItem('key', jsonValue).then(console.log('Done.')).catch(e => {console.log(e)});
-
-  }
-
-  getObjectValue = async () => {
-    AsyncStorage.getItem('key')
-      .then(data => {
-        setData(JSON.parse(data));
-      })
-      .catch(e => {
-        console.log(e);
-      });
-  };
-
   const updateAsyncStorage = (newPoint) => {
     // Adding the newPoint to the points array
     console.log(newPoint);
@@ -108,6 +91,7 @@ const Project = ({data, setData, projectId, setprojectId, saveDataToAsyncStorage
       return project;
     });
     setData(updatedData);
+    console.log(updatedData);
     setShowCreatePoint(!showCreatePoint);
     saveDataToAsyncStorage(updatedData);
   };
@@ -339,7 +323,6 @@ const Project = ({data, setData, projectId, setprojectId, saveDataToAsyncStorage
           />
           <Button title="Založ zakázku" onPress={() => {
             addProject(); 
-            setObjectValue(data);
             }} />
         </View>
       )}
