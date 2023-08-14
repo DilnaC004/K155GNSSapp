@@ -1,8 +1,8 @@
 import React, {useState} from 'react';
 import { View, Text, TextInput, Button, Switch} from 'react-native';
 
+import { styles } from '../Styles/styles';
 import { etrs2jtsk, jtsk2etrs} from '../Calculations/transformation'
-
 
 export default Importuj = ({ projectPoints, setProjectPoints }) => {
 
@@ -141,22 +141,3 @@ export default Importuj = ({ projectPoints, setProjectPoints }) => {
     </View>
   );
 };
-
-const styles = {
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 4,
-    marginBottom: 8,
-    padding: 8,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  switch: {
-    outerWidth: 50
-  }
-};
-

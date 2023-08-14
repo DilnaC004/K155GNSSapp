@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { SafeAreaView, View, Text, TextInput, Button, PermissionsAndroid, Platform } from 'react-native';
 
+import { styles } from '../Styles/styles';
 
 export const Point = ({heightAntena, setHeightAntena, offsetAntena, setOffsetAntena, codePoint, setCodePoint}) => {
-
-
   return (
     <SafeAreaView>
       <Text style={styles.title}>Nastavení antény:</Text>
@@ -41,22 +40,3 @@ export const Point = ({heightAntena, setHeightAntena, offsetAntena, setOffsetAnt
 };
 
 export default Point;
-
-const styles = {
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 4,
-    marginBottom: 8,
-    padding: 8,
-  },
-  title: {
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  hrLine: {
-    borderBottomColor: '#ccc',
-    borderBottomWidth: 1,
-    marginBottom: 16,
-  },
-};

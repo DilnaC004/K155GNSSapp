@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { SafeAreaView, View, Text, Button, PermissionsAndroid, Platform } from 'react-native';
 import { BleManager } from 'react-native-ble-plx';
 
+import { styles } from '../Styles/styles';
 import NmeaViewer from './NmeaViewer';
 
 // Sample NMEA messages, replace with your actual GPS data
@@ -54,23 +55,3 @@ export const Bluetooth = () => {
 };
 
 export default Bluetooth;
-
-const styles = {
-  nastContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  hrLine: {
-    borderBottomColor: '#ccc',
-    borderBottomWidth: 1,
-    marginBottom: 16,
-  },
-  title: {
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  refreshButton: {
-    marginRight: 8,
-    padding: 8,
-  },
-};

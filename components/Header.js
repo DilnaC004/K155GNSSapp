@@ -3,6 +3,8 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'
 import IconFontAwesome5 from 'react-native-vector-icons/FontAwesome5'
 
+import { styles } from './Styles/styles';
+
 const Header = ({nmeaParsed, coordStatus, setModalVisible, isModalVisible, setModalType}) => {
   return (
     <View style={styles.headerContainer}>
@@ -33,16 +35,3 @@ const Header = ({nmeaParsed, coordStatus, setModalVisible, isModalVisible, setMo
 };
 
 export default Header;
-
-const styles = {
-  headerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-    justifyContent: 'space-around',
-    marginVertical: 10,
-  },
-  infoText: {
-    fontSize: 10,
-  },
-};

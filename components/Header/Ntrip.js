@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, Image, ScrollView, FlatList, TouchableOpacity, Buffer} from 'react-native';
 import axios from 'axios';
 
+import { styles } from '../Styles/styles';
+
 
 const DATA = [
   {
@@ -191,73 +193,6 @@ const Ntrip = ({nmeaParsed}) => {
 };
 
 export default Ntrip;
-
-const styles = {
-  nastContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  appVersion: {
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  appVersionNumber: {
-    fontWeight: 'normal',
-  },
-  appRelease: {
-    fontWeight: 'normal',
-  },
-  hrLine: {
-    borderBottomColor: '#ccc',
-    borderBottomWidth: 1,
-    marginBottom: 16,
-  },
-  title: {
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  nastCenter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  refreshButton: {
-    marginRight: 8,
-    padding: 8,
-  },
-  refreshIcon: {
-    width: 24,
-    height: 24,
-  },
-  selectContainer: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 4,
-    marginRight: 8,
-  },
-  select: {
-    height: 40,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 4,
-    marginBottom: 8,
-    padding: 8,
-  },
-  button: {
-    marginBottom: 8,
-  },
-  mntpTable: {
-    marginBottom: 16,
-  },
-  item: {
-    padding: 20,
-    marginVertical: 8,
-    marginHorizontal: 16,
-  },
-};
 
 // Helper functions
 function utf8_to_b64(str) {

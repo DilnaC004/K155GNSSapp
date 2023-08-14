@@ -11,6 +11,7 @@ import DocumentPicker, {
 } from 'react-native-document-picker'
 import RNFS, { DocumentDirectoryPath, writeFile }from 'react-native-fs';
 
+import { styles } from '../Styles/styles';
 
 import { etrs2jtsk, jtsk2etrs} from '../Calculations/transformation'
 
@@ -423,79 +424,3 @@ const Project = ({data, setData, projectId, setprojectId, saveDataToAsyncStorage
 };
 
 export default Project;
-
-const styles = {
-  domovContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  zakazkaInfo: {
-    marginBottom: 16,
-  },
-  boldText: {
-    fontWeight: 'bold',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  hrLine: {
-    borderBottomColor: '#ccc',
-    borderBottomWidth: 1,
-    marginBottom: 16,
-  },
-  plusButton: {
-    marginRight: 8,
-  },
-  selectContainer: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 4,
-    paddingHorizontal: 8,
-  },
-  selectInput: {
-    height: 40,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  modalContainer: {
-    flex: 1,
-    padding: 16,
-  },
-  closeButton: {
-    alignSelf: 'flex-end',
-    padding: 8,
-  },
-  textInput: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 4,
-    marginBottom: 16,
-    padding: 8,
-  },
-  modalInfoText: {
-    fontWeight: 'bold',
-    marginBottom: 16,
-  },
-  seznamContainer: {
-    marginBottom: 16,
-  },
-  modalImportContainer: {
-    flex: 1,
-    padding: 16,
-  },
-  textCenter: {
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  item: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  scrollViewContent: {
-    flexDirection: 'row', // Important: Set the flexDirection to 'row' for horizontal scrolling
-  },
-
-};

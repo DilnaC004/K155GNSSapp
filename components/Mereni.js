@@ -207,24 +207,12 @@ const styles = {
     marginBottom: 8,
     padding: 8,
   },
-  zobrazCas: {
-    marginBottom: 8,
-  },
-  slider: {
-    marginBottom: 8,
-  },
   vertical: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
     justifyContent: 'space-around',
     marginVertical: 10,
-  },
-  checkboxProperty: {
-    marginRight: 8,
-  },
-  checkboxPropertyLabel: {
-    fontSize: 16,
   },
   hrLine: {
     borderBottomColor: '#ccc',
@@ -252,7 +240,5 @@ const styles = {
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-  },
-  switch: {
   },
 };

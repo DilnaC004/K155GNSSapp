@@ -15,7 +15,7 @@ import Point from './components/Header/Point';
 import Map from './components/Header/Map';
 import Placing from './components/Header/Placing';
 
-function App(): JSX.Element {
+export default function App(): JSX.Element {
   const gps = new GPS;
   const [isModalVisible, setModalVisible] = React.useState(false);
   const [ModalType, setModalType] = React.useState(String);
@@ -73,7 +73,7 @@ function App(): JSX.Element {
       title: nazevBodu,
       b: coordX,
       l: coordY,
-      h: coordZ,
+      h: coordZ-heightAntena-offsetAntena,
       accuB:coordAccuX,
       accuL:coordAccuY,
       accuH:coordAccuZ,
@@ -84,13 +84,10 @@ function App(): JSX.Element {
       code: codePoint,
       date: new Date().toLocaleString(),
     };
-    console.log(newPoint);
-    console.log(data);
-    console.log(projectId);
 
     // Log the received values
     if(projectId != 'null'){
-      const updatedData = data.map((project, index) => {
+      const updatedData = data.map((project:any, index:number) => {
         if (index === parseInt(projectId)) {
           const updatedPoints = [...project.points, newPoint];
           return {...project, points: updatedPoints};
@@ -136,71 +133,43 @@ useEffect(() => {
 
   return (
     <SafeAreaView style={backgroundStyle}>
-      <Header 
-      nmeaParsed={nmeaParsed} 
-      coordStatus={coordStatus}
-      setModalVisible={setModalVisible}
-      isModalVisible={isModalVisible}
-      setModalType={setModalType}
-      ></Header>
-      <Mereni nmeaParsed={nmeaParsed} updateCoordinates={updateCoordinates}></Mereni>
+      <Header
+        nmeaParsed={nmeaParsed}
+        coordStatus={coordStatus}
+        setModalVisible={setModalVisible}
+        isModalVisible={isModalVisible}
+        setModalType={setModalType}></Header>
+      <Mereni
+        nmeaParsed={nmeaParsed}
+        updateCoordinates={updateCoordinates}></Mereni>
 
       <Modal visible={isModalVisible} animationType="slide">
-          <Button title='↓ ↓ ↓' onPress={toggleModal}/>
-        {ModalType == "point" && (
-          <Point heightAntena={heightAntena} setHeightAntena={setHeightAntena} offsetAntena={offsetAntena} setOffsetAntena={setOffsetAntena} codePoint={codePoint} setCodePoint={setCodePoint}/>
+        <Button title="↓ ↓ ↓" onPress={toggleModal} />
+        {ModalType == 'point' && (
+          <Point
+            heightAntena={heightAntena}
+            setHeightAntena={setHeightAntena}
+            offsetAntena={offsetAntena}
+            setOffsetAntena={setOffsetAntena}
+            codePoint={codePoint}
+            setCodePoint={setCodePoint}
+          />
         )}
-        {ModalType == "bluetooth" && (
-          <Bluetooth />
+        {ModalType == 'bluetooth' && <Bluetooth />}
+        {ModalType == 'placing' && <Placing />}
+        {ModalType == 'skyplot' && <Skyplot />}
+        {ModalType == 'ntrip' && <Ntrip nmeaParsed={nmeaParsed} />}
+        {ModalType == 'project' && (
+          <Project
+            data={data}
+            setData={setData}
+            projectId={projectId}
+            setprojectId={setprojectId}
+            saveDataToAsyncStorage={setObjectValue}
+          />
         )}
-        {ModalType == "placing" && (
-          <Placing/>
-        )}
-        {ModalType == "skyplot" && (
-          <Skyplot/>
-        )}
-        {ModalType == "ntrip" && (
-          <Ntrip nmeaParsed={nmeaParsed}/>
-        )}
-        {ModalType == "project" && (
-          <Project 
-          data={data} 
-          setData={setData} 
-          projectId={projectId} 
-          setprojectId={setprojectId} 
-          saveDataToAsyncStorage={setObjectValue}/>
-        )}
-        {ModalType == "map" && (
-          <Map/>
-        )}
+        {ModalType == 'map' && <Map />}
       </Modal>
-
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-  },
-});
-
-export default App;
