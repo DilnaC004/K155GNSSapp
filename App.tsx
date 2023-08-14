@@ -33,6 +33,7 @@ function App(): JSX.Element {
       title: 'Test',
       description: 'test',
       date: '21.7.2023 18:26:36',
+      patch: 'no',
       points: [
         {
           title: 'Bod1',
@@ -61,9 +62,9 @@ function App(): JSX.Element {
 
   const getObjectValue = async () => {
     try {
-      const data = await AsyncStorage.getItem('key');
-      if (data) {
-        setData(JSON.parse(data)); // You need to have a state variable "data" to set the parsed data.
+      const dataStorage = await AsyncStorage.getItem('key');
+      if (dataStorage) {
+        setData(JSON.parse(dataStorage)); // You need to have a state variable "data" to set the parsed data.
       }
     } catch (e) {
       console.log(e);
@@ -109,7 +110,6 @@ function App(): JSX.Element {
         return project;
       });
       setData(updatedData);
-      console.log(updatedData);
       setObjectValue(updatedData); // save all data do asyncStorage
     } else {
       Alert.alert('Vyber zakázku');
@@ -134,8 +134,6 @@ function App(): JSX.Element {
     }
   });
 
-  // Call the update routine directly with a NMEA sentence, which would
-  // come from the serial port or stream-reader normally
   gps.update(
     '$GPGGA,224900.000,4832.3762,N,01303.5393,E,1,04,7.8,498.6,M,48.0,M,,0000*5E',
   );
@@ -150,7 +148,6 @@ function App(): JSX.Element {
       setModalVisible={setModalVisible}
       isModalVisible={isModalVisible}
       setModalType={setModalType}
-      loadDataFromAsyncStorage={getObjectValue}
       ></Header>
       <Mereni nmeaParsed={nmeaParsed} updateCoordinates={updateCoordinates}></Mereni>
 
@@ -160,7 +157,7 @@ function App(): JSX.Element {
           <Point setHeigthAntena={setHeightAntena} setOffsetAntena={setOffsetAntena} setCodePoint={setCodePoint}/>
         )}
         {ModalType == "bluetooth" && (
-          <Bluetooth nmeaParsed={nmeaParsed}/>
+          <Bluetooth />
         )}
         {ModalType == "placing" && (
           <Placing/>
@@ -169,10 +166,16 @@ function App(): JSX.Element {
           <Skyplot/>
         )}
         {ModalType == "ntrip" && (
-          <Ntrip/>
+          <Ntrip nmeaParsed={nmeaParsed}/>
         )}
         {ModalType == "project" && (
-          <Project data={data} setData={setData} projectId={projectId} setprojectId={setprojectId} saveDataToAsyncStorage={setObjectValue}/>
+          <Project 
+          data={data} 
+          setData={setData} 
+          projectId={projectId} 
+          setprojectId={setprojectId} 
+          saveDataToAsyncStorage={setObjectValue}
+          loadDataFromAsyncStorage={getObjectValue}/>
         )}
         {ModalType == "map" && (
           <Map/>

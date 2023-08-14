@@ -1,4 +1,4 @@
-import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useEffect} from 'react';
 import { View, Text, TextInput, Button, ScrollView, TouchableOpacity, FlatList, Switch } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'
 import IconMaterialIcons from 'react-native-vector-icons/MaterialIcons'
@@ -9,7 +9,7 @@ import DocumentPicker, {
   isInProgress,
   types,
 } from 'react-native-document-picker'
-import RNFS from 'react-native-fs';
+import RNFS, { DocumentDirectoryPath, writeFile }from 'react-native-fs';
 
 
 import { etrs2jtsk, jtsk2etrs} from '../Calculations/transformation'
@@ -38,7 +38,7 @@ const ItemPoint = ({ item, onPress, backgroundColor, textColor, textColor1 }) =>
   </ScrollView>
 );
 
-const Project = ({data, setData, projectId, setprojectId, saveDataToAsyncStorage}) => {
+const Project = ({data, setData, projectId, setprojectId, saveDataToAsyncStorage, loadDataFromAsyncStorage}) => {
 
   const [projectTitle, setprojectTitle] = useState('');
   const [projectDate, setprojectDate] = useState('');
@@ -48,13 +48,14 @@ const Project = ({data, setData, projectId, setprojectId, saveDataToAsyncStorage
   const [showPointFlatList, setShowPointFlatList] = useState(false);
   const [showCreateProject, setShowCreateProject] = useState(false);
   const [showCreatePoint, setShowCreatePoint] = useState(false);
+  const [boolDeleteAsyncStorage, setDeleteAsyncStorage] = useState(false);
 
   // state for the text inputs
   const [newProjectTitle, setNewProjectTitle] = useState('');
   const [newProjectDate, setNewProjectDate] = useState('');
   const [newProjectDescription, setNewProjectDescription] = useState('');
   const [newProjectPath, setNewProjectPath] = useState('');
-
+  
   // state point inputs
   const [isEnabled, setIsEnabled] = useState(false);
   const toggleSwitch = () => setIsEnabled(previousState => !previousState);
@@ -66,6 +67,36 @@ const Project = ({data, setData, projectId, setprojectId, saveDataToAsyncStorage
   const [pointX, setPointX] = useState('');
   const [pointY, setPointY] = useState('');
   const [pointZ, setPointZ] = useState('');
+
+  const [pokus, setPokus] = useState([
+    {
+      title: 'Test',
+      description: 'test',
+      date: '21.7.2023 18:26:36',
+      path: 'no',
+      points: [
+        {
+          title: 'Bod1',
+          b: 50,
+          l: 14,
+          h: 100,
+          accuB:0,
+          accuL:0,
+          accuH:0,
+          pdop:0,
+          time:0,
+          ofset: 0.5,
+          antena: 1.5,
+          code:'test',
+          date: '21.7.2023 19:26:36',
+        },
+      ],
+    },
+  ]);
+
+  useEffect(() => {
+    loadDataFromAsyncStorage();
+  }, []);
 
   // functions to save measured point into AsyncStorage
   const clearStorage = async () => {
@@ -106,26 +137,23 @@ const Project = ({data, setData, projectId, setprojectId, saveDataToAsyncStorage
       date: new Date().toLocaleString(), // Assuming you want to add the current date/time
       points: [], // add an empty array or whatever initial value you like
     };
+  
     // add the new project to the data array
-    if(data.length === 0){
-      const updatedData = [...data, newProject];
-      setData(updatedData);
-      saveDataToAsyncStorage(updatedData);
 
-    } else {
-      const updatedData = newProject;
-      setData(updatedData);
-      saveDataToAsyncStorage(updatedData);
+    console.log(data);
+    console.log(newProject);
 
-    }
-
-
+    setData([...data, newProject]);
+    //setData(updatedData);
+    //saveDataToAsyncStorage(updatedData);
+      
     // clear the text inputs
-    setNewProjectTitle('');
+    //setNewProjectTitle('');
     setNewProjectDate('');
     setNewProjectDescription('');
 
     setShowCreateProject(!showCreateProject);
+    
   };
 
   // add point into list of points and async storage NEED TO OPTIMAZE
@@ -204,12 +232,14 @@ const Project = ({data, setData, projectId, setprojectId, saveDataToAsyncStorage
 
   // Function to export points into txt
   const exportPoints = async () =>{
+    const filePath = RNFS.ExternalDirectoryPath + '/example.txt';
+    const path = `${DocumentDirectoryPath}/${Date.now()}.txt`;
+    
     try {
-      const filePath = `${data[projectId].path.uri}/project.txt`;
-      await RNFS.writeFile(filePath, JSON.stringify(data), 'utf8');
-      console.log('Project data saved to file:', filePath);
+      await RNFS.writeFile(filePath, data, 'utf8');
+      console.log('File saved successfully');
     } catch (error) {
-      console.error('Error saving project data:', error);
+      console.log('Error saving file: ', error);
     }
   }
 
@@ -226,7 +256,7 @@ const Project = ({data, setData, projectId, setprojectId, saveDataToAsyncStorage
             setprojectDate(item.date);
             setproctPointCount(item.points.length);
             // Find the index of the selected project in the data array
-            const index = data.indexOf(item);
+            const index = pokus.indexOf(item);
             setprojectId(index); // Set projectId to the index of the selected project
             setProjectPoints(item.points);
             setShowFlatList(false); // Hide the FlatList after an item is selected}
@@ -293,7 +323,7 @@ const Project = ({data, setData, projectId, setprojectId, saveDataToAsyncStorage
       {showFlatList && ( // conditional rendering based on the new piece of state
         <View style={{height: 100}}>
           <FlatList
-            data={data}
+            data={pokus}
             renderItem={renderItemProject}
             keyExtractor={item => item.title}
             extraData={projectTitle}
@@ -409,7 +439,7 @@ const Project = ({data, setData, projectId, setprojectId, saveDataToAsyncStorage
         <Button
           title="Exportuj body"
           onPress={() => {
-            //exportPoints();
+            exportPoints();
           }}
         />
         <Button

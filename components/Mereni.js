@@ -61,6 +61,9 @@ const Mereni = ({nmeaParsed, updateCoordinates}) => {
       setCoordAccuY(0);
       setCoordAccuZ(0);
       setcoordPDOP(nmeaParsed.hdop);
+      console.log(sumCoordX );
+      console.log(coordMeasuredTime);
+    
       updateCoordinates(nazevBodu, sumCoordX/coordMeasuredTime, sumCoordY/coordMeasuredTime, sumCoordZ/coordMeasuredTime, coordAccuX, coordAccuY, coordAccuZ, coordPDOP, coordMeasuredTime);
 
     }

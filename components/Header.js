@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'
 import IconFontAwesome5 from 'react-native-vector-icons/FontAwesome5'
 
-const Header = ({nmeaParsed, coordStatus, setModalVisible, isModalVisible, setModalType, loadDataFromAsyncStorage}) => {
+const Header = ({nmeaParsed, coordStatus, setModalVisible, isModalVisible, setModalType}) => {
   return (
     <View style={styles.headerContainer}>
       <TouchableOpacity onPress={() => {setModalVisible(!isModalVisible); setModalType("point");}} >
@@ -22,7 +22,7 @@ const Header = ({nmeaParsed, coordStatus, setModalVisible, isModalVisible, setMo
       <TouchableOpacity onPress={() => {setModalVisible(!isModalVisible); setModalType("ntrip");}} >
         <IconFontAwesome5  name="server" size={32} color="black" />
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => {setModalVisible(!isModalVisible); setModalType("project"); loadDataFromAsyncStorage();}} >
+      <TouchableOpacity onPress={() => {setModalVisible(!isModalVisible); setModalType("project");}} >
         <Icon name="folder" size={32} color="black" />
       </TouchableOpacity>
       <TouchableOpacity onPress={() => {setModalVisible(!isModalVisible); setModalType("map");}} >

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, Image, ScrollView, FlatList, TouchableOpacity, Buffer} from 'react-native';
 import axios from 'axios';
 
@@ -34,23 +34,18 @@ const Item = ({item, onPress, backgroundColor, textColor}) => (
 );
 
 
-const Ntrip = () => {
+const Ntrip = ({nmeaParsed}) => {
   const [ntripIp, setNtripIp] = useState('http://195.245.209.181:2101');//http://euref-ip.net 195.245.209.181
   const [ntripPort, setNtripPort] = useState('80'); //80 2101 
   const [ntripUsername, setNtripUsername] = useState('cvutvyuka');
   const [ntripPassword, setNtripPassword] = useState('k155dremejakokone');
   const [mountpoint, setmountpoint] = useState('CPRG3-MSM'); //CPRG3-MSM
+  const [ntripGGA, setNtripGGA] = useState('');
 
   const [selectedId, setSelectedId] = useState();
   const [showFlatList, setShowFlatList] = useState(false); 
 
   const [advice, setAdvice] = useState("");
-  const getRandomId = (min, max) => {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return (Math.floor(Math.random() * 
-        (max - min + 1)) + min).toString();
-};
 
   const getAdvice = () => {
     axios
@@ -60,8 +55,14 @@ const Ntrip = () => {
             setAdvice(response.data.slip.advice);
         });
 };
-
-
+/*
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setNtripGGA(nmeaParsed.raw);
+      console.log(ntripGGA);
+    }, 1000); // Run every second (1000 milliseconds)
+  }, [nmeaParsed]);
+*/
   const renderItem = ({item}) => {
     const backgroundColor = item.id === selectedId ? '#ccc' : '#ccc1';
     const color = item.id === selectedId ? 'white' : 'black';
