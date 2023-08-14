@@ -38,7 +38,7 @@ const ItemPoint = ({ item, onPress, backgroundColor, textColor, textColor1 }) =>
   </ScrollView>
 );
 
-const Project = ({data, setData, projectId, setprojectId, saveDataToAsyncStorage, loadDataFromAsyncStorage}) => {
+const Project = ({data, setData, projectId, setprojectId, saveDataToAsyncStorage}) => {
 
   const [projectTitle, setprojectTitle] = useState('');
   const [projectDate, setprojectDate] = useState('');
@@ -67,46 +67,6 @@ const Project = ({data, setData, projectId, setprojectId, saveDataToAsyncStorage
   const [pointX, setPointX] = useState('');
   const [pointY, setPointY] = useState('');
   const [pointZ, setPointZ] = useState('');
-
-  const [pokus, setPokus] = useState([
-    {
-      title: 'Test',
-      description: 'test',
-      date: '21.7.2023 18:26:36',
-      path: 'no',
-      points: [
-        {
-          title: 'Bod1',
-          b: 50,
-          l: 14,
-          h: 100,
-          accuB:0,
-          accuL:0,
-          accuH:0,
-          pdop:0,
-          time:0,
-          ofset: 0.5,
-          antena: 1.5,
-          code:'test',
-          date: '21.7.2023 19:26:36',
-        },
-      ],
-    },
-  ]);
-
-  useEffect(() => {
-    loadDataFromAsyncStorage();
-  }, []);
-
-  // functions to save measured point into AsyncStorage
-  const clearStorage = async () => {
-    try {
-      await AsyncStorage.clear();
-      alert('Storage successfully cleared!');
-    } catch (e) {
-      alert('Failed to clear the async storage.');
-    }
-  };
 
   const updateAsyncStorage = (newPoint) => {
     // Adding the newPoint to the points array
@@ -256,7 +216,7 @@ const Project = ({data, setData, projectId, setprojectId, saveDataToAsyncStorage
             setprojectDate(item.date);
             setproctPointCount(item.points.length);
             // Find the index of the selected project in the data array
-            const index = pokus.indexOf(item);
+            const index = data.indexOf(item);
             setprojectId(index); // Set projectId to the index of the selected project
             setProjectPoints(item.points);
             setShowFlatList(false); // Hide the FlatList after an item is selected}
@@ -323,7 +283,7 @@ const Project = ({data, setData, projectId, setprojectId, saveDataToAsyncStorage
       {showFlatList && ( // conditional rendering based on the new piece of state
         <View style={{height: 100}}>
           <FlatList
-            data={pokus}
+            data={data}
             renderItem={renderItemProject}
             keyExtractor={item => item.title}
             extraData={projectTitle}

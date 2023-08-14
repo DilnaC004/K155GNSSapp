@@ -28,31 +28,7 @@ function App(): JSX.Element {
   const [codePoint, setCodePoint] = React.useState('');
 
   const [projectId, setprojectId] = useState('null');
-  const [data, setData] = useState([
-    {
-      title: 'Test',
-      description: 'test',
-      date: '21.7.2023 18:26:36',
-      patch: 'no',
-      points: [
-        {
-          title: 'Bod1',
-          b: 50,
-          l: 14,
-          h: 100,
-          accuB:0,
-          accuL:0,
-          accuH:0,
-          pdop:0,
-          time:0,
-          ofset: 0.5,
-          antena: 1.5,
-          code:'test',
-          date: '21.7.2023 19:26:36',
-        },
-      ],
-    }
-  ]);
+  const [data, setData] = React.useState<any>(null);
 
   const setObjectValue = async (value: any) => {
     const jsonValue = JSON.stringify(value)
@@ -68,6 +44,15 @@ function App(): JSX.Element {
       }
     } catch (e) {
       console.log(e);
+    }
+  };
+
+  const clearStorage = async () => {
+    try {
+      await AsyncStorage.clear();
+      Alert.alert('Storage successfully cleared!');
+    } catch (e) {
+      Alert.alert('Failed to clear the async storage.');
     }
   };
 
@@ -99,9 +84,12 @@ function App(): JSX.Element {
       code: codePoint,
       date: new Date().toLocaleString(),
     };
+    console.log(newPoint);
+    console.log(data);
+    console.log(projectId);
 
     // Log the received values
-    if(!projectId){
+    if(projectId != 'null'){
       const updatedData = data.map((project, index) => {
         if (index === parseInt(projectId)) {
           const updatedPoints = [...project.points, newPoint];
@@ -114,6 +102,7 @@ function App(): JSX.Element {
     } else {
       Alert.alert('Vyber zakázku');
     }
+    
   };
 
   const toggleModal = () => {
@@ -121,7 +110,6 @@ function App(): JSX.Element {
     setModalType('null');
   };
   
-   // Use useEffect to start and stop the timer
  useEffect(() => {
   // Add an event listener on all protocols
   gps.on('data', parsed => {
@@ -140,6 +128,12 @@ function App(): JSX.Element {
 
 }, []);
 
+useEffect(() => {
+  if(!data){
+    getObjectValue();
+  }
+}, []);
+
   return (
     <SafeAreaView style={backgroundStyle}>
       <Header 
@@ -154,7 +148,7 @@ function App(): JSX.Element {
       <Modal visible={isModalVisible} animationType="slide">
           <Button title='↓ ↓ ↓' onPress={toggleModal}/>
         {ModalType == "point" && (
-          <Point setHeigthAntena={setHeightAntena} setOffsetAntena={setOffsetAntena} setCodePoint={setCodePoint}/>
+          <Point heightAntena={heightAntena} setHeightAntena={setHeightAntena} offsetAntena={offsetAntena} setOffsetAntena={setOffsetAntena} codePoint={codePoint} setCodePoint={setCodePoint}/>
         )}
         {ModalType == "bluetooth" && (
           <Bluetooth />
@@ -174,8 +168,7 @@ function App(): JSX.Element {
           setData={setData} 
           projectId={projectId} 
           setprojectId={setprojectId} 
-          saveDataToAsyncStorage={setObjectValue}
-          loadDataFromAsyncStorage={getObjectValue}/>
+          saveDataToAsyncStorage={setObjectValue}/>
         )}
         {ModalType == "map" && (
           <Map/>
