@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, View, Text, Button, PermissionsAndroid, Platform } from 'react-native';
-import { BleManager } from 'react-native-ble-plx';
+import { SafeAreaView, View, Text, Button, PermissionsAndroid, Platform, TouchableOpacity} from 'react-native';
+import { BleManager, Device } from 'react-native-ble-plx';
 
+import useBLE from '../hooks/useBLE';
 import { styles } from '../Styles/styles';
 import NmeaViewer from './NmeaViewer';
 
@@ -22,7 +23,27 @@ const nmeaMessages = [
 
 export const Bluetooth = () => {
 
+  const {
+    requestPermissions,
+    scanForPeripherals,
+    allDevices,
+    connectToDevice,
+    connectedDevice,
+    disconnectFromDevice,
+  } = useBLE();
+
   const [devices, setDevices] = useState([]);
+
+  const scanForDevices = () => {
+    requestPermissions(isGranted => {
+      if (isGranted) {
+        console.log('permission granted');
+        scanForPeripherals();
+        console.log(allDevices);
+      }
+    });
+  };
+
 /*
   const bleManager = new BleManager({
     scanForPeripherals: true,
@@ -45,6 +66,7 @@ export const Bluetooth = () => {
       <Button
         title="Scan for Bluetooth devices"
         onPress={() => {
+          scanForDevices();
         }}
       />
       <Button title="Stop" onPress={() => {
