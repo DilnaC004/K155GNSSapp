@@ -16,10 +16,12 @@
     "react": "18.2.0",
     "react-native": "0.72.3",
     "react-native-ble-plx": "^2.0.3",
+    "react-native-bluetooth-classic": "^1.60.0-rc.29",
     "react-native-device-info": "^10.8.0",
     "react-native-document-picker": "^9.0.1",
     "react-native-fs": "^2.20.0",
     "react-native-permissions": "^3.8.4",
+    "react-native-select-dropdown": "^3.3.4",
     "react-native-vector-icons": "^10.0.0"
   },
   "devDependencies": {

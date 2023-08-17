@@ -173,5 +173,19 @@ export const styles = {
         justifyContent: 'space-around',
         marginVertical: 10,
       },
+      dropdownBtnStyle: {
+        width: '100%',
+        height: 35,
+        backgroundColor: '#fff',
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 4,
+        marginTop: 8,
+        marginBottom: 8,
+      },
+      dropdownBtnTxtStyle: {color: '#444', textAlign: 'left'},
+      button: {
+        marginBottom: 8,
+      },
   };
   
