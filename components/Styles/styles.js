@@ -51,25 +51,18 @@ export const styles = {
     switch: {
       outerWidth: 50,
     },
-    container: {
-        height: 300,
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
     text: {
-      fontSize: 20,
+      fontSize: 10,
       fontWeight: 'bold',
       marginBottom: 10,
     },
     scrollViewContent: {
-      paddingVertical: 8,
       flexDirection: 'row', // Added for horizontal scrolling
     },
     messageContainer: {
       borderBottomWidth: 1,
       borderBottomColor: '#ccc',
-      paddingVertical: 8,
+      paddingVertical: 1,
     },
     nastContainer: {
       paddingHorizontal: 16,
