@@ -4,7 +4,6 @@ import Snackbar from 'react-native-snackbar';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import SelectDropdown from 'react-native-select-dropdown';
 import RowWithLabelAndValue from './RowWithLabelAndValue';
-import axios from 'axios';
 import {encode} from 'base-64';
 import TcpSocket from 'react-native-tcp-socket';
 
@@ -51,37 +50,64 @@ const Ntrip = () => {
     //setShowFlatList(true); // set to true when button is clicked
 
     console.log('Zkouším se připojit k Czepos');
+    const options = {
+      host: ntripSettings.ntripIp,
+      port: ntripSettings.ntripPort,
+    };
+    // Create socket
+    const client = TcpSocket.createConnection(options, () => {
+      let connectionString =
+        'GET / HTTP/1.0\r\n' +
+        'Host: ' +
+        `http://${ntripSettings.ntripIp}:${ntripSettings.ntripPort}` +
+        '\r\n' +
+        'User-Agent: NTRIPClient for Arduino v1.0\r\n' +
+        "Connection: close\r\n\r\n";
 
-    console.log(`http://${ntripSettings.ntripIp}:${ntripSettings.ntripPort}`);
-    axios
-      .get(`http://${ntripSettings.ntripIp}:${ntripSettings.ntripPort}`)
-      .then(response => {
-        const mountpoints = [];
-        const sourceData = response.data.split('\r\n');
+      // Write on the socket
+      client.write(connectionString);
 
-        for (let i = 0; i < sourceData.length; i++) {
-          if (sourceData[i].startsWith('STR')) {
-            mountpoints.push(new Mountpoint(sourceData[i]));
-          }
+      setTimeout(() => {
+        client.end();
+        console.log('Client byl ukončen : DEBUG!!');
+      }, 10000);
+    });
+
+    client.on('data', function (data) {
+      console.log('message was received', data.toString());
+
+      const mountpoints = [];
+      const sourceData = data.toString().split('\r\n');
+
+      for (let i = 0; i < sourceData.length; i++) {
+        if (sourceData[i].startsWith('STR')) {
+          mountpoints.push(new Mountpoint(sourceData[i]));
         }
+      }
 
-        updateNtripSettings({
-          mountpoints: mountpoints,
-          selectedMntp: mountpoints[0],
-        });
-
-        mountpointSelectRef.current.selectIndex(0);
-      })
-      .catch(err => {
-        console.log(err.message);
-        updateNtripSettings({mountpoints: [], selectedMntp: null});
-        Snackbar.show({
-          text: `Chyba komunikace se serverem \r\nhttp://${ntripSettings.ntripIp}:${ntripSettings.ntripPort}`,
-          duration: Snackbar.LENGTH_SHORT,
-          textColor: 'red',
-          marginBottom: 5,
-        });
+      updateNtripSettings({
+        mountpoints: mountpoints,
+        selectedMntp: mountpoints[0],
       });
+
+      mountpointSelectRef.current.selectIndex(0);
+
+    });
+
+    client.on('error', function (error) {
+      console.log(error);
+      updateNtripSettings({mountpoints: [], selectedMntp: null});
+      Snackbar.show({
+        text: `Chyba komunikace se serverem \r\nhttp://${ntripSettings.ntripIp}:${ntripSettings.ntripPort}`,
+        duration: Snackbar.LENGTH_SHORT,
+        textColor: 'red',
+        marginBottom: 5,
+      });
+    });
+
+    client.on('close', function () {
+      console.log('Connection closed!');
+    });
   };
 
   //TODO : dodelat preposilani RTK korekci do GNSS - moznost vypnuti, restartu, ukladani mnozstvi stazenych dat
