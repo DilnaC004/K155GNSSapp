@@ -147,7 +147,33 @@ useEffect(() => {
       <Mereni
         nmeaParsed={nmeaParsed}
         updateCoordinates={updateCoordinates}></Mereni>
-      {ModalType == 'bluetooth' && <Bluetooth nmeaRead={nmeaRead} setNmeaRead={setNmeaRead} ref={bluetoothModalRef}/>}
+      <Modal visible={isModalVisible} animationType="slide" >
+        <Button title="↓ ↓ ↓" onPress={toggleModal} />
+        {ModalType == 'point' && (
+          <Point
+            heightAntena={heightAntena}
+            setHeightAntena={setHeightAntena}
+            offsetAntena={offsetAntena}
+            setOffsetAntena={setOffsetAntena}
+            codePoint={codePoint}
+            setCodePoint={setCodePoint}
+          />
+        )}
+        {ModalType == 'bluetooth' && <Bluetooth ref={bluetoothModalRef}/>}
+        {ModalType == 'placing' && <Placing />}
+        {ModalType == 'skyplot' && <Skyplot />}
+        {ModalType == 'ntrip' && <Ntrip nmeaParsed={nmeaParsed} />}
+        {ModalType == 'project' && (
+          <Project
+            data={data}
+            setData={setData}
+            projectId={projectId}
+            setprojectId={setprojectId}
+            saveDataToAsyncStorage={setObjectValue}
+          />
+        )}
+        {ModalType == 'map' && <Map />}
+      </Modal>
 
     </SafeAreaView>
   );
