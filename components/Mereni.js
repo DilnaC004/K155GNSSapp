@@ -5,15 +5,13 @@ import { etrs2jtsk } from './Calculations/transformation';
 
 const Mereni = ({nmeaParsed, updateCoordinates}) => {
   const [nazevBodu, setNazevBodu] = React.useState('');
-  const [dobaMer, setDobaMer] = React.useState(10);
-  const [autoSave, setAutoSave] = React.useState(false);
   const [boolRtk, setBoolRtk] = React.useState(false);
   const [boolRaw, setBoolRaw] = React.useState(false);
 
-  const [coordX, setCoordX] = React.useState(nmeaParsed.lat);
-  const [coordY, setCoordY] = React.useState(nmeaParsed.lon);
-  const [coordZ, setCoordZ] = React.useState(nmeaParsed.alt);
-  const [coordPDOP, setcoordPDOP] = React.useState(nmeaParsed.hdop);
+  const [coordX, setCoordX] = React.useState(0);
+  const [coordY, setCoordY] = React.useState(0);
+  const [coordZ, setCoordZ] = React.useState(0);
+  const [coordPDOP, setcoordPDOP] = React.useState(0);
   const [coordAccuX, setCoordAccuX] = React.useState(0);
   const [coordAccuY, setCoordAccuY] = React.useState(0);
   const [coordAccuZ, setCoordAccuZ] = React.useState(0);
@@ -31,9 +29,9 @@ const Mereni = ({nmeaParsed, updateCoordinates}) => {
   const switchX = isEnabled ? 'B [°]' : 'X [m]';
   const switchY = isEnabled ? 'L [°]' : 'Y [m]';
   const switchZ = isEnabled ? 'H [m]' : 'H [m]';
-  const switchCoordX = isEnabled ? coordX : etrs2jtsk(coordX, coordY, coordZ).X;
-  const switchCoordY = isEnabled ? coordY : etrs2jtsk(coordX, coordY, coordZ).Y;
-  const switchCoordZ = isEnabled ? coordZ : etrs2jtsk(coordX, coordY, coordZ).Hbpv;
+  const switchCoordX = isEnabled ? coordX.toFixed(7) : etrs2jtsk(coordX, coordY, coordZ).X.toFixed(3); // OPTIMAZE TRANSFORMATION
+  const switchCoordY = isEnabled ? coordY.toFixed(7) : etrs2jtsk(coordX, coordY, coordZ).Y.toFixed(3); // OPTIMAZE TRANSFORMATION
+  const switchCoordZ = isEnabled ? coordZ.toFixed(3) : etrs2jtsk(coordX, coordY, coordZ).Hbpv.toFixed(3); // OPTIMAZE TRANSFORMATION
 
   const [startTime, setStartTime] = useState(null);
   const [endTime, setEndTime] = useState(null);
@@ -48,6 +46,10 @@ const Mereni = ({nmeaParsed, updateCoordinates}) => {
       setStartTime(new Date());
       setBoolRtk(!boolRtk);
       setEndTime(null);
+
+      setCoordX(nmeaParsed.lat);
+
+      console.log('start');
     } else {
       // If the timer is already running (start time is not null), stop the timer
       setEndTime(new Date());
@@ -55,14 +57,14 @@ const Mereni = ({nmeaParsed, updateCoordinates}) => {
       setFormattedTime('00:00:00');
       setStartTime(null);
 
-      setCoordX(sumCoordX/coordMeasuredTime)
-      setCoordY(sumCoordY/coordMeasuredTime)
-      setCoordZ(sumCoordZ/coordMeasuredTime)
       setCoordAccuX(0);
       setCoordAccuY(0);
       setCoordAccuZ(0);
       setcoordPDOP(nmeaParsed.hdop);
-      updateCoordinates(nazevBodu, coordX, coordY, coordZ, coordAccuX, coordAccuY, coordAccuZ, coordPDOP, coordMeasuredTime);
+      console.log(sumCoordX );
+      console.log(coordMeasuredTime);
+    
+      updateCoordinates(nazevBodu, sumCoordX/coordMeasuredTime, sumCoordY/coordMeasuredTime, sumCoordZ/coordMeasuredTime, coordAccuX, coordAccuY, coordAccuZ, coordPDOP, coordMeasuredTime);
 
     }
   };
@@ -87,6 +89,11 @@ const Mereni = ({nmeaParsed, updateCoordinates}) => {
     useEffect(() => {
       let intervalId;
       let measuredTime = 0;
+      setCoordX(nmeaParsed.lat);
+      setCoordY(nmeaParsed.lon);
+      setCoordZ(nmeaParsed.alt);
+      setcoordPDOP(nmeaParsed.hdop);
+
 
       if (startTime && !endTime) {
         // If the timer is running (start time is set, but end time is not)
@@ -122,7 +129,7 @@ const Mereni = ({nmeaParsed, updateCoordinates}) => {
       }
       // Clean up the interval when the component unmounts
       return () => clearInterval(intervalId);
-    }, [startTime, endTime]);
+    }, [startTime, endTime, nmeaParsed]);
 
 
   return (
@@ -200,24 +207,12 @@ const styles = {
     marginBottom: 8,
     padding: 8,
   },
-  zobrazCas: {
-    marginBottom: 8,
-  },
-  slider: {
-    marginBottom: 8,
-  },
   vertical: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
     justifyContent: 'space-around',
     marginVertical: 10,
-  },
-  checkboxProperty: {
-    marginRight: 8,
-  },
-  checkboxPropertyLabel: {
-    fontSize: 16,
   },
   hrLine: {
     borderBottomColor: '#ccc',
@@ -245,7 +240,5 @@ const styles = {
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-  },
-  switch: {
   },
 };

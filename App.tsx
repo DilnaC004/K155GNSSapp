@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, forwardRef} from 'react';
 import type {PropsWithChildren} from 'react';
 import {SafeAreaView, StyleSheet, useColorScheme, View, Modal, Button, Alert} from 'react-native';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
@@ -15,66 +15,52 @@ import Point from './components/Header/Point';
 import Map from './components/Header/Map';
 import Placing from './components/Header/Placing';
 
-function App(): JSX.Element {
+export default function App(): JSX.Element {
   const gps = new GPS;
   const [isModalVisible, setModalVisible] = React.useState(false);
   const [ModalType, setModalType] = React.useState(String);
 
   const [coordStatus, setCoordStatus] = React.useState('black');
-  const [nmeaParsed, setNmeaParsed] = useState('');
+  const [nmeaParsed, setNmeaParsed] = React.useState('');
   const [newPoint, setNewPoint] = React.useState<any>(null);
+  const [heightAntena, setHeightAntena] = React.useState(0);
+  const [offsetAntena, setOffsetAntena] = React.useState(0);
+  const [codePoint, setCodePoint] = React.useState('');
 
   const [projectId, setprojectId] = useState('null');
-  const [data, setData] = useState([
-    {
-      title: 'Test',
-      description: 'test',
-      date: '21.7.2023 18:26:36',
-      points: [
-        {
-          title: 'Bod1',
-          x: 1000000,
-          y: 700000,
-          z: 100,
-          b: 0,
-          l: 0,
-          h: 0,
-          ofset: 0.5,
-          antena: 1.5,
-          date: '21.7.2023 19:26:36',
-        },
-        {
-          title: 'Bod2',
-          x: 0,
-          y: 0,
-          z: 0,
-          b: 50,
-          l: 14,
-          h: 100,
-          ofset: 0.5,
-          antena: 1.5,
-          date: '21.7.2023 19:26:36',
-        },
-      ],
-    }
-  ]);
-/*
-  const setObjectValue = async (value) => {
+  const [data, setData] = React.useState<any>(null);
+
+  const [nmeaRead, setNmeaRead] = React.useState([]);
+
+  const ModalRef = React.useRef();
+  const bluetoothModalRef = React.useRef();
+
+  const setObjectValue = async (value: any) => {
     const jsonValue = JSON.stringify(value)
-    AsyncStorage.setItem('key', jsonValue).then(console.log('Done.')).catch(e => {console.log(e)});
+    AsyncStorage.setItem('key', jsonValue).then(() => console.log('Done.')).catch(e => {console.log(e)});
 
   }
 
   const getObjectValue = async () => {
-    AsyncStorage.getItem('key')
-      .then(data => {
-        setData(JSON.parse(data));
-      })
-      .catch(e => {
-        console.log(e);
-      });
+    try {
+      const dataStorage = await AsyncStorage.getItem('key');
+      if (dataStorage) {
+        setData(JSON.parse(dataStorage)); // You need to have a state variable "data" to set the parsed data.
+      }
+    } catch (e) {
+      console.log(e);
+    }
   };
-*/
+
+  const clearStorage = async () => {
+    try {
+      await AsyncStorage.clear();
+      Alert.alert('Storage successfully cleared!');
+    } catch (e) {
+      Alert.alert('Failed to clear the async storage.');
+    }
+  };
+
 
   const isDarkMode = useColorScheme() === 'dark';
 
@@ -92,32 +78,33 @@ function App(): JSX.Element {
       title: nazevBodu,
       b: coordX,
       l: coordY,
-      h: coordZ,
-      type: 2,
+      h: coordZ-heightAntena-offsetAntena,
       accuB:coordAccuX,
       accuL:coordAccuY,
       accuH:coordAccuZ,
       pdop:coordPDOP,
       time:coordMeasuredTime,
-      // Add other properties as needed...
-      date: new Date().toLocaleString(), // Assuming you want to add the current date/time
+      ofset:offsetAntena,
+      antena: heightAntena,
+      code: codePoint,
+      date: new Date().toLocaleString(),
     };
 
     // Log the received values
-    setNewPoint(newPoint);
-    if(!projectId){
-      const updatedData = data.map((project, index) => {
+    if(projectId != 'null'){
+      const updatedData = data.map((project:any, index:number) => {
         if (index === parseInt(projectId)) {
           const updatedPoints = [...project.points, newPoint];
           return {...project, points: updatedPoints};
         }
         return project;
       });
-      //setData(updatedData);
-      console.log(updatedData);
+      setData(updatedData);
+      setObjectValue(updatedData); // save all data do asyncStorage
     } else {
       Alert.alert('Vyber zakázku');
     }
+    
   };
 
   const toggleModal = () => {
@@ -125,7 +112,6 @@ function App(): JSX.Element {
     setModalType('null');
   };
   
-   // Use useEffect to start and stop the timer
  useEffect(() => {
   // Add an event listener on all protocols
   gps.on('data', parsed => {
@@ -138,76 +124,60 @@ function App(): JSX.Element {
     }
   });
 
-  // Call the update routine directly with a NMEA sentence, which would
-  // come from the serial port or stream-reader normally
-  gps.update(
-    '$GPGGA,224900.000,4832.3762,N,01303.5393,E,1,04,7.8,498.6,M,48.0,M,,0000*5E',
-  );
+  gps.update(nmeaRead);
 
+  console.log(nmeaRead);
+
+}, [nmeaRead]);
+
+useEffect(() => {
+  if(!data){
+    getObjectValue();
+  }
 }, []);
 
   return (
     <SafeAreaView style={backgroundStyle}>
-      <Header 
-      nmeaParsed={nmeaParsed} 
-      coordStatus={coordStatus}
-      setModalVisible={setModalVisible}
-      isModalVisible={isModalVisible}
-      setModalType={setModalType}
-      ></Header>
-      <Mereni nmeaParsed={nmeaParsed} updateCoordinates={updateCoordinates}></Mereni>
-
-      <Modal visible={isModalVisible} animationType="slide">
-          <Button title='↓ ↓ ↓' onPress={toggleModal}/>
-        {ModalType == "point" && (
-          <Point/>
-        )}
-        {ModalType == "bluetooth" && (
-          <Bluetooth nmeaParsed={nmeaParsed}/>
-        )}
-        {ModalType == "placing" && (
-          <Placing/>
-        )}
-        {ModalType == "skyplot" && (
-          <Skyplot/>
-        )}
-        {ModalType == "ntrip" && (
-          <Ntrip/>
-        )}
-        {ModalType == "project" && (
-          <Project data={data} setData={setData} projectId={projectId} setprojectId={setprojectId}/>
-        )}
-        {ModalType == "map" && (
-          <Map/>
-        )}
-      </Modal>
+      <Header
+        nmeaParsed={nmeaParsed}
+        coordStatus={coordStatus}
+        setModalVisible={setModalVisible}
+        isModalVisible={isModalVisible}
+        setModalType={setModalType}></Header>
+      <Mereni
+        nmeaParsed={nmeaParsed}
+        updateCoordinates={updateCoordinates}></Mereni>
+      {ModalType == 'bluetooth' && <Bluetooth nmeaRead={nmeaRead} setNmeaRead={setNmeaRead} ref={bluetoothModalRef}/>}
 
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-  },
-});
-
-export default App;
+/*
+      <Modal visible={isModalVisible} animationType="slide" >
+        <Button title="↓ ↓ ↓" onPress={toggleModal} />
+        {ModalType == 'point' && (
+          <Point
+            heightAntena={heightAntena}
+            setHeightAntena={setHeightAntena}
+            offsetAntena={offsetAntena}
+            setOffsetAntena={setOffsetAntena}
+            codePoint={codePoint}
+            setCodePoint={setCodePoint}
+          />
+        )}
+        {ModalType == 'bluetooth' && <Bluetooth ref={bluetoothModalRef}/>}
+        {ModalType == 'placing' && <Placing />}
+        {ModalType == 'skyplot' && <Skyplot />}
+        {ModalType == 'ntrip' && <Ntrip nmeaParsed={nmeaParsed} />}
+        {ModalType == 'project' && (
+          <Project
+            data={data}
+            setData={setData}
+            projectId={projectId}
+            setprojectId={setprojectId}
+            saveDataToAsyncStorage={setObjectValue}
+          />
+        )}
+        {ModalType == 'map' && <Map />}
+      </Modal>
+      */

@@ -75,7 +75,6 @@ const Ntrip = () => {
 
     client.on('data', function (data) {
       console.log('message was received', data.toString());
-
       const mountpoints = [];
       const sourceData = data.toString().split('\r\n');
 

@@ -1,8 +1,7 @@
-import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useEffect} from 'react';
 import { View, Text, TextInput, Button, ScrollView, TouchableOpacity, FlatList, Switch } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'
 import IconMaterialIcons from 'react-native-vector-icons/MaterialIcons'
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import DocumentPicker, {
   DirectoryPickerResponse,
   DocumentPickerResponse,
@@ -10,8 +9,9 @@ import DocumentPicker, {
   isInProgress,
   types,
 } from 'react-native-document-picker'
-import RNFS from 'react-native-fs';
+import RNFS, { DocumentDirectoryPath, writeFile }from 'react-native-fs';
 
+import { styles } from '../Styles/styles';
 
 import { etrs2jtsk, jtsk2etrs} from '../Calculations/transformation'
 
@@ -30,12 +30,6 @@ const ItemPoint = ({ item, onPress, backgroundColor, textColor, textColor1 }) =>
     showsHorizontalScrollIndicator={false}
   >
     <Text style={[styles.title, { color: textColor1 }]}>{item.title} </Text>
-    <Text style={[styles.title, { color: textColor1 }]}>X </Text>
-    <Text style={[styles.title, { color: textColor }]}>{item.x.toFixed(3)} </Text>
-    <Text style={[styles.title, { color: textColor1 }]}>Y </Text>
-    <Text style={[styles.title, { color: textColor }]}>{item.y.toFixed(3)} </Text>
-    <Text style={[styles.title, { color: textColor1 }]}>H Bpv </Text>
-    <Text style={[styles.title, { color: textColor }]}>{item.z.toFixed(3)} </Text>
     <Text style={[styles.title, { color: textColor1 }]}>B </Text>
     <Text style={[styles.title, { color: textColor }]}>{item.b.toFixed(7)} </Text>
     <Text style={[styles.title, { color: textColor1 }]}>L </Text>
@@ -45,7 +39,7 @@ const ItemPoint = ({ item, onPress, backgroundColor, textColor, textColor1 }) =>
   </ScrollView>
 );
 
-const Project = ({data, setData, projectId, setprojectId}) => {
+const Project = ({data, setData, projectId, setprojectId, saveDataToAsyncStorage}) => {
 
   const [projectTitle, setprojectTitle] = useState('');
   const [projectDate, setprojectDate] = useState('');
@@ -55,13 +49,14 @@ const Project = ({data, setData, projectId, setprojectId}) => {
   const [showPointFlatList, setShowPointFlatList] = useState(false);
   const [showCreateProject, setShowCreateProject] = useState(false);
   const [showCreatePoint, setShowCreatePoint] = useState(false);
+  const [boolDeleteAsyncStorage, setDeleteAsyncStorage] = useState(false);
 
   // state for the text inputs
   const [newProjectTitle, setNewProjectTitle] = useState('');
   const [newProjectDate, setNewProjectDate] = useState('');
   const [newProjectDescription, setNewProjectDescription] = useState('');
   const [newProjectPath, setNewProjectPath] = useState('');
-
+  
   // state point inputs
   const [isEnabled, setIsEnabled] = useState(false);
   const toggleSwitch = () => setIsEnabled(previousState => !previousState);
@@ -73,32 +68,6 @@ const Project = ({data, setData, projectId, setprojectId}) => {
   const [pointX, setPointX] = useState('');
   const [pointY, setPointY] = useState('');
   const [pointZ, setPointZ] = useState('');
-
-  // functions to save measured point into AsyncStorage
-  const clearStorage = async () => {
-    try {
-      await AsyncStorage.clear();
-      alert('Storage successfully cleared!');
-    } catch (e) {
-      alert('Failed to clear the async storage.');
-    }
-  };
-
-  setObjectValue = async (value) => {
-    const jsonValue = JSON.stringify(value)
-    AsyncStorage.setItem('key', jsonValue).then(console.log('Done.')).catch(e => {console.log(e)});
-
-  }
-
-  getObjectValue = async () => {
-    AsyncStorage.getItem('key')
-      .then(data => {
-        setData(JSON.parse(data));
-      })
-      .catch(e => {
-        console.log(e);
-      });
-  };
 
   const updateAsyncStorage = (newPoint) => {
     // Adding the newPoint to the points array
@@ -114,8 +83,9 @@ const Project = ({data, setData, projectId, setprojectId}) => {
       return project;
     });
     setData(updatedData);
+    console.log(updatedData);
     setShowCreatePoint(!showCreatePoint);
-    setObjectValue(data);
+    saveDataToAsyncStorage(updatedData);
   };
 
   // function to add the new project to the array
@@ -128,23 +98,23 @@ const Project = ({data, setData, projectId, setprojectId}) => {
       date: new Date().toLocaleString(), // Assuming you want to add the current date/time
       points: [], // add an empty array or whatever initial value you like
     };
-    console.log(newProject);
+  
     // add the new project to the data array
-    if(data.length === 0){
-      setData([...data, newProject]);
-      console.log(data);
-    } else {
-      setData([newProject]);
-      console.log(data);
-    }
-    console.log(data);
 
+    console.log(data);
+    console.log(newProject);
+
+    setData([...data, newProject]);
+    //setData(updatedData);
+    //saveDataToAsyncStorage(updatedData);
+      
     // clear the text inputs
-    setNewProjectTitle('');
+    //setNewProjectTitle('');
     setNewProjectDate('');
     setNewProjectDescription('');
 
     setShowCreateProject(!showCreateProject);
+    
   };
 
   // add point into list of points and async storage NEED TO OPTIMAZE
@@ -154,18 +124,20 @@ const Project = ({data, setData, projectId, setprojectId}) => {
     const z = parseFloat(pointZ);
 
     if (isEnabled) {
-      const jtsk = etrs2jtsk(y, x, z);
       const newPoint = {
         title: pointTitle,
         b: x,
         l: y,
         h: z,
-        x: jtsk.X,
-        y: jtsk.Y,
-        z: jtsk.Hbpv,
-        type: 1,
-        // Add other properties as needed...
-        date: new Date().toLocaleString(), // Assuming you want to add the current date/time
+        accuB:0,
+        accuL:0,
+        accuH:0,
+        pdop:0,
+        time:0,
+        ofset: 0,
+        antena: 0,
+        code:'input',
+        date: new Date().toLocaleString(), 
       };
       updateAsyncStorage(newPoint);
     } else {
@@ -175,11 +147,14 @@ const Project = ({data, setData, projectId, setprojectId}) => {
         b: etrs.B,
         l: etrs.L,
         h: etrs.H,
-        x: x,
-        y: y,
-        z: z,
-        type: 1,
-        // Add other properties as needed...
+        accuB:0,
+        accuL:0,
+        accuH:0,
+        pdop:0,
+        time:0,
+        ofset: 0,
+        antena: 0,
+        code:'input',
         date: new Date().toLocaleString(), // Assuming you want to add the current date/time
       };
       updateAsyncStorage(newPoint);
@@ -218,12 +193,14 @@ const Project = ({data, setData, projectId, setprojectId}) => {
 
   // Function to export points into txt
   const exportPoints = async () =>{
+    const filePath = RNFS.ExternalDirectoryPath + '/example.txt';
+    const path = `${DocumentDirectoryPath}/${Date.now()}.txt`;
+    
     try {
-      const filePath = `${data[projectId].path.uri}/project.txt`;
-      await RNFS.writeFile(filePath, JSON.stringify(data), 'utf8');
-      console.log('Project data saved to file:', filePath);
+      await RNFS.writeFile(filePath, data, 'utf8');
+      console.log('File saved successfully');
     } catch (error) {
-      console.error('Error saving project data:', error);
+      console.log('Error saving file: ', error);
     }
   }
 
@@ -337,7 +314,6 @@ const Project = ({data, setData, projectId, setprojectId}) => {
           />
           <Button title="Založ zakázku" onPress={() => {
             addProject(); 
-            setObjectValue(data);
             }} />
         </View>
       )}
@@ -424,7 +400,7 @@ const Project = ({data, setData, projectId, setprojectId}) => {
         <Button
           title="Exportuj body"
           onPress={() => {
-            //exportPoints();
+            exportPoints();
           }}
         />
         <Button
@@ -448,79 +424,3 @@ const Project = ({data, setData, projectId, setprojectId}) => {
 };
 
 export default Project;
-
-const styles = {
-  domovContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  zakazkaInfo: {
-    marginBottom: 16,
-  },
-  boldText: {
-    fontWeight: 'bold',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  hrLine: {
-    borderBottomColor: '#ccc',
-    borderBottomWidth: 1,
-    marginBottom: 16,
-  },
-  plusButton: {
-    marginRight: 8,
-  },
-  selectContainer: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 4,
-    paddingHorizontal: 8,
-  },
-  selectInput: {
-    height: 40,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  modalContainer: {
-    flex: 1,
-    padding: 16,
-  },
-  closeButton: {
-    alignSelf: 'flex-end',
-    padding: 8,
-  },
-  textInput: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 4,
-    marginBottom: 16,
-    padding: 8,
-  },
-  modalInfoText: {
-    fontWeight: 'bold',
-    marginBottom: 16,
-  },
-  seznamContainer: {
-    marginBottom: 16,
-  },
-  modalImportContainer: {
-    flex: 1,
-    padding: 16,
-  },
-  textCenter: {
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  item: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  scrollViewContent: {
-    flexDirection: 'row', // Important: Set the flexDirection to 'row' for horizontal scrolling
-  },
-
-};
