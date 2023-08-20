@@ -11,6 +11,7 @@ npm i gps
 yarn add @react-native-async-storage/async-storage - https://react-native-async-storage.github.io/async-storage/docs/api
 yarn add react-native-document-picker 
 npm i react-native-fs
+npm i react-native-bluetooth-classic - https://github.com/kenjdavidson/react-native-bluetooth-classic
 
 Notes:
 Zuzka - původní apka

@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, forwardRef} from 'react';
 import type {PropsWithChildren} from 'react';
 import {SafeAreaView, StyleSheet, useColorScheme, View, Modal, Button, Alert} from 'react-native';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
@@ -29,6 +29,11 @@ export default function App(): JSX.Element {
 
   const [projectId, setprojectId] = useState('null');
   const [data, setData] = React.useState<any>(null);
+
+  const [nmeaRead, setNmeaRead] = React.useState([]);
+
+  const ModalRef = React.useRef();
+  const bluetoothModalRef = React.useRef();
 
   const setObjectValue = async (value: any) => {
     const jsonValue = JSON.stringify(value)
@@ -119,11 +124,11 @@ export default function App(): JSX.Element {
     }
   });
 
-  gps.update(
-    '$GPGGA,224900.000,4832.3762,N,01303.5393,E,1,04,7.8,498.6,M,48.0,M,,0000*5E',
-  );
+  gps.update(nmeaRead);
 
-}, []);
+  console.log(nmeaRead);
+
+}, [nmeaRead]);
 
 useEffect(() => {
   if(!data){
@@ -142,8 +147,13 @@ useEffect(() => {
       <Mereni
         nmeaParsed={nmeaParsed}
         updateCoordinates={updateCoordinates}></Mereni>
+      {ModalType == 'bluetooth' && <Bluetooth nmeaRead={nmeaRead} setNmeaRead={setNmeaRead} ref={bluetoothModalRef}/>}
 
-      <Modal visible={isModalVisible} animationType="slide">
+    </SafeAreaView>
+  );
+}
+/*
+      <Modal visible={isModalVisible} animationType="slide" >
         <Button title="↓ ↓ ↓" onPress={toggleModal} />
         {ModalType == 'point' && (
           <Point
@@ -155,7 +165,7 @@ useEffect(() => {
             setCodePoint={setCodePoint}
           />
         )}
-        {ModalType == 'bluetooth' && <Bluetooth />}
+        {ModalType == 'bluetooth' && <Bluetooth ref={bluetoothModalRef}/>}
         {ModalType == 'placing' && <Placing />}
         {ModalType == 'skyplot' && <Skyplot />}
         {ModalType == 'ntrip' && <Ntrip nmeaParsed={nmeaParsed} />}
@@ -170,6 +180,4 @@ useEffect(() => {
         )}
         {ModalType == 'map' && <Map />}
       </Modal>
-    </SafeAreaView>
-  );
-}
+      */

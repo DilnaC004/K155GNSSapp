@@ -51,25 +51,18 @@ export const styles = {
     switch: {
       outerWidth: 50,
     },
-    container: {
-        height: 300,
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
     text: {
-      fontSize: 20,
+      fontSize: 10,
       fontWeight: 'bold',
       marginBottom: 10,
     },
     scrollViewContent: {
-      paddingVertical: 8,
       flexDirection: 'row', // Added for horizontal scrolling
     },
     messageContainer: {
       borderBottomWidth: 1,
       borderBottomColor: '#ccc',
-      paddingVertical: 8,
+      paddingVertical: 1,
     },
     nastContainer: {
       paddingHorizontal: 16,
@@ -172,6 +165,20 @@ export const styles = {
         marginBottom: 16,
         justifyContent: 'space-around',
         marginVertical: 10,
+      },
+      dropdownBtnStyle: {
+        width: '100%',
+        height: 35,
+        backgroundColor: '#fff',
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 4,
+        marginTop: 8,
+        marginBottom: 8,
+      },
+      dropdownBtnTxtStyle: {color: '#444', textAlign: 'left'},
+      button: {
+        marginBottom: 8,
       },
   };
   
