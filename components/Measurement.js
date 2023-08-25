@@ -3,7 +3,49 @@ import { View, Text, TextInput, Button, Switch } from 'react-native';
 
 import { etrs2jtsk } from './Calculations/transformation';
 
-const Mereni = ({nmeaParsed, updateCoordinates}) => {
+export default Measurement = ({nmeaParsed, updateCoordinates}) => {
+  const [measurementSettings, setMeasurementSettings] = useState({
+    nazevBodu: 'Bod1',
+    coordETRS: {
+      B: 0,
+      L: 0,
+      H: 0,
+    },
+    coordJTSK: null,
+    coordPDOP: 0,
+    coordAccuX: 0,
+    coordAccuY: 0,
+    coordAccuZ: 0,
+    coordMeasuredTime: 0,
+    sumCoordX: 0,
+    sumCoordy: 0,
+    sumCoordZ: 0,
+    boolRtk: false,
+    boolRaw: false,
+    formattedTime: '00:00:00',
+    startTime: null,
+    endTime: null,
+  });
+
+  const updateMeasurementSettings = newSettings => {
+    setMeasurementSettings(prevSettings => ({
+      ...prevSettings,
+      ...newSettings,
+    }));
+  };
+
+  const updateCoordJTSKSettings = coordETRS => {
+    const coordJTSK = etrs2jtsk(
+      coordETRS.B,
+      coordETRS.L,
+      coordETRS.H
+    );
+    updateMeasurementSettings({
+      coordJTSK: coordJTSK
+    }); 
+  };
+
+
   const [nazevBodu, setNazevBodu] = React.useState('');
   const [boolRtk, setBoolRtk] = React.useState(false);
   const [boolRaw, setBoolRaw] = React.useState(false);
@@ -190,7 +232,6 @@ const Mereni = ({nmeaParsed, updateCoordinates}) => {
   );
 };
 
-export default Mereni;
 
 const styles = {
   mereniContainer: {

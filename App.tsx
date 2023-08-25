@@ -1,12 +1,12 @@
 import React, {useState, useEffect, useRef, forwardRef} from 'react';
 import type {PropsWithChildren} from 'react';
-import {SafeAreaView, StyleSheet, useColorScheme, View, Modal, Button, Alert} from 'react-native';
+import {SafeAreaView, ScrollView, useColorScheme, View, Modal, Button, Alert} from 'react-native';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import GPS from 'gps';
 
 import Header from './components/Header';
-import Mereni from './components/Mereni';
+import Measurement from './components/Measurement';
 import Bluetooth from './components/Header/Bluetooth'
 import Ntrip from './components/Header/Ntrip'
 import Project from './components/Header/Project'
@@ -14,6 +14,8 @@ import Skyplot from './components/Header/Skyplot';
 import Point from './components/Header/Point';
 import Map from './components/Header/Map';
 import Placing from './components/Header/Placing';
+
+import useBluetoothClassic from './components/hooks/useBluetoothClassic';
 
 export default function App(): JSX.Element {
   const gps = new GPS;
@@ -30,10 +32,14 @@ export default function App(): JSX.Element {
   const [projectId, setprojectId] = useState('null');
   const [data, setData] = React.useState<any>(null);
 
-  const [nmeaRead, setNmeaRead] = React.useState([]);
 
   const ModalRef = React.useRef();
   const bluetoothModalRef = React.useRef();
+
+  const {
+    nmeaRead,
+    BluetoothClassicComponent
+  } = useBluetoothClassic();
 
   const setObjectValue = async (value: any) => {
     const jsonValue = JSON.stringify(value)
@@ -124,9 +130,9 @@ export default function App(): JSX.Element {
     }
   });
 
-  gps.update(nmeaRead);
-
   console.log(nmeaRead);
+
+  gps.update('');
 
 }, [nmeaRead]);
 
@@ -144,9 +150,12 @@ useEffect(() => {
         setModalVisible={setModalVisible}
         isModalVisible={isModalVisible}
         setModalType={setModalType}></Header>
-      <Mereni
+      <BluetoothClassicComponent/>
+      <ScrollView>
+      <Measurement
         nmeaParsed={nmeaParsed}
-        updateCoordinates={updateCoordinates}></Mereni>
+        updateCoordinates={updateCoordinates}/>
+        
       <Modal visible={isModalVisible} animationType="slide" >
         <Button title="↓ ↓ ↓" onPress={toggleModal} />
         {ModalType == 'point' && (
@@ -159,7 +168,7 @@ useEffect(() => {
             setCodePoint={setCodePoint}
           />
         )}
-        {ModalType == 'bluetooth' && <Bluetooth ref={bluetoothModalRef}/>}
+        {ModalType == 'bluetooth' && <Bluetooth nmeaRead={nmeaRead} setNmeaRead={setNmeaRead} ref={bluetoothModalRef}/>}
         {ModalType == 'placing' && <Placing />}
         {ModalType == 'skyplot' && <Skyplot />}
         {ModalType == 'ntrip' && <Ntrip nmeaParsed={nmeaParsed} />}
@@ -174,7 +183,7 @@ useEffect(() => {
         )}
         {ModalType == 'map' && <Map />}
       </Modal>
-
+      </ScrollView>
     </SafeAreaView>
   );
 }
