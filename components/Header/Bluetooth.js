@@ -1,24 +1,21 @@
 import React, { useState, useEffect, useRef, forwardRef } from 'react';
 import { SafeAreaView, View, Text, Button, PermissionsAndroid, Platform, TouchableOpacity} from 'react-native';
-import { BleManager, Device } from 'react-native-ble-plx';
+//import { BleManager, Device } from 'react-native-ble-plx';
 import SelectDropdown from 'react-native-select-dropdown';
 import RNBluetoothClassic, { BluetoothEventType } from 'react-native-bluetooth-classic';
 
 
-import useBLE from '../hooks/useBLE';
+//import useBLE from '../hooks/useBLE';
 import { styles } from '../Styles/styles';
 import NmeaViewer from './NmeaViewer';
 
-export const Bluetooth = ({nmeaRead, setNmeaRead}, ref) => {
-  const [isEnabled, setIsEnabled] = useState(false);
-  const [isLoopRun, setIsLoopRun] = useState(false);
-  const [devices, setDevices] = useState([]);
-  const [connectedDeviceClassic, setCoonectedDevicesClassic] = useState(null);
-  const bluetoothSelectRef = useRef();
-  const switchConnect = isEnabled ? 'Připoj' : 'Odpoj';
+export const Bluetooth = ({bluetoothSettings, updateBluetoothSettings, rtcmNtrip, getNmeaRead}) => {
+
+  const switchConnect = bluetoothSettings.isEnabled ? 'Připoj' : 'Odpoj';
+  const [nmeaRead, setNmeaRead] = useState([]);
   let intervalId;
 
-
+/*
   const {
     requestPermissions,
     scanForPeripherals,
@@ -27,6 +24,7 @@ export const Bluetooth = ({nmeaRead, setNmeaRead}, ref) => {
     connectedDevice,
     disconnectFromDevice,
   } = useBLE();
+  */
 
   const scanForDevices = async () => {
     /*
@@ -41,7 +39,7 @@ export const Bluetooth = ({nmeaRead, setNmeaRead}, ref) => {
     try {
       let paired = await RNBluetoothClassic.getBondedDevices();
       const pairedDeviced = paired;
-      setDevices(pairedDeviced);
+      updateBluetoothSettings({devices:pairedDeviced});
       let unpaired = await RNBluetoothClassic.startDiscovery();
       const unpairedDeviced = paired;
       //setDevices([...devices, unpairedDeviced]);
@@ -55,37 +53,35 @@ export const Bluetooth = ({nmeaRead, setNmeaRead}, ref) => {
   };
 
   const stopBluetoothConnection = async () => {
-    RNBluetoothClassic.disconnectFromDevice(connectedDeviceClassic.address);
-    console.log('Disconnected from ' + connectedDeviceClassic.name);
-    setCoonectedDevicesClassic(null);
+    RNBluetoothClassic.disconnectFromDevice(bluetoothSettings.connectedDeviceClassic.address);
+    console.log('Disconnected from ' + bluetoothSettings.connectedDeviceClassic.name);
     clearInterval(intervalId); // WHY THIS IS NOT WORKING ? !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   }
 
   const startBluetoothConnection = async () => {
     try{
-      await RNBluetoothClassic.connectToDevice(connectedDeviceClassic.address, {
+      await RNBluetoothClassic.connectToDevice(bluetoothSettings.connectedDeviceClassic.address, {
         CONNECTOR_TYPE: 'rfcomm',
         DELIMITER: '\n',
         DEVICE_CHARSET: 'ascii',
       });
-      console.log('Connecting to ' + connectedDeviceClassic.name);
+      console.log('Connecting to ' + bluetoothSettings.connectedDeviceClassic.name);
     } catch (err) {
       console.log(err);
-      setIsEnabled(true);
+      updateBluetoothSettings({isEnabled:true})
     }
   };
 
   const readBluetoothConnection = async () => {
     //console.log(connectedDeviceClassic.address); 
       try{
-        let readDataAvailable = await RNBluetoothClassic.availableFromDevice(connectedDeviceClassic.address);
+        let readDataAvailable = await RNBluetoothClassic.availableFromDevice(bluetoothSettings.connectedDeviceClassic.address);
         if(readDataAvailable > 0){
-          setNmeaRead([]); // Emty data to read new
 
           for (let i = 0; i < readDataAvailable; i++) {
-            let readData = await RNBluetoothClassic.readFromDevice(connectedDeviceClassic.address);
+            let readData = await RNBluetoothClassic.readFromDevice(bluetoothSettings.connectedDeviceClassic.address);
             //setNmeaRead(prevData => [...prevData, readData]);
-            setNmeaRead(readData);
+            getNmeaRead(readData);
           }
         }
       } catch (err) {
@@ -95,7 +91,7 @@ export const Bluetooth = ({nmeaRead, setNmeaRead}, ref) => {
   }
 
   const setReadBluetoothConnection = () =>{
-    if(!isEnabled && connectedDeviceClassic != null){
+    if(!bluetoothSettings.isEnabled && bluetoothSettings.connectedDeviceClassic != null){
     intervalId = setInterval(() => {
       readBluetoothConnection();
     }, 1000);
@@ -106,11 +102,10 @@ export const Bluetooth = ({nmeaRead, setNmeaRead}, ref) => {
     setReadBluetoothConnection();
 
     return () => {};
-  }, [isEnabled]);
+  }, [bluetoothSettings.isEnabled]);
 
   return (
-    <View 
-    ref={ref}>
+    <View>
       <Text style={styles.title}>Nastavení Bluetooth připojení:</Text>
       <Button
         title="Scan for Bluetooth devices"
@@ -120,15 +115,14 @@ export const Bluetooth = ({nmeaRead, setNmeaRead}, ref) => {
       />
       <SelectDropdown
         style={styles.selectDropdown}
-        ref={bluetoothSelectRef}
-        data={devices.map(mntp => mntp.name)}
-        disabled={devices.length === 0}
+        data={bluetoothSettings.devices.map(mntp => mntp.name)}
+        disabled={bluetoothSettings.devices.length === 0}
         defaultValueByIndex={0}
         defaultButtonText="žádné připojené zařízení"
         buttonStyle={styles.dropdownBtnStyle}
         onSelect={(_, index) => {
-            setCoonectedDevicesClassic(devices[index]);
-            setIsEnabled(!isEnabled);
+          updateBluetoothSettings({connectedDeviceClassic:bluetoothSettings.devices[index]});
+            updateBluetoothSettings({isEnabled:!bluetoothSettings.isEnabled})
           }}
         renderDropdownIcon={() => {}}
         dropdownIconPosition={'right'}
@@ -136,23 +130,18 @@ export const Bluetooth = ({nmeaRead, setNmeaRead}, ref) => {
       <Button
         title={switchConnect}
         onPress={() => {
-          if(isEnabled){
+          if(bluetoothSettings.isEnabled){
             startBluetoothConnection();
-            setIsEnabled(!isEnabled);
+            updateBluetoothSettings({isEnabled:!bluetoothSettings.isEnabled})
           } else {
             stopBluetoothConnection();
-            setIsEnabled(!isEnabled);
+            updateBluetoothSettings({isEnabled:!bluetoothSettings.isEnabled})
           }
         }}
       />
+      <NmeaViewer nmeaMessages={nmeaRead} />
     </View>
   );
 };
 
-export default React.forwardRef(Bluetooth);
-
-/*
-      <View>
-        <NmeaViewer nmeaMessages={nmeaRead} />
-      </View>
-*/
+export default Bluetooth;

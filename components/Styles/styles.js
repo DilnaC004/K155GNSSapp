@@ -144,6 +144,10 @@ export const styles = {
       fontWeight: 'bold',
       marginBottom: 16,
     },
+    headerInfoText: {
+      fontSize:8,
+      alignSelf: 'center',
+    },
     seznamContainer: {
       marginBottom: 16,
     },
@@ -179,6 +183,48 @@ export const styles = {
       dropdownBtnTxtStyle: {color: '#444', textAlign: 'left'},
       button: {
         marginBottom: 8,
+      },
+      nastContainer: {
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+      },
+      hrLine: {
+        borderBottomColor: '#ccc',
+        borderBottomWidth: 1,
+        marginBottom: 16,
+      },
+      title: {
+        fontWeight: 'bold',
+        marginBottom: 8,
+      },
+      nastCenter: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+      },
+      input: {
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 4,
+        marginBottom: 8,
+        padding: 8,
+      },
+      dropdownBtnStyle: {
+        width: '100%',
+        height: 35,
+        backgroundColor: '#fff',
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 4,
+        marginTop: 8,
+        marginBottom: 8,
+      },
+      dropdownBtnTxtStyle: {color: '#444', textAlign: 'left'},
+      button: {
+        marginBottom: 8,
+      },
+      mountpointInfo: {
+        paddingBottom: 25,
       },
   };
   

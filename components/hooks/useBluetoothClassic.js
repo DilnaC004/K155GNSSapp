@@ -16,7 +16,7 @@ export default function useBluetoothClassic() {
 
   useEffect(() => {
     if(connectedDeviceClassic != null){
-        setReadBluetoothConnection();
+        setReadBluetoothConnection(storeData);
         console.log('start reading')
     }
     return () => {};
@@ -37,6 +37,7 @@ export default function useBluetoothClassic() {
             data={devices.map(mntp => mntp.name)}
             disabled={devices.length === 0}
             defaultButtonText="žádné připojené zařízení"
+            defaultValue={0}
             buttonStyle={styles.dropdownBtnStyle}
             onSelect={(_, index) => {
               setCoonectedDevicesClassic(devices[index]);
@@ -73,10 +74,12 @@ export default function useBluetoothClassic() {
 
   const stopBluetoothConnection = async () => {
     RNBluetoothClassic.disconnectFromDevice(connectedDeviceClassic.address);
+    RNBluetoothClassic.
     console.log('Disconnected from ' + connectedDeviceClassic.name);
     setCoonectedDevicesClassic(null);
     setIsEnabled(!isEnabled);
-    clearInterval(intervalId); // WHY THIS IS NOT WORKING ? !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    clearInterval(intervalId); // WHY THIS IS NOT WORKING
+    setNmeaRead([]);
   };
 
   const startBluetoothConnection = async () => {
@@ -105,6 +108,7 @@ export default function useBluetoothClassic() {
             storeData.push(readData);
             //setNmeaRead(prevData => [...prevData, storeData]);
           }
+          console.log('store data: '+ storeData);
           setNmeaRead(storeData);
         }
       } catch (err) {

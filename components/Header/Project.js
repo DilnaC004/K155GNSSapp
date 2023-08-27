@@ -1,6 +1,8 @@
-import React, { useState, useEffect} from 'react';
+import React, { useState, useEffect, useRef} from 'react';
 import { View, Text, TextInput, Button, ScrollView, TouchableOpacity, FlatList, Switch } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'
+import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import SelectDropdown from 'react-native-select-dropdown';
 import IconMaterialIcons from 'react-native-vector-icons/MaterialIcons'
 import DocumentPicker, {
   DirectoryPickerResponse,
@@ -14,8 +16,6 @@ import RNFS, { DocumentDirectoryPath, writeFile }from 'react-native-fs';
 import { styles } from '../Styles/styles';
 
 import { etrs2jtsk, jtsk2etrs} from '../Calculations/transformation'
-
-
 
 const ItemProject = ({item, onPress, backgroundColor, textColor}) => (
   <TouchableOpacity onPress={onPress} style={[styles.boldText, {backgroundColor}]}>
@@ -31,32 +31,29 @@ const ItemPoint = ({ item, onPress, backgroundColor, textColor, textColor1 }) =>
   >
     <Text style={[styles.title, { color: textColor1 }]}>{item.title} </Text>
     <Text style={[styles.title, { color: textColor1 }]}>B </Text>
-    <Text style={[styles.title, { color: textColor }]}>{item.b.toFixed(7)} </Text>
+    <Text style={[styles.title, { color: textColor }]}>{item.b} </Text>
     <Text style={[styles.title, { color: textColor1 }]}>L </Text>
-    <Text style={[styles.title, { color: textColor }]}>{item.l.toFixed(7)} </Text>
+    <Text style={[styles.title, { color: textColor }]}>{item.l} </Text>
     <Text style={[styles.title, { color: textColor1 }]}>H </Text>
-    <Text style={[styles.title, { color: textColor }]}>{item.h.toFixed(3)} </Text>
+    <Text style={[styles.title, { color: textColor }]}>{item.h} </Text>
   </ScrollView>
 );
 
-const Project = ({data, setData, projectId, setprojectId, saveDataToAsyncStorage}) => {
+const Project = ({pointSettings, updatePointSetting, projectSettings, updateProjectSettings, data, updateData, clearStorage}) => {
+  const [newProject, setProject] = useState({
+    title: '',
+    date: '',
+    description: '',
+    path: '',
+    points:[],
+  });
+  const updateProject = newSettings => {
+    setProject(prevSettings => ({
+      ...prevSettings,
+      ...newSettings,
+    }));
+  };
 
-  const [projectTitle, setprojectTitle] = useState('');
-  const [projectDate, setprojectDate] = useState('');
-  const [projectPointCount, setproctPointCount] = useState('');
-  const [projectPoints, setProjectPoints] = useState([]);
-  const [showFlatList, setShowFlatList] = useState(false);
-  const [showPointFlatList, setShowPointFlatList] = useState(false);
-  const [showCreateProject, setShowCreateProject] = useState(false);
-  const [showCreatePoint, setShowCreatePoint] = useState(false);
-  const [boolDeleteAsyncStorage, setDeleteAsyncStorage] = useState(false);
-
-  // state for the text inputs
-  const [newProjectTitle, setNewProjectTitle] = useState('');
-  const [newProjectDate, setNewProjectDate] = useState('');
-  const [newProjectDescription, setNewProjectDescription] = useState('');
-  const [newProjectPath, setNewProjectPath] = useState('');
-  
   // state point inputs
   const [isEnabled, setIsEnabled] = useState(false);
   const toggleSwitch = () => setIsEnabled(previousState => !previousState);
@@ -64,107 +61,38 @@ const Project = ({data, setData, projectId, setprojectId, saveDataToAsyncStorage
   const switchX = isEnabled ? 'L [DMS]' : 'X [m]';
   const switchY = isEnabled ? 'B [DMS]' : 'Y [m]';
   const switchZ = isEnabled ? 'H [DMS]' : 'H [m]';
-  const [pointTitle, setPointTitle] = useState('');
-  const [pointX, setPointX] = useState('');
-  const [pointY, setPointY] = useState('');
-  const [pointZ, setPointZ] = useState('');
 
-  const updateAsyncStorage = (newPoint) => {
-    // Adding the newPoint to the points array
-    console.log(newPoint);
-    // Adding the newPoint to the points array
-    setProjectPoints([...projectPoints, newPoint]);
+  // function to add the new project to the array
+  const addProject = () => {
+    updateProject({date: new Date().toLocaleString()});
+    console.log(newProject);
+    updateData({projects: [...data.projects, newProject] })
+    updateProject({title:'', date: '', description: ''});
+    updateProjectSettings({showCreateProject: !projectSettings.showCreateProject});
+    console.log('Save new project' + newProject);
+  };
 
-    const updatedData = data.map((project, index) => {
-      if (index === projectId) {
+  // add point into list of points and async storage NEED TO OPTIMAZE
+  const addPoint = () => {
+    if (isEnabled) {
+      updatePointSetting({accuB: 0,accuL:0, accuH:0, pdop:0, time:0, code:'input', date: new Date().toLocaleString()})
+    } else {
+      const etrs = jtsk2etrs(y, x, z);
+      updatePointSetting({b:etrs.B, l:etrs.L, h:etrs.H, accuB: 0,accuL:0, accuH:0, pdop:0, time:0, code:'input', date: new Date().toLocaleString()})
+    }
+
+    updateProjectSettings({points: [...projectSettings.points, pointSettings]})
+
+    const updatedData = data.projects.map((project, index) => {
+      if (index === projectSettings.projectId) {
         const updatedPoints = [...project.points, newPoint];
         return {...project, points: updatedPoints};
       }
       return project;
     });
-    setData(updatedData);
-    console.log(updatedData);
-    setShowCreatePoint(!showCreatePoint);
-    saveDataToAsyncStorage(updatedData);
-  };
-
-  // function to add the new project to the array
-  const addProject = () => {
-    // construct the new project object
-    const newProject = {
-      title: newProjectTitle,
-      description: newProjectDescription,
-      path: newProjectPath,
-      date: new Date().toLocaleString(), // Assuming you want to add the current date/time
-      points: [], // add an empty array or whatever initial value you like
-    };
-  
-    // add the new project to the data array
-
-    console.log(data);
-    console.log(newProject);
-
-    setData([...data, newProject]);
-    //setData(updatedData);
-    //saveDataToAsyncStorage(updatedData);
-      
-    // clear the text inputs
-    //setNewProjectTitle('');
-    setNewProjectDate('');
-    setNewProjectDescription('');
-
-    setShowCreateProject(!showCreateProject);
-    
-  };
-
-  // add point into list of points and async storage NEED TO OPTIMAZE
-  const addPoint = () => {
-    const x = parseFloat(pointX);
-    const y = parseFloat(pointY);
-    const z = parseFloat(pointZ);
-
-    if (isEnabled) {
-      const newPoint = {
-        title: pointTitle,
-        b: x,
-        l: y,
-        h: z,
-        accuB:0,
-        accuL:0,
-        accuH:0,
-        pdop:0,
-        time:0,
-        ofset: 0,
-        antena: 0,
-        code:'input',
-        date: new Date().toLocaleString(), 
-      };
-      updateAsyncStorage(newPoint);
-    } else {
-      const etrs = jtsk2etrs(y, x, z);
-      const newPoint = {
-        title: pointTitle,
-        b: etrs.B,
-        l: etrs.L,
-        h: etrs.H,
-        accuB:0,
-        accuL:0,
-        accuH:0,
-        pdop:0,
-        time:0,
-        ofset: 0,
-        antena: 0,
-        code:'input',
-        date: new Date().toLocaleString(), // Assuming you want to add the current date/time
-      };
-      updateAsyncStorage(newPoint);
-    }
-
-    // Clear the input after adding the point
-    setPointTitle('');
-    setPointX('');
-    setPointY('');
-    setPointZ('');
+    updateData({projects: updatedData });
+    console.log('Add point ' + pointSettings.title + ' to project ' + data.projects[projectSettings.projectId].title);
+    updateProjectSettings({showCreatePoint: !projectSettings.showCreatePoint});
   };
 
   // Function to delete a project from the data array
@@ -172,7 +100,7 @@ const Project = ({data, setData, projectId, setprojectId, saveDataToAsyncStorage
     const updatedData = data.filter(
       project => project.title !== projectTitleToDelete,
     );
-    setData(updatedData);
+    updateData({projects: updateData });
   };
 
   // Function to delete a point from a project in the data array
@@ -183,12 +111,12 @@ const Project = ({data, setData, projectId, setprojectId, saveDataToAsyncStorage
           point => point.title !== pointTitleToDelete,
         );
         setProjectPoints(updatedPoints);
-        setproctPointCount(projectPoints.length);
+        updateProjectSettings({projectPointCount: updatedPoints.length});  
         return {...project, points: updatedPoints};
       }
       return project;
     });
-    setData(updatedData);
+    updateData({projects: updateData });
   };
 
   // Function to export points into txt
@@ -205,27 +133,21 @@ const Project = ({data, setData, projectId, setprojectId, saveDataToAsyncStorage
   }
 
   const renderItemProject = ({item}) => {
-    const backgroundColor = item.title === projectTitle ? '#ccc' : '#ccc1';
-    const color = item.title === projectTitle ? 'white' : 'black';
+    const backgroundColor = item.title === projectSettings.projectTitle ? '#ccc' : '#ccc1';
+    const color = item.title === projectSettings.projectTitle ? 'white' : 'black';
 
     return (
       <View style={styles.buttonContainer}>
         <ItemProject
           item={item}
           onPress={() => {
-            setprojectTitle(item.title);
-            setprojectDate(item.date);
-            setproctPointCount(item.points.length);
-            // Find the index of the selected project in the data array
-            const index = data.indexOf(item);
-            setprojectId(index); // Set projectId to the index of the selected project
-            setProjectPoints(item.points);
-            setShowFlatList(false); // Hide the FlatList after an item is selected}
+            updateProjectSettings({projectPointCount: item.points.length, projectDate:item.date, projectTitle: item.title, showFlatList:false, projectId:data.indexOf(item), points:item.points});
+            updateProjectSettings({points:item.points});
           }}
           backgroundColor={backgroundColor}
           textColor={color}
         />
-        <TouchableOpacity onPress={() => deleteProject(item.title)}>
+        <TouchableOpacity onPress={() => {}}>
           <IconMaterialIcons name="delete" size={24} color="black" />
         </TouchableOpacity>
       </View>
@@ -233,18 +155,14 @@ const Project = ({data, setData, projectId, setprojectId, saveDataToAsyncStorage
   };
 
   const renderItemPoint = ({item}) => {
-    const backgroundColor = item.title === projectTitle ? '#ccc' : '#ccc1';
-    const color = item.title === projectTitle ? 'white' : 'black';
-
     return (
       <View style={styles.buttonContainer}>
         <ItemPoint
           item={item}
-          backgroundColor={backgroundColor}
           textColor={'gray'}
           textColor1={'white'}
         />
-        <TouchableOpacity onPress={() => deletePoint(projectTitle, item.title)}>
+        <TouchableOpacity onPress={() => {}}>
           <IconMaterialIcons name="delete" size={24} color="black" />
         </TouchableOpacity>
       </View>
@@ -257,12 +175,12 @@ const Project = ({data, setData, projectId, setprojectId, saveDataToAsyncStorage
         <Text>
           <Text style={styles.boldText}>Informace o aktuální zakázce</Text>
           {'\n'}
-          <Text id="INFOnazevZakazky">Název zakázky: {projectTitle}</Text>
+          <Text id="INFOnazevZakazky">Název zakázky: {projectSettings.projectTitle}</Text>
           {'\n'}
-          <Text id="INFOdatumVytvoreni">Datum vytvoření: {projectDate}</Text>
+          <Text id="INFOdatumVytvoreni">Datum vytvoření: {projectSettings.projectDate}</Text>
           {'\n'}
           <Text id="INFOpocetBodu">
-            Počet změřených bodů: {projectPointCount}
+            Počet změřených bodů: {projectSettings.projectPointCount}
           </Text>
         </Text>
       </View>
@@ -271,45 +189,45 @@ const Project = ({data, setData, projectId, setprojectId, saveDataToAsyncStorage
         <Button
           title="Vyber Zakázku"
           onPress={() => {
-            setShowFlatList(!showFlatList);
+            updateProjectSettings({showFlatList:!projectSettings.showFlatList});
           }}
         />
         <Button
           title="Vytvoř zakázku"
           onPress={() => {
-            setShowCreateProject(!showCreateProject);
+            updateProjectSettings({showCreateProject: !projectSettings.showCreateProject});
           }}
         />
       </View>
-      {showFlatList && ( // conditional rendering based on the new piece of state
+      {projectSettings.showFlatList && ( // conditional rendering based on the new piece of state
         <View style={{height: 100}}>
           <FlatList
             data={data}
             renderItem={renderItemProject}
             keyExtractor={item => item.title}
-            extraData={projectTitle}
+            extraData={projectSettings.projectTitle}
           />
         </View>
       )}
-      {showCreateProject && ( // conditional rendering based on the new piece of state
+      {projectSettings.showCreateProject && ( // conditional rendering based on the new piece of state
         <View>
           <TextInput
             style={styles.textInput}
             placeholder="Název zakázky"
-            value={newProjectTitle}
-            onChangeText={setNewProjectTitle}
+            value={newProject.title}
+            onChangeText={(value) => {updateProject({title: value}) }}
           />
           <TextInput
             style={styles.textInput}
             placeholder="Popis"
             multiline={true}
-            value={newProjectDescription}
-            onChangeText={setNewProjectDescription}
+            value={newProject.description}
+            onChangeText={(value) => {updateProject({description: value}) }}
           />
           <Button
             title="Vyber cestu k projektu"
             onPress={() => {
-              DocumentPicker.pickDirectory().then(setNewProjectPath).catch(e => {console.log(e)});
+              DocumentPicker.pickDirectory().then((value) => { updateProject({patch:value})} ).catch(e => {console.log(e)});
             }}
           />
           <Button title="Založ zakázku" onPress={() => {
@@ -322,39 +240,38 @@ const Project = ({data, setData, projectId, setprojectId, saveDataToAsyncStorage
         <Button
           title="Zobraz uložené body"
           onPress={() => {
-            if (projectId != 'null') {
-              setShowPointFlatList(!showPointFlatList);
+            if (projectSettings.projectId != 'null') {
+              updateProjectSettings({showPointFlatList: !projectSettings.showPointFlatList});
             }
           }}
         />
         <Button
           title="Vlož bod"
           onPress={() => {
-            if (projectId != 'null') {
-              setShowCreatePoint(!showCreatePoint);
+            if (projectSettings.projectId != 'null') {
+              updateProjectSettings({showCreatePoint: !projectSettings.showCreatePoint});
             }
           }}
         />
       </View>
-      {showPointFlatList && ( // conditional rendering based on the new piece of state
+      {projectSettings.showPointFlatList && ( // conditional rendering based on the new piece of state
         <View style={{height: 120}}>
           <FlatList
-            data={projectPoints}
+            data={projectSettings.points}
             renderItem={renderItemPoint}
             keyExtractor={item => item.title}
-            extraData={projectTitle}
           />
           <View style={styles.hrLine} />
         </View>
       )}
-      {showCreatePoint && ( // conditional rendering based on the new piece of state
+      {projectSettings.showCreatePoint && ( // conditional rendering based on the new piece of state
         <View>
           <View style={styles.buttonContainer}>
             <TextInput
               style={styles.textInput}
               placeholder="Název bodu"
-              value={pointTitle}
-              onChangeText={setPointTitle}
+              value={pointSettings.title}
+               onChangeText={(value) => {updatePointSetting({title: value})}}
             />
             <Text>{switchCoordinates}</Text>
             <Switch
@@ -369,24 +286,24 @@ const Project = ({data, setData, projectId, setprojectId, saveDataToAsyncStorage
           <TextInput
             style={styles.textInput}
             placeholder={switchY}
-            value={pointY}
-            onChangeText={setPointY}
+            value={pointSettings.l}
+            onChangeText={(value) => {updatePointSetting({l:value})}}
             maxLength={11} // Set the maximum number of characters allowed
             keyboardType="numeric" // Set the keyboard to numeric mode
           />
           <TextInput
             style={styles.textInput}
             placeholder={switchX}
-            value={pointX}
-            onChangeText={setPointX}
+            value={pointSettings.b}
+            onChangeText={(value) => {updatePointSetting({b:value})}}
             maxLength={11} // Set the maximum number of characters allowed
             keyboardType="numeric" // Set the keyboard to numeric mode
           />
           <TextInput
             style={styles.textInput}
             placeholder={switchZ}
-            value={pointZ}
-            onChangeText={setPointZ}
+            value={pointSettings.h}
+            onChangeText={(value) => {updatePointSetting({h:value})}}
             maxLength={7} // Set the maximum number of characters allowed
             keyboardType="numeric" // Set the keyboard to numeric mode
           />
@@ -406,7 +323,7 @@ const Project = ({data, setData, projectId, setprojectId, saveDataToAsyncStorage
         <Button
           title="Importuj body"
           onPress={() => {
-            if (projectId != 'null') {
+            if (projectSettings.projectId != 'null') {
             }
           }}
         />
@@ -414,8 +331,7 @@ const Project = ({data, setData, projectId, setprojectId, saveDataToAsyncStorage
           title="Vše vymaž"
           onPress={() => {
             clearStorage();
-            setData([]);
-            setProjectPoints([]);
+            updateData({projects: []})
           }}
         />
       </View>

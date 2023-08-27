@@ -1,29 +1,29 @@
-import React, { useState, useEffect } from 'react';
-import { SafeAreaView, View, Text, TextInput, Button, PermissionsAndroid, Platform } from 'react-native';
+import React from 'react';
+import {View, Text, TextInput} from 'react-native';
+import RowWithLabelAndValue from './RowWithLabelAndValue';
+import {styles} from '../Styles/styles';
 
-import { styles } from '../Styles/styles';
-
-export const Point = ({heightAntena, setHeightAntena, offsetAntena, setOffsetAntena, codePoint, setCodePoint}) => {
+export default Point = ({pointSettings, updatePointSettings}) => {
   return (
-    <SafeAreaView>
-      <Text style={styles.title}>Nastavení antény:</Text>
-      <Text >K155GNSS KRABIČKA - fázové centrum 42 mm</Text>
-      <Text >K155GNSS VÁLEC - fázové centrum XX mm</Text>
-      <View style={styles.hrLine} />
+    <View>
       <Text style={styles.title}>Fázové centrum [m]</Text>
       <TextInput
-          style={styles.input}
-          value={offsetAntena.toString()}
-          placeholder="Fázové centrum [m]"
-          onChangeText={setOffsetAntena}
-          maxLength={5} // Set the maximum number of characters allowed
-          keyboardType="numeric" // Set the keyboard to numeric mode
-        />
-        <Text style={styles.title}>Výška antény [m]</Text>
+        style={styles.input}
+        value={pointSettings.offset.toString()}
+        placeholder="Fázové centrum [m]"
+        onChangeText={value => {
+          updatePointSettings({offset: value});
+        }}
+        maxLength={5} // Set the maximum number of characters allowed
+        keyboardType="numeric" // Set the keyboard to numeric mode
+      />
+      <Text style={styles.title}>Výška antény [m]</Text>
       <TextInput
         style={styles.input}
-        value={heightAntena.toString()}
-        onChangeText={setHeightAntena}
+        value={pointSettings.height.toString()}
+        onChangeText={value => {
+          updatePointSettings({height: value});
+        }}
         placeholder="Výška antény [m]"
         maxLength={5} // Set the maximum number of characters allowed
         keyboardType="numeric" // Set the keyboard to numeric mode
@@ -31,12 +31,14 @@ export const Point = ({heightAntena, setHeightAntena, offsetAntena, setOffsetAnt
       <Text style={styles.title}>Kód</Text>
       <TextInput
         style={styles.input}
-        value={codePoint.toString()}
-        onChangeText={setCodePoint}
+        value={pointSettings.code.toString()}
+        onChangeText={value => {
+          updatePointSettings({code: value});
+        }}
         placeholder="Kód"
       />
-    </SafeAreaView>
+      <RowWithLabelAndValue label="K155GNSS KRABIČKA" value="42mm" />
+      <RowWithLabelAndValue label="K155GNSS VÁLEC" value="XXmm" />
+    </View>
   );
 };
-
-export default Point;

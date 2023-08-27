@@ -1,52 +1,135 @@
-import React, {useState, useEffect, useRef, forwardRef} from 'react';
-import type {PropsWithChildren} from 'react';
-import {SafeAreaView, ScrollView, useColorScheme, View, Modal, Button, Alert} from 'react-native';
-import {Colors} from 'react-native/Libraries/NewAppScreen';
+import React, {useState, useEffect} from 'react';
+import {SafeAreaView, View, Alert} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import GPS from 'gps';
 
 import Header from './components/Header';
 import Measurement from './components/Measurement';
-import Bluetooth from './components/Header/Bluetooth'
-import Ntrip from './components/Header/Ntrip'
-import Project from './components/Header/Project'
+import Ntrip from './components/Header/Ntrip';
+import Bluetooth from './components/Header/Bluetooth';
+import Project from './components/Header/Project';
 import Skyplot from './components/Header/Skyplot';
 import Point from './components/Header/Point';
 import Map from './components/Header/Map';
 import Placing from './components/Header/Placing';
 
-import useBluetoothClassic from './components/hooks/useBluetoothClassic';
-
 export default function App(): JSX.Element {
-  const gps = new GPS;
-  const [isModalVisible, setModalVisible] = React.useState(false);
-  const [ModalType, setModalType] = React.useState(String);
-
-  const [coordStatus, setCoordStatus] = React.useState('black');
+  const gps = new GPS();
   const [nmeaParsed, setNmeaParsed] = React.useState('');
-  const [newPoint, setNewPoint] = React.useState<any>(null);
-  const [heightAntena, setHeightAntena] = React.useState(0);
-  const [offsetAntena, setOffsetAntena] = React.useState(0);
-  const [codePoint, setCodePoint] = React.useState('');
+  const [projectId, setprojectId] = React.useState('null');
+  const [rtcmNtrip, setRtcmNtrip] = React.useState<any>(null);
+  const [nmeaRead, setNmeaRead] = React.useState<any>(null);
 
-  const [projectId, setprojectId] = useState('null');
-  const [data, setData] = React.useState<any>(null);
-
-
-  const ModalRef = React.useRef();
-  const bluetoothModalRef = React.useRef();
-
-  const {
-    nmeaRead,
-    BluetoothClassicComponent
-  } = useBluetoothClassic();
-
+  const [data, setData] = useState({
+    projects: null,
+    codes: null,
+    ntripSettings: null,
+    pointSettings: null,
+    projectSettings: null,
+    bluetoothSettings:null,
+  });
+  const updateData = (newSettings: any) => {
+    setData(prevSettings => ({
+      ...prevSettings,
+      ...newSettings,
+    }));
+    setObjectValue(data);
+  };
+  const [ntripSettings, setNtripSettings] = useState({
+    ntripIp: '195.245.209.181',
+    ntripPort: '2101',
+    ntripUsername: 'cvutvyuka',
+    ntripPassword: 'k155dremejakokone',
+    selectedMntp: null,
+    mountpoints: [],
+    ntripConnect: false,
+  });
+  const updateNtripSettings = (newSettings: any) => {
+    setNtripSettings(prevSettings => ({
+      ...prevSettings,
+      ...newSettings,
+    }));
+  };
+  const [pointSettings, setPointSettings] = useState({
+    title: '',
+    b: 0,
+    l: 0,
+    h: 0,
+    accuB: 0,
+    accuL: 0,
+    accuH: 0,
+    pdop: 0,
+    time: 0,
+    date: 0,
+    height: 0,
+    offset: 0,
+    code: '',
+  });
+  const updatePointSettings = (newSettings: any) => {
+    setPointSettings(prevSettings => ({
+      ...prevSettings,
+      ...newSettings,
+    }));
+  };
+  const [projectSettings, setProjectSettings] = useState({
+    projectTitle: '',
+    projectId: 0,
+    projectDate: '',
+    ProjectDescription: '',
+    projectPointCount: '',
+    points: [],
+    showFlatList: false,
+    showPointFlatList: false,
+    showCreateProject: false,
+    showCreatePoint: false,
+  });
+  const updateProjectSettings = (newSettings: any) => {
+    setProjectSettings(prevSettings => ({
+      ...prevSettings,
+      ...newSettings,
+    }));
+  };
+  const [bluetoothSettings, setBluetoothSettings] = useState({
+    isEnabled: false,
+    devices: [],
+    connectedDeviceClassic: null,
+  });
+  const updateBluetoothSettings = (newSettings: any) => {
+    setBluetoothSettings(prevSettings => ({
+      ...prevSettings,
+      ...newSettings,
+    }));
+  };
+  const getRtcmNtrip = (rtcmNtrip: any) => {
+    setRtcmNtrip(rtcmNtrip);
+  };
+  const getNmeaRead = (nmeaRead: any) => {
+    setNmeaRead(nmeaRead);
+  };
+  const [modalType, setmodalType] = React.useState({
+    point: false,
+    placing: false,
+    skyplot: false,
+    bluetooth: false,
+    ntrip: false,
+    project: false,
+    map: false,
+    measurement: true,
+  });
+  const updateModalType = (newSettings: any) => {
+    setmodalType(prevSettings => ({
+      ...prevSettings,
+      ...newSettings,
+    }));
+  };
   const setObjectValue = async (value: any) => {
-    const jsonValue = JSON.stringify(value)
-    AsyncStorage.setItem('key', jsonValue).then(() => console.log('Done.')).catch(e => {console.log(e)});
-
-  }
-
+    const jsonValue = JSON.stringify(value);
+    AsyncStorage.setItem('key', jsonValue)
+      .then(() => console.log('Done.'))
+      .catch(e => {
+        console.log(e);
+      });
+  };
   const getObjectValue = async () => {
     try {
       const dataStorage = await AsyncStorage.getItem('key');
@@ -57,7 +140,6 @@ export default function App(): JSX.Element {
       console.log(e);
     }
   };
-
   const clearStorage = async () => {
     try {
       await AsyncStorage.clear();
@@ -66,17 +148,18 @@ export default function App(): JSX.Element {
       Alert.alert('Failed to clear the async storage.');
     }
   };
-
-
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
-  const updateCoordinates = (nazevBodu:string, coordX:number, coordY:number, coordZ:number, coordAccuX:number, coordAccuY:number, coordAccuZ:number, coordPDOP:number, coordMeasuredTime:number) => {
-
-    if(nazevBodu== ''){
+  const updateCoordinates = (
+    nazevBodu: string,
+    coordX: number,
+    coordY: number,
+    coordZ: number,
+    coordAccuX: number,
+    coordAccuY: number,
+    coordAccuZ: number,
+    coordPDOP: number,
+    coordMeasuredTime: number,
+  ) => {
+    if (nazevBodu == '') {
       Alert.alert('Vlož název bodu');
     }
 
@@ -84,22 +167,35 @@ export default function App(): JSX.Element {
       title: nazevBodu,
       b: coordX,
       l: coordY,
-      h: coordZ-heightAntena-offsetAntena,
-      accuB:coordAccuX,
-      accuL:coordAccuY,
-      accuH:coordAccuZ,
-      pdop:coordPDOP,
-      time:coordMeasuredTime,
-      ofset:offsetAntena,
-      antena: heightAntena,
-      code: codePoint,
+      h: coordZ - pointSettings.height - pointSettings.offset,
+      accuB: coordAccuX,
+      accuL: coordAccuY,
+      accuH: coordAccuZ,
+      pdop: coordPDOP,
+      time: coordMeasuredTime,
+      ofset: pointSettings.offset,
+      antena: pointSettings.height,
+      code: pointSettings.code,
       date: new Date().toLocaleString(),
     };
 
+    updatePointSettings({
+      b: coordX,
+      l: coordY,
+      h: coordZ - pointSettings.height - pointSettings.offset,
+      accuB: coordAccuX,
+      accuL: coordAccuY,
+      accuH: coordAccuZ,
+      pdop: coordPDOP,
+      time: coordMeasuredTime,
+      date: new Date().toLocaleString(),
+    });
+
     // Log the received values
-    if(projectId != 'null'){
-      const updatedData = data.map((project:any, index:number) => {
-        if (index === parseInt(projectId)) {
+    if (projectSettings.projectId != null) {
+      console.log('Point saved into project: ' + data[projectSettings.projectId].title);
+      const updatedData = data.map((project: any, index: number) => {
+        if (index === projectSettings.projectId) {
           const updatedPoints = [...project.points, newPoint];
           return {...project, points: updatedPoints};
         }
@@ -110,109 +206,76 @@ export default function App(): JSX.Element {
     } else {
       Alert.alert('Vyber zakázku');
     }
-    
   };
+  useEffect(() => {
+    // Add an event listener on all protocols
+    gps.on('data', parsed => {
+      setNmeaParsed(parsed);
+    });
 
-  const toggleModal = () => {
-    setModalVisible(!isModalVisible);
-    setModalType('null');
-  };
-  
- useEffect(() => {
-  // Add an event listener on all protocols
-  gps.on('data', parsed => {
-    setNmeaParsed(parsed);
-    if(parsed.quality == 'fix'){
-      setCoordStatus("green");
+    console.log(nmeaRead);
+    console.log(rtcmNtrip);
+
+    gps.update(
+      '$GPGGA,224900.000,4832.3762,N,01403.5393,E,1,04,7.8,498.6,M,48.0,M,,0000*5E',
+    );
+  }, [rtcmNtrip, nmeaRead]);
+  useEffect(() => {
+    if (!data.projects) {
+      getObjectValue();
     }
-    if(parsed.quality == 'float'){
-      setCoordStatus("orange");
-    }
-  });
-
-  console.log(nmeaRead);
-
-  gps.update('');
-
-}, [nmeaRead]);
-
-useEffect(() => {
-  if(!data){
-    getObjectValue();
-  }
-}, []);
+    console.log(rtcmNtrip);
+  }, []);
 
   return (
-    <SafeAreaView style={backgroundStyle}>
+    <SafeAreaView>
       <Header
         nmeaParsed={nmeaParsed}
-        coordStatus={coordStatus}
-        setModalVisible={setModalVisible}
-        isModalVisible={isModalVisible}
-        setModalType={setModalType}></Header>
-      <BluetoothClassicComponent/>
-      <ScrollView>
-      <Measurement
-        nmeaParsed={nmeaParsed}
-        updateCoordinates={updateCoordinates}/>
-        
-      <Modal visible={isModalVisible} animationType="slide" >
-        <Button title="↓ ↓ ↓" onPress={toggleModal} />
-        {ModalType == 'point' && (
-          <Point
-            heightAntena={heightAntena}
-            setHeightAntena={setHeightAntena}
-            offsetAntena={offsetAntena}
-            setOffsetAntena={setOffsetAntena}
-            codePoint={codePoint}
-            setCodePoint={setCodePoint}
+        modalType={modalType}
+        updateModalType={updateModalType}></Header>
+      <View>
+        {modalType.bluetooth && (
+          <Bluetooth
+            bluetoothSettings={bluetoothSettings}
+            updateBluetoothSettings={updateBluetoothSettings}
+            rtcmNtrip={rtcmNtrip}
+            getNmeaRead={getNmeaRead}
           />
         )}
-        {ModalType == 'bluetooth' && <Bluetooth nmeaRead={nmeaRead} setNmeaRead={setNmeaRead} ref={bluetoothModalRef}/>}
-        {ModalType == 'placing' && <Placing />}
-        {ModalType == 'skyplot' && <Skyplot />}
-        {ModalType == 'ntrip' && <Ntrip nmeaParsed={nmeaParsed} />}
-        {ModalType == 'project' && (
+        {modalType.ntrip && (
+          <Ntrip
+            ntripSettings={ntripSettings}
+            updateNtripSettings={updateNtripSettings}
+            getRtcmNtrip={getRtcmNtrip}
+          />
+        )}
+        {modalType.project && (
           <Project
+            pointSettings={pointSettings}
+            updatePointSetting={updatePointSettings}
+            projectSettings={projectSettings}
+            updateProjectSettings={updateProjectSettings}
             data={data}
-            setData={setData}
-            projectId={projectId}
-            setprojectId={setprojectId}
-            saveDataToAsyncStorage={setObjectValue}
+            updateData={updateData}
+            clearStorage={clearStorage}
           />
         )}
-        {ModalType == 'map' && <Map />}
-      </Modal>
-      </ScrollView>
+        {modalType.point && (
+          <Point
+            pointSettings={pointSettings}
+            updatePointSettings={updatePointSettings}
+          />
+        )}
+        {modalType.measurement && (
+          <Measurement
+            nmeaParsed={nmeaParsed}
+            updateCoordinates={updateCoordinates}
+          />
+        )}
+        {modalType.placing && <Placing />}
+        {modalType.map && <Map />}
+        {modalType.skyplot && <Skyplot />}
+      </View>
     </SafeAreaView>
   );
 }
-/*
-      <Modal visible={isModalVisible} animationType="slide" >
-        <Button title="↓ ↓ ↓" onPress={toggleModal} />
-        {ModalType == 'point' && (
-          <Point
-            heightAntena={heightAntena}
-            setHeightAntena={setHeightAntena}
-            offsetAntena={offsetAntena}
-            setOffsetAntena={setOffsetAntena}
-            codePoint={codePoint}
-            setCodePoint={setCodePoint}
-          />
-        )}
-        {ModalType == 'bluetooth' && <Bluetooth ref={bluetoothModalRef}/>}
-        {ModalType == 'placing' && <Placing />}
-        {ModalType == 'skyplot' && <Skyplot />}
-        {ModalType == 'ntrip' && <Ntrip nmeaParsed={nmeaParsed} />}
-        {ModalType == 'project' && (
-          <Project
-            data={data}
-            setData={setData}
-            projectId={projectId}
-            setprojectId={setprojectId}
-            saveDataToAsyncStorage={setObjectValue}
-          />
-        )}
-        {ModalType == 'map' && <Map />}
-      </Modal>
-      */

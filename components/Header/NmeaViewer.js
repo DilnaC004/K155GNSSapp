@@ -17,7 +17,7 @@ const NmeaViewer = ({ nmeaMessages }) => {
 
 const styles = StyleSheet.create({
   container: {
-    height: 200,
+    height: 500,
     padding: 10,
     backgroundColor: '#F5FCFF',
   },
