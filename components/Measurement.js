@@ -1,6 +1,5 @@
 import React, {useState, useEffect} from 'react';
 import { View, Text, TextInput, Button, Switch } from 'react-native';
-
 import { etrs2jtsk } from './Calculations/transformation';
 
 export default Measurement = ({nmeaParsed, updateCoordinates}) => {
