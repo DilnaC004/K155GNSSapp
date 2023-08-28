@@ -16,12 +16,18 @@ import Placing from './components/Header/Placing';
 export default function App(): JSX.Element {
   const gps = new GPS();
   const [nmeaParsed, setNmeaParsed] = React.useState('');
-  const [projectId, setprojectId] = React.useState('null');
   const [rtcmNtrip, setRtcmNtrip] = React.useState<any>(null);
   const [nmeaRead, setNmeaRead] = React.useState<any>(null);
 
   const [data, setData] = useState({
-    projects: null,
+    projects: [
+      {
+        title: 'Test',
+        date: '14.2.2014',
+        description: 'Toto je pouze test, autodestrukce mobilu za 3, 2, 1 .',
+        points: [],
+      },
+    ],
     codes: null,
     ntripSettings: null,
     pointSettings: null,
@@ -29,10 +35,12 @@ export default function App(): JSX.Element {
     bluetoothSettings:null,
   });
   const updateData = (newSettings: any) => {
+    
     setData(prevSettings => ({
       ...prevSettings,
       ...newSettings,
     }));
+
     setObjectValue(data);
   };
   const [ntripSettings, setNtripSettings] = useState({
@@ -72,10 +80,10 @@ export default function App(): JSX.Element {
     }));
   };
   const [projectSettings, setProjectSettings] = useState({
-    projectTitle: '',
+    title: '',
     projectId: 0,
-    projectDate: '',
-    ProjectDescription: '',
+    date: '',
+    description: '',
     projectPointCount: '',
     points: [],
     showFlatList: false,
@@ -125,7 +133,7 @@ export default function App(): JSX.Element {
   const setObjectValue = async (value: any) => {
     const jsonValue = JSON.stringify(value);
     AsyncStorage.setItem('key', jsonValue)
-      .then(() => console.log('Done.'))
+      .then(() => console.log('Saved data into Storage ' + value))
       .catch(e => {
         console.log(e);
       });
@@ -207,6 +215,7 @@ export default function App(): JSX.Element {
       Alert.alert('Vyber zakázku');
     }
   };
+ 
   useEffect(() => {
     // Add an event listener on all protocols
     gps.on('data', parsed => {
@@ -220,6 +229,7 @@ export default function App(): JSX.Element {
       '$GPGGA,224900.000,4832.3762,N,01403.5393,E,1,04,7.8,498.6,M,48.0,M,,0000*5E',
     );
   }, [rtcmNtrip, nmeaRead]);
+ 
   useEffect(() => {
     if (!data.projects) {
       getObjectValue();

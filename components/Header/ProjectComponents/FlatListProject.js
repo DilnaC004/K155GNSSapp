@@ -1,0 +1,84 @@
+import React, {useState, useEffect} from 'react';
+import {
+  FlatList,
+  View,
+  Text,
+  TouchableOpacity,
+  Button,
+  PermissionsAndroid,
+  Platform,
+} from 'react-native';
+import IconMaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import {styles} from '../../Styles/styles';
+
+const ItemProject = ({item, onPress, backgroundColor, textColor}) => (
+  <TouchableOpacity
+    onPress={onPress}
+    style={[styles.boldText, {backgroundColor}]}>
+    <Text style={[styles.title, {color: textColor}]}>{item.title} </Text>
+  </TouchableOpacity>
+);
+
+export default FlatListProject = ({
+  data,
+  updateData,
+  projectSettings,
+  updateProjectSettings,
+}) => {
+
+  const renderItemProject = ({item}) => {
+    const backgroundColor =
+      item.title === projectSettings.title ? '#ccc' : '#ccc1';
+    const color =
+      item.title === projectSettings.title ? 'white' : 'black';
+
+    return (
+      <View style={styles.buttonContainer}>
+        <ItemProject
+          item={item}
+          onPress={() => {
+            updateProjectSettings({
+              projectPointCount: item.points.length,
+              date: item.date,
+              title: item.title,
+              description: item.description,
+              showFlatList: false,
+              projectId: data.projects.indexOf(item),
+            });
+          }}
+          backgroundColor={backgroundColor}
+          textColor={color}
+        />
+        <TouchableOpacity
+          onPress={() => {
+            deleteProject();
+          }}>
+          <IconMaterialIcons name="delete" size={24} color="black" />
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  useEffect(() => {
+    console.log(data);
+  }, );
+
+  // Function to delete a project from the data array
+  const deleteProject = projectTitleToDelete => {
+    const updatedData = data.filter(
+      project => project.title !== projectTitleToDelete,
+    );
+    updateData({projects: updateData});
+  };
+
+  return (
+    <View style={{height: 120}}>
+      <FlatList
+        data={data.projects}
+        renderItem={renderItemProject}
+        keyExtractor={item => item.title}
+      />
+      <View style={styles.hrLine} />
+    </View>
+  );
+};

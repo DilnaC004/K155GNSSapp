@@ -4,8 +4,8 @@ import {View, Text, StyleSheet} from 'react-native';
 const RowWithLabelAndValue = ({label, value}) => {
   return (
     <View style={styles.row}>
-      <Text style={styles.label}>{label}:</Text>
-      <Text style={styles.value}>{value}</Text>
+      <Text style={styles.label}>{label.toString()}:</Text>
+      <Text style={styles.value}>{value.toString()}</Text>
     </View>
   );
 };
