@@ -1,6 +1,7 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import {FlatList, View, Text, TouchableOpacity, ScrollView} from 'react-native';
 import IconMaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { DataContext } from '../../Functions/DataContext';
 import {styles} from '../../Styles/styles';
 
 const ItemPoint = ({item, onPress, backgroundColor, textColor, textColor1}) => (
@@ -19,11 +20,10 @@ const ItemPoint = ({item, onPress, backgroundColor, textColor, textColor1}) => (
 );
 
 export default FlatListPoint = ({
-  data,
-  updateData,
   projectSettings,
   updateProjectSettings,
 }) => {
+  const { data, updateData} = useContext(DataContext);
   const renderItemPoint = ({item}) => {
     return (
       <View style={styles.buttonContainer}>

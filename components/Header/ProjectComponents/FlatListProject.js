@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useContext, useEffect} from 'react';
 import {
   FlatList,
   View,
@@ -9,6 +9,7 @@ import {
   Platform,
 } from 'react-native';
 import IconMaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import { DataContext } from '../../Functions/DataContext';
 import {styles} from '../../Styles/styles';
 
 const ItemProject = ({item, onPress, backgroundColor, textColor}) => (
@@ -20,12 +21,10 @@ const ItemProject = ({item, onPress, backgroundColor, textColor}) => (
 );
 
 export default FlatListProject = ({
-  data,
-  updateData,
   projectSettings,
   updateProjectSettings,
 }) => {
-
+  const { data, updateData} = useContext(DataContext);
   const renderItemProject = ({item}) => {
     const backgroundColor =
       item.title === projectSettings.title ? '#ccc' : '#ccc1';

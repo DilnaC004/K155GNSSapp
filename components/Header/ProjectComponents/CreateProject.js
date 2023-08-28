@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useContext} from 'react';
 import {TextInput, View, Button} from 'react-native';
 import DocumentPicker, {
   DirectoryPickerResponse,
@@ -7,14 +7,14 @@ import DocumentPicker, {
   isInProgress,
   types,
 } from 'react-native-document-picker';
+import { DataContext } from '../../Functions/DataContext';
 import {styles} from '../../Styles/styles';
 
 export default CreateProject = ({
-  data,
-  updateData,
   projectSettings,
   updateProjectSettings,
 }) => {
+  const { data, updateData} = useContext(DataContext);
   const [newProject, setProject] = useState({
     title: '',
     date: '',
@@ -34,7 +34,7 @@ export default CreateProject = ({
   const addProject = () => {
     updateProject({date: new Date().toLocaleString()});
     const updatedData = [...data.projects, newProject];
-    updateData({projects: updateData});
+    updateData({projects: updatedData});
     updateProject({title: '', date: '', description: ''});
     console.log('Save new project' + newProject);
   };

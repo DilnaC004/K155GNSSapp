@@ -1,25 +1,8 @@
-import React, {useState, useEffect, useRef} from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  Button,
-  ScrollView,
-  TouchableOpacity,
-  FlatList,
-  Switch,
-  Modal,
-  FlatListComponent,
-} from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-import SelectDropdown from 'react-native-select-dropdown';
-import IconMaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import React, {useState, useEffect, useContext} from 'react';
+import {View, Button} from 'react-native';
 import RNFS, {DocumentDirectoryPath, writeFile} from 'react-native-fs';
-
+import { DataContext } from '../Functions/DataContext';
 import {styles} from '../Styles/styles';
-
-import {etrs2jtsk, jtsk2etrs} from '../Calculations/transformation';
 
 import CreatePoint from './ProjectComponents/CreatePoint';
 import CreateProject from './ProjectComponents/CreateProject';
@@ -32,10 +15,11 @@ const Project = ({
   updatePointSetting,
   projectSettings,
   updateProjectSettings,
-  data,
-  updateData,
   clearStorage,
 }) => {
+
+  const { data, updateData} = useContext(DataContext);
+
   // Function to export points into txt
   const exportPoints = async () => {
     const filePath = RNFS.ExternalDirectoryPath + '/example.txt';
@@ -71,16 +55,12 @@ const Project = ({
       </View>
       {projectSettings.showFlatList && ( // conditional rendering based on the new piece of state
         <FlatListProject
-          data={data}
-          updateData={updateData}
           projectSettings={projectSettings}
           updateProjectSettings={updateProjectSettings}
         />
       )}
       {projectSettings.showCreateProject && ( // conditional rendering based on the new piece of state
         <CreateProject
-          data={data}
-          updateData={data}
           projectSettings={projectSettings}
           updateProjectSettings={updatePointSetting}
         />
@@ -107,10 +87,8 @@ const Project = ({
           }}
         />
       </View>
-      {projectSettings.showPointFlatList && ( // conditional rendering based on the new piece of state
+      {projectSettings.showPointFlatList && data.projects != null &&( // conditional rendering based on the new piece of state
         <FlatListPoint
-          updateData={updateData}
-          data={data}
           projectSettings={projectSettings}
           updateProjectSettings={updateProjectSettings}
         />
@@ -120,8 +98,6 @@ const Project = ({
           updatePointSetting={updatePointSetting}
           pointSettings={pointSettings}
           projectSettings={projectSettings}
-          data={data}
-          updateData={updateData}
         />
       )}
       <View style={styles.buttonContainer}>
@@ -141,7 +117,7 @@ const Project = ({
         <Button
           title="Vše vymaž"
           onPress={() => {
-            clearStorage();
+            //clearStorage();
             updateData({projects: []});
           }}
         />

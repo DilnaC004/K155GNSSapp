@@ -1,15 +1,15 @@
-import React, {useState} from 'react';
+import React, {useState, useContext} from 'react';
 import {TextInput, View, Text, Switch, Button} from 'react-native';
-
+import { DataContext } from '../../Functions/DataContext';
 import {styles} from '../../Styles/styles';
+import { jtsk2etrs } from '../../Calculations/transformation';
 
 export default CreatePoint = ({
   pointSettings,
   updatePointSetting,
   projectSettings,
-  data,
-  updateData,
 }) => {
+  const { data, updateData} = useContext(DataContext);
   // state point inputs
   const [isEnabled, setIsEnabled] = useState(false);
   const toggleSwitch = () => setIsEnabled(previousState => !previousState);
@@ -31,7 +31,7 @@ export default CreatePoint = ({
         date: new Date().toLocaleString(),
       });
     } else {
-      const etrs = jtsk2etrs(y, x, z);
+      const etrs = jtsk2etrs(pointSettings.l, pointSettings.b, pointSettings.h);
       updatePointSetting({
         b: etrs.B,
         l: etrs.L,

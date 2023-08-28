@@ -13,6 +13,8 @@ import Point from './components/Header/Point';
 import Map from './components/Header/Map';
 import Placing from './components/Header/Placing';
 
+import { DataContext } from './components/Functions/DataContext';
+
 export default function App(): JSX.Element {
   const gps = new GPS();
   const [nmeaParsed, setNmeaParsed] = React.useState('');
@@ -25,7 +27,19 @@ export default function App(): JSX.Element {
         title: 'Test',
         date: '14.2.2014',
         description: 'Toto je pouze test, autodestrukce mobilu za 3, 2, 1 .',
-        points: [],
+        points: [{    title: 'Test',
+        b: 50,
+        l: 14,
+        h: 100,
+        accuB: 0,
+        accuL: 0,
+        accuH: 0,
+        pdop: 0,
+        time: 0,
+        date: 0,
+        height: 0,
+        offset: 0,
+        code: 'test',}],
       },
     ],
     codes: null,
@@ -35,14 +49,12 @@ export default function App(): JSX.Element {
     bluetoothSettings:null,
   });
   const updateData = (newSettings: any) => {
-    
     setData(prevSettings => ({
       ...prevSettings,
       ...newSettings,
     }));
-
-    setObjectValue(data);
   };
+  const valueContext = {data, updateData}; // Provide valueContext to all components in App
   const [ntripSettings, setNtripSettings] = useState({
     ntripIp: '195.245.209.181',
     ntripPort: '2101',
@@ -156,6 +168,7 @@ export default function App(): JSX.Element {
       Alert.alert('Failed to clear the async storage.');
     }
   };
+  
   const updateCoordinates = (
     nazevBodu: string,
     coordX: number,
@@ -167,6 +180,7 @@ export default function App(): JSX.Element {
     coordPDOP: number,
     coordMeasuredTime: number,
   ) => {
+      /*
     if (nazevBodu == '') {
       Alert.alert('Vlož název bodu');
     }
@@ -202,7 +216,7 @@ export default function App(): JSX.Element {
     // Log the received values
     if (projectSettings.projectId != null) {
       console.log('Point saved into project: ' + data[projectSettings.projectId].title);
-      const updatedData = data.map((project: any, index: number) => {
+      const updatedData = data.projects.map((project: any, index: number) => {
         if (index === projectSettings.projectId) {
           const updatedPoints = [...project.points, newPoint];
           return {...project, points: updatedPoints};
@@ -214,6 +228,7 @@ export default function App(): JSX.Element {
     } else {
       Alert.alert('Vyber zakázku');
     }
+    */
   };
  
   useEffect(() => {
@@ -239,6 +254,7 @@ export default function App(): JSX.Element {
 
   return (
     <SafeAreaView>
+      <DataContext.Provider value={valueContext}>
       <Header
         nmeaParsed={nmeaParsed}
         modalType={modalType}
@@ -265,8 +281,6 @@ export default function App(): JSX.Element {
             updatePointSetting={updatePointSettings}
             projectSettings={projectSettings}
             updateProjectSettings={updateProjectSettings}
-            data={data}
-            updateData={updateData}
             clearStorage={clearStorage}
           />
         )}
@@ -286,6 +300,7 @@ export default function App(): JSX.Element {
         {modalType.map && <Map />}
         {modalType.skyplot && <Skyplot />}
       </View>
+      </DataContext.Provider>
     </SafeAreaView>
   );
 }

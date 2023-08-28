@@ -1,5 +1,5 @@
 import React from 'react';
-import {View, Text, TextInput} from 'react-native';
+import {View} from 'react-native';
 import {styles} from '../../Styles/styles';
 import RowWithLabelAndValue from '../RowWithLabelAndValue';
 
