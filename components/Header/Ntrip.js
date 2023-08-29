@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect, useContext} from 'react';
 import {View, Text, TextInput, Button, ScrollView} from 'react-native';
 import Snackbar from 'react-native-snackbar';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
@@ -6,6 +6,8 @@ import SelectDropdown from 'react-native-select-dropdown';
 import RowWithLabelAndValue from './RowWithLabelAndValue';
 import {encode} from 'base-64';
 import TcpSocket from 'react-native-tcp-socket';
+import { DataContext } from '../Functions/DataContext';
+import { styles } from '../Styles/styles';
 
 class Mountpoint {
   constructor(sourceTableString) {
@@ -25,25 +27,19 @@ class Mountpoint {
   }
 }
 
-const Ntrip = () => {
-  const [ntripSettings, setNtripSettings] = useState({
-    ntripIp: '195.245.209.181',
-    ntripPort: '2101',
-    ntripUsername: 'cvutvyuka',
-    ntripPassword: 'k155dremejakokone',
-    selectedMntp: null,
-    mountpoints: [],
-  });
-
-  const mountpointSelectRef = useRef();
-
-  // Funkce pro aktualizaci nastavení
+const Ntrip = ({getRtcmNtrip}) => {
+  const { data, updateData} = useContext(DataContext);
+  const [ntripSettings, setNtripSettings] = useState(data.ntripSettings);
   const updateNtripSettings = newSettings => {
     setNtripSettings(prevSettings => ({
       ...prevSettings,
       ...newSettings,
     }));
   };
+
+  let client;
+  const switchConnect  = ntripSettings.ntripConnect ? 'Odpoj se' : 'Připoj se k Ntrip serveru';
+  const mountpointSelectRef = useRef();
 
   const handleMntpSelectChange = () => {
     // Perform logic based on MNTP selection change
@@ -55,7 +51,7 @@ const Ntrip = () => {
       port: ntripSettings.ntripPort,
     };
     // Create socket
-    const client = TcpSocket.createConnection(options, () => {
+    client = TcpSocket.createConnection(options, () => {
       let connectionString =
         'GET / HTTP/1.0\r\n' +
         'Host: ' +
@@ -90,7 +86,6 @@ const Ntrip = () => {
       });
 
       mountpointSelectRef.current.selectIndex(0);
-
     });
 
     client.on('error', function (error) {
@@ -120,7 +115,7 @@ const Ntrip = () => {
 
     console.log(options);
     // Create socket
-    const client = TcpSocket.createConnection(options, () => {
+    client = TcpSocket.createConnection(options, () => {
       let connectionString =
         'GET /' +
         ntripSettings.selectedMntp.id +
@@ -138,14 +133,17 @@ const Ntrip = () => {
       // Write on the socket
       client.write(connectionString);
 
+      updateNtripSettings({ntripConnect:true});
+
       setTimeout(() => {
         client.end();
         console.log('Client byl ukončen : DEBUG!!');
+        updateNtripSettings({ntripConnect:false});
       }, 10000);
     });
 
     client.on('data', function (data) {
-      console.log('message was received', data);
+      getRtcmNtrip(data);
     });
 
     client.on('error', function (error) {
@@ -156,6 +154,20 @@ const Ntrip = () => {
       console.log('Connection closed!');
     });
   };
+
+  const onNtripClose = () => {
+    //const client = TcpSocket.current;
+    //client.end();
+    updateNtripSettings({ntripConnect:false});
+  }
+
+  useEffect(() => {
+    return () => {
+      updateData({
+        ntripSettings:ntripSettings,
+      })
+    };
+  },[]);
 
   return (
     <ScrollView style={styles.nastContainer}>
@@ -222,10 +234,15 @@ const Ntrip = () => {
         secureTextEntry
       />
       <Button
-        title="Připoj se k NTRIP serveru"
-        id="NTRIPpripoj"
+        title={switchConnect}
         style={styles.button}
-        onPress={onNtripConnect}
+        onPress={() => {
+            if(!ntripSettings.ntripConnect){
+                onNtripConnect();
+            } else {
+                onNtripClose();
+            }
+          }}
       />
       <View style={styles.hrLine} />
       {ntripSettings.selectedMntp !== null && (
@@ -254,51 +271,6 @@ const Ntrip = () => {
 };
 
 export default Ntrip;
-
-const styles = {
-  nastContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  hrLine: {
-    borderBottomColor: '#ccc',
-    borderBottomWidth: 1,
-    marginBottom: 16,
-  },
-  title: {
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  nastCenter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 4,
-    marginBottom: 8,
-    padding: 8,
-  },
-  dropdownBtnStyle: {
-    width: '100%',
-    height: 35,
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 4,
-    marginTop: 8,
-    marginBottom: 8,
-  },
-  dropdownBtnTxtStyle: {color: '#444', textAlign: 'left'},
-  button: {
-    marginBottom: 8,
-  },
-  mountpointInfo: {
-    paddingBottom: 25,
-  },
-};
 
 // Helper functions
 function utf8_to_b64(str) {
