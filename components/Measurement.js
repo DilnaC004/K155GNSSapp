@@ -4,7 +4,7 @@ import {etrs2jtsk} from './Calculations/transformation';
 import { DataContext } from './Functions/DataContext';
 import {styles} from './Styles/styles';
 
-export default Measurement = ({nmeaParsed}) => {
+export default Measurement = ({nmeaParsed, exportRawData}) => {
   const { data, updateData} = useContext(DataContext);
   const [measurementSettings, setMeasurementSettings] = useState(data.measurementSettings);
   const updateMeasurementSettings = newSettings => {
@@ -92,10 +92,10 @@ export default Measurement = ({nmeaParsed}) => {
   const handleRawPress = () => {
     if (!measurementSettings.startTime) {
       updateMeasurementSettings({startTime: new Date(), boolRaw: !measurementSettings.boolRaw, endTime:null,});
+      exportRawData();
     } else {
       updateMeasurementSettings({startTime:null, boolRaw: !measurementSettings.boolRaw, endTime: new Date(), formattedTime:'00:00:00',});
     }
-    console.log(data);
   };
 
   // Use useEffect to start and stop the timer

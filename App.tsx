@@ -2,6 +2,7 @@ import React, {useState, useEffect} from 'react';
 import {SafeAreaView, View, Alert} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import GPS from 'gps';
+import RNFS, {DocumentDirectoryPath, writeFile} from 'react-native-fs';
 
 import Header from './components/Header';
 import Measurement from './components/Measurement';
@@ -22,7 +23,7 @@ export default function App(): JSX.Element {
   const [nmeaRead, setNmeaRead] = React.useState<any>(null);
 
   const [data, setData] = useState({
-    firstLoad:true,
+    firstLoad: true,
     projects: [
       {
         title: 'Test',
@@ -172,6 +173,17 @@ export default function App(): JSX.Element {
     }
   };
 
+  // Function to export points into txt
+  const exportRawData = async () => {
+    const filePath = RNFS.ExternalDirectoryPath + '/rawdata.txt';
+    try {
+      await RNFS.write(filePath,JSON.stringify(nmeaRead), 1,'utf8' ); //rewrite to streamdata
+      console.log('File saved successfully');
+    } catch (error) {
+      console.log('Error saving file: ', error);
+    }
+  };
+
   useEffect(() => {
     // Add an event listener on all protocols
     gps.on('data', parsed => {
@@ -182,16 +194,16 @@ export default function App(): JSX.Element {
     //console.log('rtcmNtrip ' + rtcmNtrip);
 
     gps.update(
-      '$GPGGA,224900.000,4832.3762,N,01403.5393,E,1,04,7.8,498.6,M,48.0,M,,0000*5E',
+      nmeaRead,
+      /*'$GPGGA,224900.000,4832.3762,N,01403.5393,E,1,04,7.8,498.6,M,48.0,M,,0000*5E',*/
     );
   }, [rtcmNtrip, nmeaRead]);
 
   useEffect(() => {
     if (!data) {
       getObjectValue();
-    }
-    else{
-      updateData({firstLoad:false});
+    } else {
+      updateData({firstLoad: false});
     }
     return () => {
       setObjectValue(data);
@@ -212,7 +224,7 @@ export default function App(): JSX.Element {
           {modalType.ntrip && <Ntrip getRtcmNtrip={getRtcmNtrip} />}
           {modalType.project && <Project clearStorage={clearStorage} />}
           {modalType.point && <Point />}
-          {modalType.measurement && <Measurement nmeaParsed={nmeaParsed} />}
+          {modalType.measurement && <Measurement nmeaParsed={nmeaParsed} exportRawData={exportRawData}/>}
           {modalType.placing && <Placing />}
           {modalType.map && <Map />}
           {modalType.skyplot && <Skyplot />}

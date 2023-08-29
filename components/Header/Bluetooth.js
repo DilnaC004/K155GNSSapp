@@ -1,14 +1,5 @@
 import React, {useState, useEffect, useContext, forwardRef} from 'react';
-import {
-  SafeAreaView,
-  View,
-  Text,
-  Button,
-  PermissionsAndroid,
-  Platform,
-  TouchableOpacity,
-} from 'react-native';
-//import { BleManager, Device } from 'react-native-ble-plx';
+import {View, Text, Button} from 'react-native';
 import {DataContext} from '../Functions/DataContext';
 import SelectDropdown from 'react-native-select-dropdown';
 import RNBluetoothClassic, {
@@ -20,7 +11,7 @@ import Snackbar from 'react-native-snackbar';
 import {styles} from '../Styles/styles';
 import NmeaViewer from './NmeaViewer';
 
-export const Bluetooth = ({rtcmNtrip, getNmeaRead}) => {
+export default Bluetooth = ({rtcmNtrip, getNmeaRead}) => {
   const {data, updateData} = useContext(DataContext);
 
   const [bluetoothSettings, setBluetoothSettings] = useState(
@@ -36,37 +27,19 @@ export const Bluetooth = ({rtcmNtrip, getNmeaRead}) => {
 
   const switchConnect = bluetoothSettings.isEnabled ? 'Připoj' : 'Odpoj';
   const [nmeaRead, setNmeaRead] = useState([]);
-
-  /*
-  const {
-    requestPermissions,
-    scanForPeripherals,
-    allDevices,
-    connectToDevice,
-    connectedDevice,
-    disconnectFromDevice,
-  } = useBLE();
-  */
+  const updateNmeaRead = newSettings => {
+    setNmeaRead(prevSettings => ({
+      ...prevSettings,
+      ...newSettings,
+    }));
+  };
 
   const scanForDevices = async () => {
-    /*
-    requestPermissions(isGranted => {
-      if (isGranted) {
-        //console.log('permission granted');
-        scanForPeripherals();
-        //console.log(allDevices);
-      }
-    });
-*/
     try {
       let paired = await RNBluetoothClassic.getBondedDevices();
-      const pairedDeviced = paired;
-      updateBluetoothSettings({devices: pairedDeviced});
       let unpaired = await RNBluetoothClassic.startDiscovery();
-      const unpairedDeviced = paired;
-      //setDevices([...devices, unpairedDeviced]);
-
-      //console.log(devices);
+      const pairedDeviced = [paired, unpaired];
+      updateBluetoothSettings({devices: pairedDeviced});
     } catch (err) {
       console.log('error:', err);
     }
@@ -124,7 +97,8 @@ export const Bluetooth = ({rtcmNtrip, getNmeaRead}) => {
           let readData = await RNBluetoothClassic.readFromDevice(
             bluetoothSettings.connectedDeviceClassic.address,
           );
-          //setNmeaRead(prevData => [...prevData, readData]);
+          setNmeaRead([...nmeaRead, readData]); // store data into variable
+          //console.log(nmeaRead);
           getNmeaRead(readData);
         }
       }
@@ -199,4 +173,3 @@ export const Bluetooth = ({rtcmNtrip, getNmeaRead}) => {
   );
 };
 
-export default Bluetooth;
