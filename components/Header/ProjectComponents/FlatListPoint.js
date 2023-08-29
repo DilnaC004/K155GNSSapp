@@ -24,13 +24,14 @@ export default FlatListPoint = ({
   updateProjectSettings,
 }) => {
   const { data, updateData} = useContext(DataContext);
+
   const renderItemPoint = ({item}) => {
     return (
       <View style={styles.buttonContainer}>
         <ItemPoint item={item} textColor={'gray'} textColor1={'white'} />
         <TouchableOpacity
           onPress={() => {
-            deletePoint();
+            deletePoint(item.title, data.projects[projectSettings.projectId].title);
           }}>
           <IconMaterialIcons name="delete" size={24} color="black" />
         </TouchableOpacity>
@@ -39,18 +40,22 @@ export default FlatListPoint = ({
   };
 
   // Function to delete a point from a project in the data array
-  const deletePoint = (projectTitleToDelete, pointTitleToDelete) => {
-    const updatedData = data.project[projectSettings.projectId].map(project => {
+  const deletePoint = (pointTitleToDelete, projectTitleToDelete) => {
+    console.log('delete point ' + pointTitleToDelete + 'in project ' + projectTitleToDelete);
+    
+    const updatedData = data.projects.map(project => {
       if (project.title === projectTitleToDelete) {
         const updatedPoints = project.points.filter(
           point => point.title !== pointTitleToDelete,
         );
+        console.log(updatedPoints);
         updateProjectSettings({projectPointCount: updatedPoints.length});
         return {...project, points: updatedPoints};
       }
       return project;
     });
-    updateData({projects: updateData});
+    updateData({projects: updatedData});
+    
   };
 
   return (

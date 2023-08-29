@@ -1,20 +1,17 @@
 import React, {useState, useEffect, useContext} from 'react';
 import {View, Button} from 'react-native';
 import RNFS, {DocumentDirectoryPath, writeFile} from 'react-native-fs';
-import { DataContext } from '../Functions/DataContext';
+import {DataContext} from '../Functions/DataContext';
 import {styles} from '../Styles/styles';
-
+import Snackbar from 'react-native-snackbar';
 import CreatePoint from './ProjectComponents/CreatePoint';
 import CreateProject from './ProjectComponents/CreateProject';
 import FlatListProject from './ProjectComponents/FlatListProject';
 import FlatListPoint from './ProjectComponents/FlatListPoint';
 import ProjectDescription from './ProjectComponents/ProjectDescription';
 
-export default Project = ({
-  clearStorage,
-}) => {
-
-  const { data, updateData} = useContext(DataContext);
+export default Project = ({clearStorage}) => {
+  const {data, updateData} = useContext(DataContext);
   const [pointSettings, setPointSettings] = useState(data.pointSettings);
   const updatePointSettings = newSettings => {
     setPointSettings(prevSettings => ({
@@ -32,10 +29,9 @@ export default Project = ({
 
   // Function to export points into txt
   const exportPoints = async () => {
-    const filePath = RNFS.ExternalDirectoryPath + '/example.txt';
-    const path = `${DocumentDirectoryPath}/${Date.now()}.txt`;
+    const filePath = RNFS.ExternalDirectoryPath + '/GNSSappDATA.txt';
     try {
-      await RNFS.writeFile(filePath, data, 'utf8');
+      await RNFS.writeFile(filePath, JSON.stringify(data), 'utf8');
       console.log('File saved successfully');
     } catch (error) {
       console.log('Error saving file: ', error);
@@ -43,19 +39,17 @@ export default Project = ({
   };
 
   useEffect(() => {
-
     return () => {
       updateData({
-        pointSettings:pointSettings,
-        projectSettings:projectSettings,
-      })
-
+        pointSettings: pointSettings,
+        projectSettings: projectSettings,
+      });
     };
   }, [pointSettings, projectSettings]);
 
   return (
     <View style={styles.nastContainer}>
-      <ProjectDescription projectSettings={projectSettings}/>
+      <ProjectDescription projectSettings={projectSettings} />
       <View style={styles.buttonContainer}>
         <Button
           title="Vyber Zakázku"
@@ -81,10 +75,7 @@ export default Project = ({
         />
       )}
       {projectSettings.showCreateProject && ( // conditional rendering based on the new piece of state
-        <CreateProject
-          projectSettings={projectSettings}
-          updateProjectSettings={updatePointSetting}
-        />
+        <CreateProject />
       )}
       <View style={styles.buttonContainer}>
         <Button
@@ -108,12 +99,13 @@ export default Project = ({
           }}
         />
       </View>
-      {projectSettings.showPointFlatList && data.projects != null &&( // conditional rendering based on the new piece of state
-        <FlatListPoint
-          projectSettings={projectSettings}
-          updateProjectSettings={updateProjectSettings}
-        />
-      )}
+      {projectSettings.showPointFlatList &&
+        data.projects != null && ( // conditional rendering based on the new piece of state
+          <FlatListPoint
+            projectSettings={projectSettings}
+            updateProjectSettings={updateProjectSettings}
+          />
+        )}
       {projectSettings.showCreatePoint && ( // conditional rendering based on the new piece of state
         <CreatePoint
           updatePointSetting={updatePointSettings}
@@ -131,19 +123,17 @@ export default Project = ({
         <Button
           title="Importuj body"
           onPress={() => {
+            Snackbar.show({
+              text: 'Tato funkce není dostupná',
+              duration: Snackbar.LENGTH_SHORT,
+              textColor: 'red',
+              marginBottom: 5,
+            });
             if (projectSettings.projectId != 'null') {
             }
-          }}
-        />
-        <Button
-          title="Vše vymaž"
-          onPress={() => {
-            //clearStorage();
-            updateData({projects: []});
           }}
         />
       </View>
     </View>
   );
 };
-

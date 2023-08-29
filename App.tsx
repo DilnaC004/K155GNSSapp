@@ -85,7 +85,7 @@ export default function App(): JSX.Element {
       showCreatePoint: false,
     },
     bluetoothSettings: {
-      isEnabled: false,
+      isEnabled: true,
       devices: [],
       connectedDeviceClassic: null,
     },
@@ -178,8 +178,8 @@ export default function App(): JSX.Element {
       setNmeaParsed(parsed);
     });
 
-    console.log('nmeaRead ' + nmeaRead);
-    console.log('rtcmNtrip ' + rtcmNtrip);
+    //console.log('nmeaRead ' + nmeaRead);
+    //console.log('rtcmNtrip ' + rtcmNtrip);
 
     gps.update(
       '$GPGGA,224900.000,4832.3762,N,01403.5393,E,1,04,7.8,498.6,M,48.0,M,,0000*5E',

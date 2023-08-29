@@ -7,14 +7,15 @@ import DocumentPicker, {
   isInProgress,
   types,
 } from 'react-native-document-picker';
+import Snackbar from 'react-native-snackbar';
 import { DataContext } from '../../Functions/DataContext';
 import {styles} from '../../Styles/styles';
 
 export default CreateProject = ({
-  projectSettings,
-  updateProjectSettings,
 }) => {
   const { data, updateData} = useContext(DataContext);
+
+
   const [newProject, setProject] = useState({
     title: '',
     date: '',
@@ -32,11 +33,20 @@ export default CreateProject = ({
 
   // function to add the new project to the array
   const addProject = () => {
-    updateProject({date: new Date().toLocaleString()});
-    const updatedData = [...data.projects, newProject];
-    updateData({projects: updatedData});
-    updateProject({title: '', date: '', description: ''});
-    console.log('Save new project' + newProject);
+    if(newProject.title == ''){
+      Snackbar.show({
+        text: 'Vlož název zakázky',
+        duration: Snackbar.LENGTH_SHORT,
+        textColor: 'red',
+        marginBottom: 5,
+      });
+    } else {
+      updateProject({date: new Date().toLocaleString()});
+      const updatedData = [...data.projects, newProject];
+      updateData({projects: updatedData});
+      updateProject({title: '', date: '', description: ''});
+      console.log('Save new project' + newProject);
+    }
   };
 
   return (

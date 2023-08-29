@@ -50,7 +50,7 @@ export default FlatListProject = ({
         />
         <TouchableOpacity
           onPress={() => {
-            deleteProject();
+            deleteProject(item.title);
           }}>
           <IconMaterialIcons name="delete" size={24} color="black" />
         </TouchableOpacity>
@@ -64,10 +64,10 @@ export default FlatListProject = ({
 
   // Function to delete a project from the data array
   const deleteProject = projectTitleToDelete => {
-    const updatedData = data.filter(
+    const updatedData = data.projects.filter(
       project => project.title !== projectTitleToDelete,
     );
-    updateData({projects: updateData});
+    updateData({projects: updatedData});
   };
 
   return (

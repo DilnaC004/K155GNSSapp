@@ -5,7 +5,6 @@ import { DataContext } from './Functions/DataContext';
 import {styles} from './Styles/styles';
 
 export default Measurement = ({nmeaParsed}) => {
-
   const { data, updateData} = useContext(DataContext);
   const [measurementSettings, setMeasurementSettings] = useState(data.measurementSettings);
   const updateMeasurementSettings = newSettings => {
@@ -14,6 +13,15 @@ export default Measurement = ({nmeaParsed}) => {
       ...newSettings,
     }));
   };
+  const [pointSettings, setPointSettings] = useState(data.pointSettings);
+  const updatePointSettings = newSettings => {
+    setPointSettings(prevSettings => ({
+      ...prevSettings,
+      ...newSettings,
+    }));
+  };
+  const [projectSettings, setProjectSettings] = useState(data.projectSettings);
+
 
   const [isEnabled, setIsEnabled] = useState(true);
   const toggleSwitch = () => setIsEnabled(previousState => !previousState);
@@ -33,61 +41,31 @@ export default Measurement = ({nmeaParsed}) => {
     ? measurementSettings.etrs.h
     : measurementSettings.jtsk.Hbpv;
 
-    const updateCoordinates = (
-      nazevBodu,
-      coordX,
-      coordY,
-      coordZ,
-      coordAccuX,
-      coordAccuY,
-      coordAccuZ,
-      coordPDOP,
-      coordMeasuredTime,
-    ) => {
-        
-      if (nazevBodu == '') {
-        Alert.alert('Vlož název bodu');
-      }
-  
-      const newPoint = {
-        title: nazevBodu,
-        b: coordX,
-        l: coordY,
-        h: coordZ - pointSettings.height - pointSettings.offset,
-        accuB: coordAccuX,
-        accuL: coordAccuY,
-        accuH: coordAccuZ,
-        pdop: coordPDOP,
-        time: coordMeasuredTime,
-        ofset: pointSettings.offset,
-        antena: pointSettings.height,
-        code: pointSettings.code,
-        date: new Date().toLocaleString(),
-      };
-  
+    const updateCoordinates = () => {
       updatePointSettings({
-        b: coordX,
-        l: coordY,
-        h: coordZ - pointSettings.height - pointSettings.offset,
-        accuB: coordAccuX,
-        accuL: coordAccuY,
-        accuH: coordAccuZ,
-        pdop: coordPDOP,
-        time: coordMeasuredTime,
+        title: measurementSettings.nazev,
+        b: measurementSettings.sumCoordX / measurementSettings.coordMeasuredTime,
+        l: measurementSettings.sumCoordY / measurementSettings.coordMeasuredTime,
+        h: measurementSettings.sumCoordZ / measurementSettings.coordMeasuredTime,
+        accuB: measurementSettings.coordAccuX,
+        accuL: measurementSettings.coordAccuY,
+        accuH: measurementSettings.coordAccuZ,
+        pdop: measurementSettings.coordPDOP,
+        time: measurementSettings.coordMeasuredTime,
         date: new Date().toLocaleString(),
       });
   
       // Log the received values
       if (projectSettings.projectId != null) {
-        console.log('Point saved into project: ' + data[projectSettings.projectId].title);
+        console.log('Point saved into project: ' + data.projects[projectSettings.projectId].title);
         const updatedData = data.projects.map((project, index) => {
           if (index === projectSettings.projectId) {
-            const updatedPoints = [...project.points, newPoint];
+            const updatedPoints = [...project.points, pointSettings];
             return {...project, points: updatedPoints};
           }
           return project;
         });
-        setData(updatedData);
+        updateData({projects: updatedData});
       } else {
         Alert.alert('Vyber zakázku');
       }
@@ -107,17 +85,7 @@ export default Measurement = ({nmeaParsed}) => {
         coordPDOP: nmeaParsed.hdop,
       });
 
-      updateCoordinates(
-        measurementSettings.nazev,
-        measurementSettings.sumCoordX / measurementSettings.coordMeasuredTime,
-        measurementSettings.sumCoordY / measurementSettings.coordMeasuredTime,
-        measurementSettings.sumCoordZ / measurementSettings.coordMeasuredTime,
-        measurementSettings.coordAccuX,
-        measurementSettings.coordAccuY,
-        measurementSettings.coordAccuZ,
-        measurementSettings.coordPDOP,
-        measurementSettings.coordMeasuredTime,
-      );
+      updateCoordinates();
     }
   };
 
@@ -178,7 +146,10 @@ export default Measurement = ({nmeaParsed}) => {
       });
     }
     // Clean up the interval when the component unmounts
-    return () => clearInterval(intervalId);
+    return () => {
+      clearInterval(intervalId)
+      updateData({measurementSettings:measurementSettings})
+    };
   }, [measurementSettings.startTime, measurementSettings.endTime, nmeaParsed]);
 
   return (

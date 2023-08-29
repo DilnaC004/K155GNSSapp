@@ -1,5 +1,6 @@
 import React, {useState, useContext} from 'react';
 import {TextInput, View, Text, Switch, Button} from 'react-native';
+import Snackbar from 'react-native-snackbar';
 import { DataContext } from '../../Functions/DataContext';
 import {styles} from '../../Styles/styles';
 import { jtsk2etrs } from '../../Calculations/transformation';
@@ -20,6 +21,26 @@ export default CreatePoint = ({
 
   // add point into list of points and async storage
   const addPoint = () => {
+    if(pointSettings.title == ''){
+      Snackbar.show({
+        text: 'Vlož název bodu',
+        duration: Snackbar.LENGTH_SHORT,
+        textColor: 'red',
+        marginBottom: 5,
+      });
+    } else if (pointSettings.b == '' || pointSettings.l == ''  || pointSettings.h == '') {
+      Snackbar.show({
+        text: 'Vlož souřadnice bodu',
+        duration: Snackbar.LENGTH_SHORT,
+        textColor: 'red',
+        marginBottom: 5,
+      });
+    } else {
+      savePoint();
+  }
+}
+
+  const savePoint = () => {
     if (isEnabled) {
       updatePointSetting({
         accuB: 0,
@@ -31,7 +52,7 @@ export default CreatePoint = ({
         date: new Date().toLocaleString(),
       });
     } else {
-      const etrs = jtsk2etrs(pointSettings.l, pointSettings.b, pointSettings.h);
+      const etrs = jtsk2etrs(pointSettings.b, pointSettings.l, pointSettings.h);
       updatePointSetting({
         b: etrs.B,
         l: etrs.L,
@@ -87,9 +108,9 @@ export default CreatePoint = ({
       <TextInput
         style={styles.textInput}
         placeholder={switchY}
-        value={pointSettings.l.toString()}
+        value={pointSettings.b.toString()}
         onChangeText={value => {
-          updatePointSetting({l: value});
+          updatePointSetting({b: value});
         }}
         maxLength={11} // Set the maximum number of characters allowed
         keyboardType="numeric" // Set the keyboard to numeric mode
@@ -97,9 +118,9 @@ export default CreatePoint = ({
       <TextInput
         style={styles.textInput}
         placeholder={switchX}
-        value={pointSettings.b.toString()}
+        value={pointSettings.l.toString()}
         onChangeText={value => {
-          updatePointSetting({b: value});
+          updatePointSetting({l: value});
         }}
         maxLength={11} // Set the maximum number of characters allowed
         keyboardType="numeric" // Set the keyboard to numeric mode
