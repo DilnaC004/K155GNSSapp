@@ -20,7 +20,7 @@ export default function App(): JSX.Element {
   const gps = new GPS();
   const [nmeaParsed, setNmeaParsed] = React.useState('');
   const [rtcmNtrip, setRtcmNtrip] = React.useState<any>(null);
-  const [nmeaRead, setNmeaRead] = React.useState<any>(null);
+  const [nmeaRead, setNmeaRead] = React.useState<any>([]);
 
   const [data, setData] = useState({
     firstLoad: true,
@@ -190,7 +190,7 @@ export default function App(): JSX.Element {
       setNmeaParsed(parsed);
     });
 
-    //console.log('nmeaRead ' + nmeaRead);
+    console.log(nmeaRead);
     //console.log('rtcmNtrip ' + rtcmNtrip);
 
     gps.update(

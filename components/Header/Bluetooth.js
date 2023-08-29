@@ -37,8 +37,7 @@ export default Bluetooth = ({rtcmNtrip, getNmeaRead}) => {
   const scanForDevices = async () => {
     try {
       let paired = await RNBluetoothClassic.getBondedDevices();
-      let unpaired = await RNBluetoothClassic.startDiscovery();
-      const pairedDeviced = [paired, unpaired];
+      const pairedDeviced = paired;
       updateBluetoothSettings({devices: pairedDeviced});
     } catch (err) {
       console.log('error:', err);
@@ -93,14 +92,15 @@ export default Bluetooth = ({rtcmNtrip, getNmeaRead}) => {
         bluetoothSettings.connectedDeviceClassic.address,
       );
       if (readDataAvailable > 0) {
+        let storeData = [];
         for (let i = 0; i < readDataAvailable; i++) {
           let readData = await RNBluetoothClassic.readFromDevice(
             bluetoothSettings.connectedDeviceClassic.address,
           );
-          setNmeaRead([...nmeaRead, readData]); // store data into variable
-          //console.log(nmeaRead);
-          getNmeaRead(readData);
+          storeData.push(readData);
         }
+        setNmeaRead(storeData);
+        getNmeaRead(storeData);
       }
     } catch (err) {
       console.log(err);
@@ -172,4 +172,3 @@ export default Bluetooth = ({rtcmNtrip, getNmeaRead}) => {
     </View>
   );
 };
-

@@ -14,9 +14,15 @@ packages:
 - npm i react-native-bluetooth-classic - https://github.com/kenjdavidson/react-native-bluetooth-classic
 
 # TODO
+- separate ubx and nmea from bluetooth datastream
+- connect rtcm data from ntrip to bluetooth
+- connect bluetooth datastream to GPS.js object
+
 - map
 - skyplot
+- continuous measurement on satellite
 - placing
 - import points
 - write raw data
 - firebase upload
+- add unpaired bluetooth devices
