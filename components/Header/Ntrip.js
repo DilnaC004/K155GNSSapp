@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect, useContext} from 'react';
 import {View, Text, TextInput, Button, ScrollView} from 'react-native';
 import Snackbar from 'react-native-snackbar';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
@@ -6,7 +6,7 @@ import SelectDropdown from 'react-native-select-dropdown';
 import RowWithLabelAndValue from './RowWithLabelAndValue';
 import {encode} from 'base-64';
 import TcpSocket from 'react-native-tcp-socket';
-
+import { DataContext } from '../Functions/DataContext';
 import { styles } from '../Styles/styles';
 
 class Mountpoint {
@@ -27,11 +27,19 @@ class Mountpoint {
   }
 }
 
-const Ntrip = ({ntripSettings, updateNtripSettings, getRtcmNtrip}) => {
+const Ntrip = ({getRtcmNtrip}) => {
+  const { data, updateData} = useContext(DataContext);
+  const [ntripSettings, setNtripSettings] = useState(data.ntripSettings);
+  const updateNtripSettings = newSettings => {
+    setNtripSettings(prevSettings => ({
+      ...prevSettings,
+      ...newSettings,
+    }));
+  };
+
   let client;
   const switchConnect  = ntripSettings.ntripConnect ? 'Odpoj se' : 'Připoj se k Ntrip serveru';
   const mountpointSelectRef = useRef();
-
 
   const handleMntpSelectChange = () => {
     // Perform logic based on MNTP selection change
@@ -152,6 +160,14 @@ const Ntrip = ({ntripSettings, updateNtripSettings, getRtcmNtrip}) => {
     //client.end();
     updateNtripSettings({ntripConnect:false});
   }
+
+  useEffect(() => {
+    return () => {
+      updateData({
+        ntripSettings:ntripSettings,
+      })
+    };
+  },[]);
 
   return (
     <ScrollView style={styles.nastContainer}>

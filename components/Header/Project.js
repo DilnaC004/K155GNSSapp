@@ -10,15 +10,25 @@ import FlatListProject from './ProjectComponents/FlatListProject';
 import FlatListPoint from './ProjectComponents/FlatListPoint';
 import ProjectDescription from './ProjectComponents/ProjectDescription';
 
-const Project = ({
-  pointSettings,
-  updatePointSetting,
-  projectSettings,
-  updateProjectSettings,
+export default Project = ({
   clearStorage,
 }) => {
 
   const { data, updateData} = useContext(DataContext);
+  const [pointSettings, setPointSettings] = useState(data.pointSettings);
+  const updatePointSettings = newSettings => {
+    setPointSettings(prevSettings => ({
+      ...prevSettings,
+      ...newSettings,
+    }));
+  };
+  const [projectSettings, setProjectSettings] = useState(data.projectSettings);
+  const updateProjectSettings = newSettings => {
+    setProjectSettings(prevSettings => ({
+      ...prevSettings,
+      ...newSettings,
+    }));
+  };
 
   // Function to export points into txt
   const exportPoints = async () => {
@@ -31,6 +41,17 @@ const Project = ({
       console.log('Error saving file: ', error);
     }
   };
+
+  useEffect(() => {
+
+    return () => {
+      updateData({
+        pointSettings:pointSettings,
+        projectSettings:projectSettings,
+      })
+
+    };
+  }, [pointSettings, projectSettings]);
 
   return (
     <View style={styles.nastContainer}>
@@ -95,7 +116,7 @@ const Project = ({
       )}
       {projectSettings.showCreatePoint && ( // conditional rendering based on the new piece of state
         <CreatePoint
-          updatePointSetting={updatePointSetting}
+          updatePointSetting={updatePointSettings}
           pointSettings={pointSettings}
           projectSettings={projectSettings}
         />
@@ -126,4 +147,3 @@ const Project = ({
   );
 };
 
-export default Project;

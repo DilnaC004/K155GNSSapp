@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef, forwardRef } from 'react';
+import React, { useState, useEffect, useContext, forwardRef } from 'react';
 import { SafeAreaView, View, Text, Button, PermissionsAndroid, Platform, TouchableOpacity} from 'react-native';
 //import { BleManager, Device } from 'react-native-ble-plx';
+import { DataContext } from '../Functions/DataContext';
 import SelectDropdown from 'react-native-select-dropdown';
 import RNBluetoothClassic, { BluetoothEventType } from 'react-native-bluetooth-classic';
 
@@ -9,7 +10,18 @@ import RNBluetoothClassic, { BluetoothEventType } from 'react-native-bluetooth-c
 import { styles } from '../Styles/styles';
 import NmeaViewer from './NmeaViewer';
 
-export const Bluetooth = ({bluetoothSettings, updateBluetoothSettings, rtcmNtrip, getNmeaRead}) => {
+export const Bluetooth = ({rtcmNtrip, getNmeaRead}) => {
+
+  const { data, updateData} = useContext(DataContext);
+
+  const [bluetoothSettings, setBluetoothSettings] = useState(data.bluetoothSettings);
+
+  const updateBluetoothSettings = newSettings => {
+    setBluetoothSettings(prevSettings => ({
+      ...prevSettings,
+      ...newSettings,
+    }));
+  };
 
   const switchConnect = bluetoothSettings.isEnabled ? 'Připoj' : 'Odpoj';
   const [nmeaRead, setNmeaRead] = useState([]);
@@ -101,7 +113,11 @@ export const Bluetooth = ({bluetoothSettings, updateBluetoothSettings, rtcmNtrip
   useEffect(() => {
     setReadBluetoothConnection();
 
-    return () => {};
+    return () => {
+      updateData({
+        bluetoothSettings:bluetoothSettings,
+      })
+    };
   }, [bluetoothSettings.isEnabled]);
 
   return (

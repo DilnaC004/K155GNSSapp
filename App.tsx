@@ -13,7 +13,7 @@ import Point from './components/Header/Point';
 import Map from './components/Header/Map';
 import Placing from './components/Header/Placing';
 
-import { DataContext } from './components/Functions/DataContext';
+import {DataContext} from './components/Functions/DataContext';
 
 export default function App(): JSX.Element {
   const gps = new GPS();
@@ -22,31 +22,99 @@ export default function App(): JSX.Element {
   const [nmeaRead, setNmeaRead] = React.useState<any>(null);
 
   const [data, setData] = useState({
+    firstLoad:true,
     projects: [
       {
         title: 'Test',
         date: '14.2.2014',
         description: 'Toto je pouze test, autodestrukce mobilu za 3, 2, 1 .',
-        points: [{    title: 'Test',
-        b: 50,
-        l: 14,
-        h: 100,
-        accuB: 0,
-        accuL: 0,
-        accuH: 0,
-        pdop: 0,
-        time: 0,
-        date: 0,
-        height: 0,
-        offset: 0,
-        code: 'test',}],
+        points: [
+          {
+            title: 'Test',
+            b: 50,
+            l: 14,
+            h: 100,
+            accuB: 0,
+            accuL: 0,
+            accuH: 0,
+            pdop: 0,
+            time: 0,
+            date: 0,
+            height: 0,
+            offset: 0,
+            code: 'test',
+          },
+        ],
       },
     ],
     codes: null,
-    ntripSettings: null,
-    pointSettings: null,
-    projectSettings: null,
-    bluetoothSettings:null,
+    ntripSettings: {
+      ntripIp: '195.245.209.181',
+      ntripPort: '2101',
+      ntripUsername: 'cvutvyuka',
+      ntripPassword: 'k155dremejakokone',
+      selectedMntp: null,
+      mountpoints: [],
+      ntripConnect: false,
+    },
+    pointSettings: {
+      title: '',
+      b: 0,
+      l: 0,
+      h: 0,
+      accuB: 0,
+      accuL: 0,
+      accuH: 0,
+      pdop: 0,
+      time: 0,
+      date: 0,
+      height: 0,
+      offset: 0,
+      code: '',
+    },
+    projectSettings: {
+      title: '',
+      projectId: 0,
+      date: '',
+      description: '',
+      projectPointCount: '',
+      points: [],
+      showFlatList: false,
+      showPointFlatList: false,
+      showCreateProject: false,
+      showCreatePoint: false,
+    },
+    bluetoothSettings: {
+      isEnabled: false,
+      devices: [],
+      connectedDeviceClassic: null,
+    },
+    measurementSettings: {
+      nazev: 'Bod1',
+      etrs: {
+        b: 0,
+        l: 0,
+        h: 0,
+      },
+      jtsk: {
+        X: 0,
+        Y: 0,
+        Hbpv: 0,
+      },
+      coordPDOP: 0,
+      coordAccuX: 0,
+      coordAccuY: 0,
+      coordAccuZ: 0,
+      coordMeasuredTime: 0,
+      sumCoordX: 0,
+      sumCoordY: 0,
+      sumCoordZ: 0,
+      boolRtk: false,
+      boolRaw: false,
+      formattedTime: '00:00:00',
+      startTime: null,
+      endTime: null,
+    },
   });
   const updateData = (newSettings: any) => {
     setData(prevSettings => ({
@@ -55,71 +123,6 @@ export default function App(): JSX.Element {
     }));
   };
   const valueContext = {data, updateData}; // Provide valueContext to all components in App
-  const [ntripSettings, setNtripSettings] = useState({
-    ntripIp: '195.245.209.181',
-    ntripPort: '2101',
-    ntripUsername: 'cvutvyuka',
-    ntripPassword: 'k155dremejakokone',
-    selectedMntp: null,
-    mountpoints: [],
-    ntripConnect: false,
-  });
-  const updateNtripSettings = (newSettings: any) => {
-    setNtripSettings(prevSettings => ({
-      ...prevSettings,
-      ...newSettings,
-    }));
-  };
-  const [pointSettings, setPointSettings] = useState({
-    title: '',
-    b: 0,
-    l: 0,
-    h: 0,
-    accuB: 0,
-    accuL: 0,
-    accuH: 0,
-    pdop: 0,
-    time: 0,
-    date: 0,
-    height: 0,
-    offset: 0,
-    code: '',
-  });
-  const updatePointSettings = (newSettings: any) => {
-    setPointSettings(prevSettings => ({
-      ...prevSettings,
-      ...newSettings,
-    }));
-  };
-  const [projectSettings, setProjectSettings] = useState({
-    title: '',
-    projectId: 0,
-    date: '',
-    description: '',
-    projectPointCount: '',
-    points: [],
-    showFlatList: false,
-    showPointFlatList: false,
-    showCreateProject: false,
-    showCreatePoint: false,
-  });
-  const updateProjectSettings = (newSettings: any) => {
-    setProjectSettings(prevSettings => ({
-      ...prevSettings,
-      ...newSettings,
-    }));
-  };
-  const [bluetoothSettings, setBluetoothSettings] = useState({
-    isEnabled: false,
-    devices: [],
-    connectedDeviceClassic: null,
-  });
-  const updateBluetoothSettings = (newSettings: any) => {
-    setBluetoothSettings(prevSettings => ({
-      ...prevSettings,
-      ...newSettings,
-    }));
-  };
   const getRtcmNtrip = (rtcmNtrip: any) => {
     setRtcmNtrip(rtcmNtrip);
   };
@@ -168,138 +171,52 @@ export default function App(): JSX.Element {
       Alert.alert('Failed to clear the async storage.');
     }
   };
-  
-  const updateCoordinates = (
-    nazevBodu: string,
-    coordX: number,
-    coordY: number,
-    coordZ: number,
-    coordAccuX: number,
-    coordAccuY: number,
-    coordAccuZ: number,
-    coordPDOP: number,
-    coordMeasuredTime: number,
-  ) => {
-      /*
-    if (nazevBodu == '') {
-      Alert.alert('Vlož název bodu');
-    }
 
-    const newPoint = {
-      title: nazevBodu,
-      b: coordX,
-      l: coordY,
-      h: coordZ - pointSettings.height - pointSettings.offset,
-      accuB: coordAccuX,
-      accuL: coordAccuY,
-      accuH: coordAccuZ,
-      pdop: coordPDOP,
-      time: coordMeasuredTime,
-      ofset: pointSettings.offset,
-      antena: pointSettings.height,
-      code: pointSettings.code,
-      date: new Date().toLocaleString(),
-    };
-
-    updatePointSettings({
-      b: coordX,
-      l: coordY,
-      h: coordZ - pointSettings.height - pointSettings.offset,
-      accuB: coordAccuX,
-      accuL: coordAccuY,
-      accuH: coordAccuZ,
-      pdop: coordPDOP,
-      time: coordMeasuredTime,
-      date: new Date().toLocaleString(),
-    });
-
-    // Log the received values
-    if (projectSettings.projectId != null) {
-      console.log('Point saved into project: ' + data[projectSettings.projectId].title);
-      const updatedData = data.projects.map((project: any, index: number) => {
-        if (index === projectSettings.projectId) {
-          const updatedPoints = [...project.points, newPoint];
-          return {...project, points: updatedPoints};
-        }
-        return project;
-      });
-      setData(updatedData);
-      setObjectValue(updatedData); // save all data do asyncStorage
-    } else {
-      Alert.alert('Vyber zakázku');
-    }
-    */
-  };
- 
   useEffect(() => {
     // Add an event listener on all protocols
     gps.on('data', parsed => {
       setNmeaParsed(parsed);
     });
 
-    console.log(nmeaRead);
-    console.log(rtcmNtrip);
+    console.log('nmeaRead ' + nmeaRead);
+    console.log('rtcmNtrip ' + rtcmNtrip);
 
     gps.update(
       '$GPGGA,224900.000,4832.3762,N,01403.5393,E,1,04,7.8,498.6,M,48.0,M,,0000*5E',
     );
   }, [rtcmNtrip, nmeaRead]);
- 
+
   useEffect(() => {
-    if (!data.projects) {
+    if (!data) {
       getObjectValue();
     }
-    console.log(rtcmNtrip);
+    else{
+      updateData({firstLoad:false});
+    }
+    return () => {
+      setObjectValue(data);
+    };
   }, []);
 
   return (
     <SafeAreaView>
       <DataContext.Provider value={valueContext}>
-      <Header
-        nmeaParsed={nmeaParsed}
-        modalType={modalType}
-        updateModalType={updateModalType}></Header>
-      <View>
-        {modalType.bluetooth && (
-          <Bluetooth
-            bluetoothSettings={bluetoothSettings}
-            updateBluetoothSettings={updateBluetoothSettings}
-            rtcmNtrip={rtcmNtrip}
-            getNmeaRead={getNmeaRead}
-          />
-        )}
-        {modalType.ntrip && (
-          <Ntrip
-            ntripSettings={ntripSettings}
-            updateNtripSettings={updateNtripSettings}
-            getRtcmNtrip={getRtcmNtrip}
-          />
-        )}
-        {modalType.project && (
-          <Project
-            pointSettings={pointSettings}
-            updatePointSetting={updatePointSettings}
-            projectSettings={projectSettings}
-            updateProjectSettings={updateProjectSettings}
-            clearStorage={clearStorage}
-          />
-        )}
-        {modalType.point && (
-          <Point
-            pointSettings={pointSettings}
-            updatePointSettings={updatePointSettings}
-          />
-        )}
-        {modalType.measurement && (
-          <Measurement
-            nmeaParsed={nmeaParsed}
-            updateCoordinates={updateCoordinates}
-          />
-        )}
-        {modalType.placing && <Placing />}
-        {modalType.map && <Map />}
-        {modalType.skyplot && <Skyplot />}
-      </View>
+        <Header
+          nmeaParsed={nmeaParsed}
+          modalType={modalType}
+          updateModalType={updateModalType}></Header>
+        <View>
+          {modalType.bluetooth && (
+            <Bluetooth rtcmNtrip={rtcmNtrip} getNmeaRead={getNmeaRead} />
+          )}
+          {modalType.ntrip && <Ntrip getRtcmNtrip={getRtcmNtrip} />}
+          {modalType.project && <Project clearStorage={clearStorage} />}
+          {modalType.point && <Point />}
+          {modalType.measurement && <Measurement nmeaParsed={nmeaParsed} />}
+          {modalType.placing && <Placing />}
+          {modalType.map && <Map />}
+          {modalType.skyplot && <Skyplot />}
+        </View>
       </DataContext.Provider>
     </SafeAreaView>
   );

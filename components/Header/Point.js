@@ -1,9 +1,30 @@
-import React from 'react';
+import React, {useState, useEffect ,useContext} from 'react';
 import {View, Text, TextInput} from 'react-native';
 import RowWithLabelAndValue from './RowWithLabelAndValue';
+import { DataContext } from '../Functions/DataContext';
 import {styles} from '../Styles/styles';
 
-export default Point = ({pointSettings, updatePointSettings}) => {
+export default Point = () => {
+
+  const { data, updateData} = useContext(DataContext);
+
+  const [pointSettings, setPointSettings] = useState(data.pointSettings);
+
+  const updatePointSettings = newSettings => {
+    setPointSettings(prevSettings => ({
+      ...prevSettings,
+      ...newSettings,
+    }));
+  };
+
+  useEffect(() => {
+    return () => {
+      updateData({
+        pointSettings:pointSettings,
+      })
+    };
+  }, [pointSettings]);
+
   return (
     <View>
       <Text style={styles.title}>Fázové centrum [m]</Text>
