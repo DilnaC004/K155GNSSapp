@@ -1,5 +1,6 @@
 import React, {useState, useEffect, useContext} from 'react';
 import {View, Text, TextInput, Button, Switch} from 'react-native';
+import Snackbar from 'react-native-snackbar';
 import {etrs2jtsk} from './Calculations/transformation';
 import { DataContext } from './Functions/DataContext';
 import {styles} from './Styles/styles';
@@ -54,13 +55,36 @@ export default Measurement = ({nmeaParsed, exportRawData}) => {
         time: measurementSettings.coordMeasuredTime,
         date: new Date().toLocaleString(),
       });
-  
+
+      const newPoint = {
+        title: measurementSettings.nazev,
+        b: measurementSettings.sumCoordX / measurementSettings.coordMeasuredTime,
+        l: measurementSettings.sumCoordY / measurementSettings.coordMeasuredTime,
+        h: measurementSettings.sumCoordZ / measurementSettings.coordMeasuredTime,
+        accuB: measurementSettings.coordAccuX,
+        accuL: measurementSettings.coordAccuY,
+        accuH: measurementSettings.coordAccuZ,
+        pdop: measurementSettings.coordPDOP,
+        time: measurementSettings.coordMeasuredTime,
+        date: new Date().toLocaleString(),
+        height: pointSettings.height,
+        offset: pointSettings.offset,
+        code: pointSettings.code,
+      };
+
+      console.log( newPoint);
+      Snackbar.show({
+        text: `Uložen bod ${newPoint.title}`,
+        duration: Snackbar.LENGTH_SHORT,
+        textColor: 'green',
+        marginBottom: 5,
+      });
       // Log the received values
       if (projectSettings.projectId != null) {
         console.log('Point saved into project: ' + data.projects[projectSettings.projectId].title);
         const updatedData = data.projects.map((project, index) => {
           if (index === projectSettings.projectId) {
-            const updatedPoints = [...project.points, pointSettings];
+            const updatedPoints = [...project.points, newPoint];
             return {...project, points: updatedPoints};
           }
           return project;
@@ -82,7 +106,10 @@ export default Measurement = ({nmeaParsed, exportRawData}) => {
         coordAccuX: 0,
         coordAccuY: 0,
         coordAccuZ: 0,
-        coordPDOP: nmeaParsed.hdop,
+        sumCoordX: 0,
+        sumCoordY: 0,
+        sumCoordZ: 0,
+        nazev: measurementSettings.nazev+1,
       });
 
       updateCoordinates();
@@ -139,11 +166,6 @@ export default Measurement = ({nmeaParsed, exportRawData}) => {
     } else {
       // Clear the interval if the timer is not running
       clearInterval(intervalId);
-      updateMeasurementSettings({
-        sumCoordX: 0,
-        sumCoordY: 0,
-        sumCoordZ: 0,
-      });
     }
     // Clean up the interval when the component unmounts
     return () => {
@@ -156,11 +178,12 @@ export default Measurement = ({nmeaParsed, exportRawData}) => {
     <View style={styles.mereniContainer}>
       <TextInput
         style={styles.input}
-        value={measurementSettings.nazev}
+        value={ measurementSettings.nazev.toString()}
         placeholder="Název bodu"
         onChangeText={value => {
-          updateMeasurementSettings({nazev: value});
+          updateMeasurementSettings({nazev: parseInt(value)});
         }}
+        keyboardType="numeric" // Set the keyboard to numeric mode
       />
       <View style={styles.buttonContainer}>
         <Button title={switchRtk} onPress={handleRtkPress} />

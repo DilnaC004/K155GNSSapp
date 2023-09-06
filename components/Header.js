@@ -1,42 +1,61 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState,useContext} from 'react';
 import {View, Text, TouchableOpacity} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import IconFontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-
+import { DataContext } from './Functions/DataContext';
 import {styles} from './Styles/styles';
 
 export default Header = ({nmeaParsed, modalType, updateModalType}) => {
-  const [coordStatus, setCoordStatus] = React.useState('black');
+  const { data, updateData} = useContext(DataContext);
+  const [coordStatus, setCoordStatus] = useState('black');
+  const [bluetoothStatus, setBluetoothStatus] = useState('black');
+  const [ntripStatus, setNtripStatus] = useState('black');
 
   useEffect(() => {
-    if (nmeaParsed.quality == 'fix') {
-      setCoordStatus('green');
+    switch (nmeaParsed.quality) {
+      case 'fix':
+        setCoordStatus('red');
+        break;
+      case 'float':
+        setCoordStatus('orange');
+        break;
+      case 'dgps-fix':
+        setCoordStatus('purple');
+        break;
+      case 'pps-fix':
+        setCoordStatus('white');
+        break;
+      case 'rtk':
+        setCoordStatus('green');
+        break;
+      case 'rtk-float':
+        setCoordStatus('orange');
+        break;
+      case 'estimated':
+        setCoordStatus('red');
+        break;
+      case 'manual':
+        setCoordStatus('pink');
+        break;
+      case 'simulated':
+        setCoordStatus('yellow');
+        break;
+      default:
+        setCoordStatus('black');
+        break;
     }
-    if (nmeaParsed.quality == 'float') {
-      setCoordStatus('orange');
+    if(data.bluetoothSettings.isEnabled){
+      setBluetoothStatus("black")
+    } else {
+      setBluetoothStatus("blue")
     }
-    if (nmeaParsed.quality == 'dgps-fix') {
-      setCoordStatus('purple');
+    if(!data.ntripSettings.ntripConnect){
+      setNtripStatus("black")
+    } else {
+      setNtripStatus("blue")
     }
-    if (nmeaParsed.quality == 'pps-fix') {
-      setCoordStatus('white');
-    }
-    if (nmeaParsed.quality == 'rtk') {
-      setCoordStatus('blue');
-    }
-    if (nmeaParsed.quality == 'rtk-float') {
-      setCoordStatus('orange');
-    }
-    if (nmeaParsed.quality == 'estimated') {
-      setCoordStatus('red');
-    }
-    if (nmeaParsed.quality == 'manual') {
-      setCoordStatus('pink');
-    }
-    if (nmeaParsed.quality == 'simulated') {
-      setCoordStatus('yellow');
-    }
-  }, [nmeaParsed]);
+    
+  }, [nmeaParsed, data.bluetoothSettings.isEnabled ,data.ntripSettings.ntripConnect]);
 
   return (
     <View style={styles.headerContainer}>
@@ -66,7 +85,7 @@ export default Header = ({nmeaParsed, modalType, updateModalType}) => {
             });
           }
         }}>
-        <Icon name="bluetooth" size={32} color="black" />
+        <Icon name="bluetooth" size={32} color={bluetoothStatus} />
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => {
@@ -94,7 +113,7 @@ export default Header = ({nmeaParsed, modalType, updateModalType}) => {
             });
           }
         }}>
-        <IconFontAwesome5 name="server" size={32} color="black" />
+        <IconFontAwesome5 name="server" size={32} color={ntripStatus} />
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => {

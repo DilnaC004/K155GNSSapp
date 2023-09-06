@@ -2,8 +2,8 @@ import React, {useState, useEffect} from 'react';
 import {SafeAreaView, View, Alert} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import GPS from 'gps';
-import RNFS, {DocumentDirectoryPath, writeFile} from 'react-native-fs';
-
+import RNFS from 'react-native-fs';
+import Snackbar from 'react-native-snackbar';
 import Header from './components/Header';
 import Measurement from './components/Measurement';
 import Ntrip from './components/Header/Ntrip';
@@ -19,8 +19,11 @@ import {DataContext} from './components/Functions/DataContext';
 export default function App(): JSX.Element {
   const gps = new GPS();
   const [nmeaParsed, setNmeaParsed] = React.useState('');
+  const [rawMeasurement, setRawMeasurement] = React.useState('');
+  const [intervalRawMeasurement, setIntervalRawMeasurement] = React.useState<any>(null);
   const [rtcmNtrip, setRtcmNtrip] = React.useState<any>(null);
-  const [nmeaRead, setNmeaRead] = React.useState<any>([]);
+  const [lastGGA, setLastGGA] = React.useState<any>(null);
+
 
   const [data, setData] = useState({
     firstLoad: true,
@@ -59,7 +62,7 @@ export default function App(): JSX.Element {
       ntripConnect: false,
     },
     pointSettings: {
-      title: '',
+      title: '1',
       b: 0,
       l: 0,
       h: 0,
@@ -91,7 +94,7 @@ export default function App(): JSX.Element {
       connectedDeviceClassic: null,
     },
     measurementSettings: {
-      nazev: 'Bod1',
+      nazev: 1,
       etrs: {
         b: 0,
         l: 0,
@@ -116,6 +119,9 @@ export default function App(): JSX.Element {
       startTime: null,
       endTime: null,
     },
+    nmeaRead: [],
+    rtcmNtrip: [],
+    lastGGA: '',
   });
   const updateData = (newSettings: any) => {
     setData(prevSettings => ({
@@ -123,12 +129,26 @@ export default function App(): JSX.Element {
       ...newSettings,
     }));
   };
+  const getNmeaRead = (nmeaRead: any) => {
+
+    setRawMeasurement(nmeaRead);
+
+    for(let i = 0; i < nmeaRead.length; i++){
+      if(nmeaRead[i].includes("$GNGGA")){
+        setLastGGA(nmeaRead[i]);
+        //console.log(nmeaRead[i]);
+        gps.update(nmeaRead[i]);
+      }
+    }
+
+    gps.on('data', parsed => {
+      setNmeaParsed(parsed);
+    });
+  };
   const valueContext = {data, updateData}; // Provide valueContext to all components in App
   const getRtcmNtrip = (rtcmNtrip: any) => {
     setRtcmNtrip(rtcmNtrip);
-  };
-  const getNmeaRead = (nmeaRead: any) => {
-    setNmeaRead(nmeaRead);
+    //console.log("rtcm app " + rtcmNtrip);
   };
   const [modalType, setmodalType] = React.useState({
     point: false,
@@ -175,29 +195,39 @@ export default function App(): JSX.Element {
 
   // Function to export points into txt
   const exportRawData = async () => {
-    const filePath = RNFS.ExternalDirectoryPath + '/rawdata.txt';
+    const filePath =
+      RNFS.DownloadDirectoryPath + '/raw_' + `${data.measurementSettings.nazev}.txt`; // work only on Android
     try {
-      await RNFS.write(filePath,JSON.stringify(nmeaRead), 1,'utf8' ); //rewrite to streamdata
-      console.log('File saved successfully');
+      await RNFS.appendFile(filePath,JSON.stringify(rawMeasurement),'utf8' ); //rewrite to streamdata
+      //await RNFS.appendFile(filePath, rawMeasurement.toString()); //rewrite to streamdata
+      console.log('File saved successfully to ' + filePath);
+      Snackbar.show({
+        text: `Soubor uložen do \r\n${filePath}`,
+        duration: Snackbar.LENGTH_SHORT,
+        textColor: 'green',
+        marginBottom: 5,
+      });
     } catch (error) {
       console.log('Error saving file: ', error);
+      Snackbar.show({
+        text: `Chyba \r\n${error}`,
+        duration: Snackbar.LENGTH_SHORT,
+        textColor: 'red',
+        marginBottom: 5,
+      });
     }
   };
 
-  useEffect(() => {
-    // Add an event listener on all protocols
-    gps.on('data', parsed => {
-      setNmeaParsed(parsed);
-    });
+  const storeRawData = () => {
+    if(data.measurementSettings.boolRaw){
+      let interval= setInterval(() => {
 
-    console.log(nmeaRead);
-    //console.log('rtcmNtrip ' + rtcmNtrip);
-
-    gps.update(
-      nmeaRead,
-      /*'$GPGGA,224900.000,4832.3762,N,01403.5393,E,1,04,7.8,498.6,M,48.0,M,,0000*5E',*/
-    );
-  }, [rtcmNtrip, nmeaRead]);
+      },20000);
+      setIntervalRawMeasurement(interval);
+    } else {
+      clearInterval(intervalRawMeasurement);
+    }
+  }
 
   useEffect(() => {
     if (!data) {
@@ -218,13 +248,16 @@ export default function App(): JSX.Element {
           modalType={modalType}
           updateModalType={updateModalType}></Header>
         <View>
-          {modalType.bluetooth && (
-            <Bluetooth rtcmNtrip={rtcmNtrip} getNmeaRead={getNmeaRead} />
-          )}
-          {modalType.ntrip && <Ntrip getRtcmNtrip={getRtcmNtrip} />}
+          {modalType.bluetooth && <Bluetooth rtcmNtrip={rtcmNtrip} getNmeaRead={getNmeaRead}/>}
+          {modalType.ntrip && <Ntrip getRtcmNtrip={getRtcmNtrip} lastGGA={lastGGA} />}
           {modalType.project && <Project clearStorage={clearStorage} />}
           {modalType.point && <Point />}
-          {modalType.measurement && <Measurement nmeaParsed={nmeaParsed} exportRawData={exportRawData}/>}
+          {modalType.measurement && (
+            <Measurement
+              nmeaParsed={nmeaParsed}
+              exportRawData={exportRawData}
+            />
+          )}
           {modalType.placing && <Placing />}
           {modalType.map && <Map />}
           {modalType.skyplot && <Skyplot />}

@@ -27,7 +27,9 @@ class Mountpoint {
   }
 }
 
-const Ntrip = ({getRtcmNtrip}) => {
+const Ntrip = ({getRtcmNtrip, lastGGA}) => {
+  const [intervalLastGGA, setIntervalLastGGA] = useState(0);
+  const [clientWrapper, setClientWrapper] = useState(null);
   const { data, updateData} = useContext(DataContext);
   const [ntripSettings, setNtripSettings] = useState(data.ntripSettings);
   const updateNtripSettings = newSettings => {
@@ -37,7 +39,6 @@ const Ntrip = ({getRtcmNtrip}) => {
     }));
   };
 
-  let client;
   const switchConnect  = ntripSettings.ntripConnect ? 'Odpoj se' : 'Připoj se k Ntrip serveru';
   const mountpointSelectRef = useRef();
 
@@ -51,7 +52,7 @@ const Ntrip = ({getRtcmNtrip}) => {
       port: ntripSettings.ntripPort,
     };
     // Create socket
-    client = TcpSocket.createConnection(options, () => {
+    let client = TcpSocket.createConnection(options, () => {
       let connectionString =
         'GET / HTTP/1.0\r\n' +
         'Host: ' +
@@ -115,7 +116,7 @@ const Ntrip = ({getRtcmNtrip}) => {
 
     console.log(options);
     // Create socket
-    client = TcpSocket.createConnection(options, () => {
+    let client = TcpSocket.createConnection(options, () => {
       let connectionString =
         'GET /' +
         ntripSettings.selectedMntp.id +
@@ -133,14 +134,35 @@ const Ntrip = ({getRtcmNtrip}) => {
       // Write on the socket
       client.write(connectionString);
 
-      updateNtripSettings({ntripConnect:true});
+      if(ntripSettings.selectedMntp.isVirtual && lastGGA !=null){
+        console.log('Sending GGA')
 
+        let interval = setInterval(() => {
+          client.write(lastGGA);
+        },20000);
+
+        setIntervalLastGGA(interval);
+
+      } else if(lastGGA == null){
+        Snackbar.show({
+          text: "Pro využítí virtuální stanice připojte GNSS přijímač",
+          duration: Snackbar.LENGTH_SHORT,
+          textColor: 'red',
+          marginBottom: 5,
+        });
+      }
+
+      updateNtripSettings({ntripConnect:true});
+/*
       setTimeout(() => {
         client.end();
         console.log('Client byl ukončen : DEBUG!!');
         updateNtripSettings({ntripConnect:false});
       }, 10000);
+      */
     });
+
+    setClientWrapper(client);
 
     client.on('data', function (data) {
       getRtcmNtrip(data);
@@ -152,17 +174,25 @@ const Ntrip = ({getRtcmNtrip}) => {
 
     client.on('close', function () {
       console.log('Connection closed!');
+      Snackbar.show({
+        text: `Ukončena komunikace se serverem \r\nhttp://${ntripSettings.ntripIp}:${ntripSettings.ntripPort}`,
+        duration: Snackbar.LENGTH_SHORT,
+        textColor: 'red',
+        marginBottom: 5,
+      });
     });
   };
 
   const onNtripClose = () => {
-    //const client = TcpSocket.current;
-    //client.end();
+    clientWrapper.end();
+    clearInterval(intervalLastGGA);
     updateNtripSettings({ntripConnect:false});
   }
 
   useEffect(() => {
+    console.log(ntripSettings);
     return () => {
+      console.log(ntripSettings);
       updateData({
         ntripSettings:ntripSettings,
       })

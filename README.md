@@ -26,3 +26,4 @@ packages:
 - write raw data
 - firebase upload
 - add unpaired bluetooth devices
+- i18n

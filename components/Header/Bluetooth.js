@@ -6,14 +6,12 @@ import RNBluetoothClassic, {
   BluetoothEventType,
 } from 'react-native-bluetooth-classic';
 import Snackbar from 'react-native-snackbar';
-
-//import useBLE from '../hooks/useBLE';
 import {styles} from '../Styles/styles';
 import NmeaViewer from './NmeaViewer';
 
 export default Bluetooth = ({rtcmNtrip, getNmeaRead}) => {
   const {data, updateData} = useContext(DataContext);
-
+  const [intervalId, setIntervalId] = useState(0);
   const [bluetoothSettings, setBluetoothSettings] = useState(
     data.bluetoothSettings,
   );
@@ -26,13 +24,6 @@ export default Bluetooth = ({rtcmNtrip, getNmeaRead}) => {
   };
 
   const switchConnect = bluetoothSettings.isEnabled ? 'Připoj' : 'Odpoj';
-  const [nmeaRead, setNmeaRead] = useState([]);
-  const updateNmeaRead = newSettings => {
-    setNmeaRead(prevSettings => ({
-      ...prevSettings,
-      ...newSettings,
-    }));
-  };
 
   const scanForDevices = async () => {
     try {
@@ -40,7 +31,12 @@ export default Bluetooth = ({rtcmNtrip, getNmeaRead}) => {
       const pairedDeviced = paired;
       updateBluetoothSettings({devices: pairedDeviced});
     } catch (err) {
-      console.log('error:', err);
+      Snackbar.show({
+        text: err,
+        duration: Snackbar.LENGTH_SHORT,
+        textColor: 'red',
+        marginBottom: 5,
+      });
     }
   };
 
@@ -54,6 +50,7 @@ export default Bluetooth = ({rtcmNtrip, getNmeaRead}) => {
       );
       updateBluetoothSettings({isEnabled: !bluetoothSettings.isEnabled});
     }
+    clearInterval(intervalId);
   };
 
   const startBluetoothConnection = async () => {
@@ -63,7 +60,6 @@ export default Bluetooth = ({rtcmNtrip, getNmeaRead}) => {
           bluetoothSettings.connectedDeviceClassic.address,
           {
             CONNECTOR_TYPE: 'rfcomm',
-            DELIMITER: '\n',
             DEVICE_CHARSET: 'ascii',
           },
         );
@@ -73,6 +69,12 @@ export default Bluetooth = ({rtcmNtrip, getNmeaRead}) => {
         updateBluetoothSettings({isEnabled: !bluetoothSettings.isEnabled});
       } catch (err) {
         console.log(err);
+        Snackbar.show({
+          text: 'Nelze se připojit, zkuste znovu',
+          duration: Snackbar.LENGTH_SHORT,
+          textColor: 'red',
+          marginBottom: 5,
+        });
         updateBluetoothSettings({isEnabled: true});
       }
     } else {
@@ -86,21 +88,20 @@ export default Bluetooth = ({rtcmNtrip, getNmeaRead}) => {
   };
 
   const readBluetoothConnection = async () => {
-    //console.log(connectedDeviceClassic.address);
     try {
+      var storeData = [];
       let readDataAvailable = await RNBluetoothClassic.availableFromDevice(
         bluetoothSettings.connectedDeviceClassic.address,
       );
       if (readDataAvailable > 0) {
-        let storeData = [];
         for (let i = 0; i < readDataAvailable; i++) {
           let readData = await RNBluetoothClassic.readFromDevice(
             bluetoothSettings.connectedDeviceClassic.address,
           );
           storeData.push(readData);
         }
-        setNmeaRead(storeData);
         getNmeaRead(storeData);
+        updateData({nmeaRead: storeData});
       }
     } catch (err) {
       console.log(err);
@@ -108,19 +109,34 @@ export default Bluetooth = ({rtcmNtrip, getNmeaRead}) => {
   };
 
   const setReadBluetoothConnection = () => {
-    let intervalId;
-
+    let newintervalId;
     if (
       !bluetoothSettings.isEnabled &&
       bluetoothSettings.connectedDeviceClassic !== null
     ) {
-      intervalId = setInterval(() => {
+      newintervalId = setInterval(() => {
         readBluetoothConnection();
+        sendRtcm();
       }, 1000);
-    }
-    if (bluetoothSettings.isEnabled) {
+      setIntervalId(newintervalId);
+    } else if (bluetoothSettings.isEnabled) {
       console.log('clear interval');
       clearInterval(intervalId);
+    }
+  };
+
+  const sendRtcm = async () => {
+    if (rtcmNtrip != null) {
+      try {
+        await RNBluetoothClassic.writeToDevice(
+          bluetoothSettings.connectedDeviceClassic.address,
+          rtcmNtrip,
+          'ascii',
+        );
+        console.log('rtcm ' + rtcmNtrip);
+      } catch (err) {
+        console.log(err);
+      }
     }
   };
 
@@ -168,7 +184,7 @@ export default Bluetooth = ({rtcmNtrip, getNmeaRead}) => {
           }
         }}
       />
-      <NmeaViewer nmeaMessages={nmeaRead} />
+      <NmeaViewer nmeaMessages={data.nmeaRead} />
     </View>
   );
 };

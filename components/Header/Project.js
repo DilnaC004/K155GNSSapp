@@ -29,10 +29,16 @@ export default Project = ({clearStorage}) => {
 
   // Function to export points into txt
   const exportPoints = async () => {
-    const filePath = RNFS.ExternalDirectoryPath + '/GNSSappDATA.txt';
+    const filePath = RNFS.DownloadDirectoryPath + '/GNSSappDATA.txt';
     try {
       await RNFS.writeFile(filePath, JSON.stringify(data), 'utf8');
       console.log('File saved successfully');
+      Snackbar.show({
+        text: `Soubor uložen do \r\n${filePath}`,
+        duration: Snackbar.LENGTH_SHORT,
+        textColor: 'red',
+        marginBottom: 5,
+      });
     } catch (error) {
       console.log('Error saving file: ', error);
     }

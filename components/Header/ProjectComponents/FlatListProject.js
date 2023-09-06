@@ -58,10 +58,6 @@ export default FlatListProject = ({
     );
   };
 
-  useEffect(() => {
-    console.log(data);
-  }, );
-
   // Function to delete a project from the data array
   const deleteProject = projectTitleToDelete => {
     const updatedData = data.projects.filter(
