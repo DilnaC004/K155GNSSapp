@@ -16,14 +16,16 @@ packages:
 # TODO
 - separate ubx and nmea from bluetooth datastream
 - connect rtcm data from ntrip to bluetooth
-- connect bluetooth datastream to GPS.js object
+- connect bluetooth datastream to GPS.js object, not just GGA
+- write raw data
+- rewrite newPoint - updateCoordinates - Measurement.js
 
+- view Points in JTSK coordinates
 - map
 - skyplot
 - continuous measurement on satellite
 - placing
 - import points
-- write raw data
 - firebase upload
 - add unpaired bluetooth devices
 - i18n

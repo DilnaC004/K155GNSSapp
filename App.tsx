@@ -20,7 +20,6 @@ export default function App(): JSX.Element {
   const gps = new GPS();
   const [nmeaParsed, setNmeaParsed] = React.useState('');
   const [rawMeasurement, setRawMeasurement] = React.useState('');
-  const [intervalRawMeasurement, setIntervalRawMeasurement] = React.useState<any>(null);
   const [rtcmNtrip, setRtcmNtrip] = React.useState<any>(null);
   const [lastGGA, setLastGGA] = React.useState<any>(null);
 
@@ -60,6 +59,7 @@ export default function App(): JSX.Element {
       selectedMntp: null,
       mountpoints: [],
       ntripConnect: false,
+      clientWrapper: null,
     },
     pointSettings: {
       title: '1',
@@ -118,6 +118,7 @@ export default function App(): JSX.Element {
       formattedTime: '00:00:00',
       startTime: null,
       endTime: null,
+      intervalRawMeasurement:0,
     },
     nmeaRead: [],
     rtcmNtrip: [],
@@ -148,7 +149,6 @@ export default function App(): JSX.Element {
   const valueContext = {data, updateData}; // Provide valueContext to all components in App
   const getRtcmNtrip = (rtcmNtrip: any) => {
     setRtcmNtrip(rtcmNtrip);
-    //console.log("rtcm app " + rtcmNtrip);
   };
   const [modalType, setmodalType] = React.useState({
     point: false,
@@ -166,24 +166,6 @@ export default function App(): JSX.Element {
       ...newSettings,
     }));
   };
-  const setObjectValue = async (value: any) => {
-    const jsonValue = JSON.stringify(value);
-    AsyncStorage.setItem('key', jsonValue)
-      .then(() => console.log('Saved data into Storage ' + value))
-      .catch(e => {
-        console.log(e);
-      });
-  };
-  const getObjectValue = async () => {
-    try {
-      const dataStorage = await AsyncStorage.getItem('key');
-      if (dataStorage) {
-        setData(JSON.parse(dataStorage)); // You need to have a state variable "data" to set the parsed data.
-      }
-    } catch (e) {
-      console.log(e);
-    }
-  };
   const clearStorage = async () => {
     try {
       await AsyncStorage.clear();
@@ -193,50 +175,22 @@ export default function App(): JSX.Element {
     }
   };
 
-  // Function to export points into txt
-  const exportRawData = async () => {
-    const filePath =
-      RNFS.DownloadDirectoryPath + '/raw_' + `${data.measurementSettings.nazev}.txt`; // work only on Android
-    try {
-      await RNFS.appendFile(filePath,JSON.stringify(rawMeasurement),'utf8' ); //rewrite to streamdata
-      //await RNFS.appendFile(filePath, rawMeasurement.toString()); //rewrite to streamdata
-      console.log('File saved successfully to ' + filePath);
-      Snackbar.show({
-        text: `Soubor uložen do \r\n${filePath}`,
-        duration: Snackbar.LENGTH_SHORT,
-        textColor: 'green',
-        marginBottom: 5,
-      });
-    } catch (error) {
-      console.log('Error saving file: ', error);
-      Snackbar.show({
-        text: `Chyba \r\n${error}`,
-        duration: Snackbar.LENGTH_SHORT,
-        textColor: 'red',
-        marginBottom: 5,
-      });
-    }
-  };
-
-  const storeRawData = () => {
-    if(data.measurementSettings.boolRaw){
-      let interval= setInterval(() => {
-
-      },20000);
-      setIntervalRawMeasurement(interval);
-    } else {
-      clearInterval(intervalRawMeasurement);
-    }
-  }
-
   useEffect(() => {
     if (!data) {
-      getObjectValue();
+      const dataStorage = AsyncStorage.getItem('key');
+      if (dataStorage) {
+        setData(JSON.parse(dataStorage.toString())); // You need to have a state variable "data" to set the parsed data.
+      }
     } else {
       updateData({firstLoad: false});
     }
     return () => {
-      setObjectValue(data);
+      const jsonValue = JSON.stringify(data);
+      AsyncStorage.setItem('key', jsonValue)
+        .then(() => console.log('Saved data into Storage ' + data))
+        .catch(e => {
+          console.log(e);
+        });
     };
   }, []);
 
@@ -255,7 +209,7 @@ export default function App(): JSX.Element {
           {modalType.measurement && (
             <Measurement
               nmeaParsed={nmeaParsed}
-              exportRawData={exportRawData}
+              rawMeasurement={rawMeasurement}
             />
           )}
           {modalType.placing && <Placing />}

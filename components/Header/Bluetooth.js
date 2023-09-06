@@ -2,9 +2,7 @@ import React, {useState, useEffect, useContext, forwardRef} from 'react';
 import {View, Text, Button} from 'react-native';
 import {DataContext} from '../Functions/DataContext';
 import SelectDropdown from 'react-native-select-dropdown';
-import RNBluetoothClassic, {
-  BluetoothEventType,
-} from 'react-native-bluetooth-classic';
+import RNBluetoothClassic from 'react-native-bluetooth-classic';
 import Snackbar from 'react-native-snackbar';
 import {styles} from '../Styles/styles';
 import NmeaViewer from './NmeaViewer';
@@ -119,7 +117,7 @@ export default Bluetooth = ({rtcmNtrip, getNmeaRead}) => {
         sendRtcm();
       }, 1000);
       setIntervalId(newintervalId);
-    } else if (bluetoothSettings.isEnabled) {
+    } else {
       console.log('clear interval');
       clearInterval(intervalId);
     }

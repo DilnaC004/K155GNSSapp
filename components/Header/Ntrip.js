@@ -29,7 +29,6 @@ class Mountpoint {
 
 const Ntrip = ({getRtcmNtrip, lastGGA}) => {
   const [intervalLastGGA, setIntervalLastGGA] = useState(0);
-  const [clientWrapper, setClientWrapper] = useState(null);
   const { data, updateData} = useContext(DataContext);
   const [ntripSettings, setNtripSettings] = useState(data.ntripSettings);
   const updateNtripSettings = newSettings => {
@@ -117,6 +116,8 @@ const Ntrip = ({getRtcmNtrip, lastGGA}) => {
     console.log(options);
     // Create socket
     let client = TcpSocket.createConnection(options, () => {
+      updateNtripSettings({clientWrapper:client});
+
       let connectionString =
         'GET /' +
         ntripSettings.selectedMntp.id +
@@ -162,8 +163,6 @@ const Ntrip = ({getRtcmNtrip, lastGGA}) => {
       */
     });
 
-    setClientWrapper(client);
-
     client.on('data', function (data) {
       getRtcmNtrip(data);
     });
@@ -184,20 +183,18 @@ const Ntrip = ({getRtcmNtrip, lastGGA}) => {
   };
 
   const onNtripClose = () => {
-    clientWrapper.end();
+    ntripSettings.clientWrapper.end();
     clearInterval(intervalLastGGA);
     updateNtripSettings({ntripConnect:false});
   }
 
   useEffect(() => {
-    console.log(ntripSettings);
     return () => {
-      console.log(ntripSettings);
       updateData({
         ntripSettings:ntripSettings,
       })
     };
-  },[]);
+  },[ntripSettings]);
 
   return (
     <ScrollView style={styles.nastContainer}>

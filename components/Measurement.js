@@ -1,13 +1,16 @@
 import React, {useState, useEffect, useContext} from 'react';
 import {View, Text, TextInput, Button, Switch} from 'react-native';
 import Snackbar from 'react-native-snackbar';
+import RNFS from 'react-native-fs';
 import {etrs2jtsk} from './Calculations/transformation';
-import { DataContext } from './Functions/DataContext';
+import {DataContext} from './Functions/DataContext';
 import {styles} from './Styles/styles';
 
-export default Measurement = ({nmeaParsed, exportRawData}) => {
-  const { data, updateData} = useContext(DataContext);
-  const [measurementSettings, setMeasurementSettings] = useState(data.measurementSettings);
+export default Measurement = ({nmeaParsed, rawMeasurement}) => {
+  const {data, updateData} = useContext(DataContext);
+  const [measurementSettings, setMeasurementSettings] = useState(
+    data.measurementSettings,
+  );
   const updateMeasurementSettings = newSettings => {
     setMeasurementSettings(prevSettings => ({
       ...prevSettings,
@@ -23,7 +26,6 @@ export default Measurement = ({nmeaParsed, exportRawData}) => {
   };
   const [projectSettings, setProjectSettings] = useState(data.projectSettings);
 
-
   const [isEnabled, setIsEnabled] = useState(true);
   const toggleSwitch = () => setIsEnabled(previousState => !previousState);
   const switchCoordinates = isEnabled ? 'ETRS89' : 'S-JTSK';
@@ -37,70 +39,69 @@ export default Measurement = ({nmeaParsed, exportRawData}) => {
     : measurementSettings.jtsk.X;
   const switchCoordY = isEnabled
     ? measurementSettings.etrs.l
-    : measurementSettings.jtsk.Y; 
+    : measurementSettings.jtsk.Y;
   const switchCoordZ = isEnabled
     ? measurementSettings.etrs.h
     : measurementSettings.jtsk.Hbpv;
 
-    const updateCoordinates = () => {
-      updatePointSettings({
-        title: measurementSettings.nazev,
-        b: measurementSettings.sumCoordX / measurementSettings.coordMeasuredTime,
-        l: measurementSettings.sumCoordY / measurementSettings.coordMeasuredTime,
-        h: measurementSettings.sumCoordZ / measurementSettings.coordMeasuredTime,
-        accuB: measurementSettings.coordAccuX,
-        accuL: measurementSettings.coordAccuY,
-        accuH: measurementSettings.coordAccuZ,
-        pdop: measurementSettings.coordPDOP,
-        time: measurementSettings.coordMeasuredTime,
-        date: new Date().toLocaleString(),
-      });
-
-      const newPoint = {
-        title: measurementSettings.nazev,
-        b: measurementSettings.sumCoordX / measurementSettings.coordMeasuredTime,
-        l: measurementSettings.sumCoordY / measurementSettings.coordMeasuredTime,
-        h: measurementSettings.sumCoordZ / measurementSettings.coordMeasuredTime,
-        accuB: measurementSettings.coordAccuX,
-        accuL: measurementSettings.coordAccuY,
-        accuH: measurementSettings.coordAccuZ,
-        pdop: measurementSettings.coordPDOP,
-        time: measurementSettings.coordMeasuredTime,
-        date: new Date().toLocaleString(),
-        height: pointSettings.height,
-        offset: pointSettings.offset,
-        code: pointSettings.code,
-      };
-
-      console.log( newPoint);
-      Snackbar.show({
-        text: `Uložen bod ${newPoint.title}`,
-        duration: Snackbar.LENGTH_SHORT,
-        textColor: 'green',
-        marginBottom: 5,
-      });
-      // Log the received values
-      if (projectSettings.projectId != null) {
-        console.log('Point saved into project: ' + data.projects[projectSettings.projectId].title);
-        const updatedData = data.projects.map((project, index) => {
-          if (index === projectSettings.projectId) {
-            const updatedPoints = [...project.points, newPoint];
-            return {...project, points: updatedPoints};
-          }
-          return project;
-        });
-        updateData({projects: updatedData});
-      } else {
-        Alert.alert('Vyber zakázku');
-      }
+  const updateCoordinates = () => {
+    const newPoint = {
+      title: measurementSettings.nazev,
+      b: measurementSettings.sumCoordX / (measurementSettings.coordMeasuredTime+1),
+      l: measurementSettings.sumCoordY / (measurementSettings.coordMeasuredTime+1),
+      h: measurementSettings.sumCoordZ / (measurementSettings.coordMeasuredTime+1),
+      accuB: measurementSettings.coordAccuX,
+      accuL: measurementSettings.coordAccuY,
+      accuH: measurementSettings.coordAccuZ,
+      pdop: measurementSettings.coordPDOP,
+      time: measurementSettings.coordMeasuredTime,
+      date: new Date().toLocaleString(),
+      height: pointSettings.height,
+      offset: pointSettings.offset,
+      code: pointSettings.code,
     };
+
+    console.log(newPoint, measurementSettings);
+    Snackbar.show({
+      text: `Uložen bod ${newPoint.title}`,
+      duration: Snackbar.LENGTH_SHORT,
+      textColor: 'green',
+      marginBottom: 5,
+    });
+    // Log the received values
+    if (projectSettings.projectId != null) {
+      console.log(
+        'Point saved into project: ' +
+          data.projects[projectSettings.projectId].title,
+      );
+      const updatedData = data.projects.map((project, index) => {
+        if (index === projectSettings.projectId) {
+          const updatedPoints = [...project.points, newPoint];
+          return {...project, points: updatedPoints};
+        }
+        return project;
+      });
+      updateData({projects: updatedData});
+    } else {
+      Alert.alert('Vyber zakázku');
+    }
+  };
 
   const handleRtkPress = () => {
     if (!measurementSettings.startTime) {
-      updateMeasurementSettings({startTime: new Date(), boolRtk: !measurementSettings.boolRtk, endTime:null,});
-      console.log('start');
+      updateMeasurementSettings({
+        startTime: new Date(),
+        boolRtk: !measurementSettings.boolRtk,
+        endTime: null,
+      });
+      console.log('start ');
     } else {
-      updateMeasurementSettings({startTime:null, boolRtk: !measurementSettings.boolRtk, endTime: new Date(), formattedTime:'00:00:00',});
+      updateMeasurementSettings({
+        startTime: null,
+        boolRtk: !measurementSettings.boolRtk,
+        endTime: new Date(),
+        formattedTime: '00:00:00',
+      });
 
       updateMeasurementSettings({
         coordAccuX: 0,
@@ -109,7 +110,7 @@ export default Measurement = ({nmeaParsed, exportRawData}) => {
         sumCoordX: 0,
         sumCoordY: 0,
         sumCoordZ: 0,
-        nazev: measurementSettings.nazev+1,
+        nazev: measurementSettings.nazev + 1,
       });
 
       updateCoordinates();
@@ -118,16 +119,72 @@ export default Measurement = ({nmeaParsed, exportRawData}) => {
 
   const handleRawPress = () => {
     if (!measurementSettings.startTime) {
-      updateMeasurementSettings({startTime: new Date(), boolRaw: !measurementSettings.boolRaw, endTime:null,});
-      exportRawData();
+      updateMeasurementSettings({
+        startTime: new Date(),
+        boolRaw: !measurementSettings.boolRaw,
+        endTime: null,
+      });
+      storeRawData();
     } else {
-      updateMeasurementSettings({startTime:null, boolRaw: !measurementSettings.boolRaw, endTime: new Date(), formattedTime:'00:00:00',});
+      updateMeasurementSettings({
+        startTime: null,
+        boolRaw: !measurementSettings.boolRaw,
+        endTime: new Date(),
+        formattedTime: '00:00:00',
+      });
+      updateMeasurementSettings({
+        nazev: measurementSettings.nazev + 1,
+      });
+      clearInterval(measurementSettings.intervalRawMeasurement);
+    }
+  };
+
+  // Function to export points into txt
+  const exportRawData = async filePath => {
+    try {
+      await RNFS.appendFile(filePath, rawMeasurement.toString(), 'utf8'); //rewrite to streamdata
+
+      console.log('File saved successfully to ' + filePath);
+      Snackbar.show({
+        text: `Soubor uložen do \r\n${filePath}`,
+        duration: Snackbar.LENGTH_SHORT,
+        textColor: 'green',
+        marginBottom: 5,
+      });
+    } catch (error) {
+      console.log('Error saving file: ', error);
+      Snackbar.show({
+        text: `Chyba \r\n${error}`,
+        duration: Snackbar.LENGTH_SHORT,
+        textColor: 'red',
+        marginBottom: 5,
+      });
+    }
+  };
+
+  const storeRawData = () => {
+    const filePath =
+      RNFS.DownloadDirectoryPath +
+      '/raw_' +
+      `${data.measurementSettings.nazev}.txt`; // work only on Android
+    let storeData = [];
+    if (!measurementSettings.boolRaw) {
+      storeData.push(rawMeasurement);
+      console.log(storeData);
+      let interval = setInterval(() => {
+        exportRawData(filePath);
+        console.log(storeData.length);
+        storeData = [];
+      }, 20000);
+      updateMeasurementSettings({
+        intervalRawMeasurement: interval,
+      });
     }
   };
 
   // Use useEffect to start and stop the timer
   useEffect(() => {
-    let intervalId;
+    console.log(measurementSettings.sumCoordX, measurementSettings.sumCoordY, measurementSettings.sumCoordZ);
     let measuredTime = 0;
     const etrs = {
       b: nmeaParsed.lat,
@@ -135,7 +192,6 @@ export default Measurement = ({nmeaParsed, exportRawData}) => {
       h: nmeaParsed.alt,
     };
     const jtsk = etrs2jtsk(nmeaParsed.lat, nmeaParsed.lon, nmeaParsed.alt);
-
     updateMeasurementSettings({
       etrs: etrs,
       jtsk: jtsk,
@@ -143,57 +199,48 @@ export default Measurement = ({nmeaParsed, exportRawData}) => {
     });
 
     if (measurementSettings.startTime && !measurementSettings.endTime) {
-      // If the timer is running (start time is set, but end time is not)
-      intervalId = setInterval(() => {
-        const currentTime = new Date();
-        measuredTime = Math.floor((currentTime - measurementSettings.startTime) / 1000);
-        const hours = String(Math.floor(measuredTime / 3600)).padStart(2, '0');
-        const minutes = String(Math.floor((measuredTime % 3600) / 60)).padStart(
-          2,
-          '0',
-        );
-        const seconds = String(measuredTime % 60).padStart(2, '0');
-        updateMeasurementSettings({formattedTime:`${hours}:${minutes}:${seconds}`});
+      const currentTime = new Date();
+      measuredTime = Math.floor(
+        (currentTime - measurementSettings.startTime) / 1000,
+      );
+      const hours = String(Math.floor(measuredTime / 3600)).padStart(2, '0');
+      const minutes = String(Math.floor((measuredTime % 3600) / 60)).padStart(
+        2,
+        '0',
+      );
+      const seconds = String(measuredTime % 60).padStart(2, '0');
 
-        //Measure RTK point
-        updateMeasurementSettings({
-          sumCoordX: measurementSettings.sumCoordX + parseFloat(nmeaParsed.lat),
-          sumCoordY: measurementSettings.sumCoordY + parseFloat(nmeaParsed.lon),
-          sumCoordZ: measurementSettings.sumCoordZ + parseFloat(nmeaParsed.alt),
-          measuredTime: measuredTime,
-        });
-      }, 1000);
-    } else {
-      // Clear the interval if the timer is not running
-      clearInterval(intervalId);
-    }
+      //Measure RTK point
+      updateMeasurementSettings({
+        coordMeasuredTime: measuredTime,
+        sumCoordX: measurementSettings.sumCoordX + parseFloat(etrs.b),
+        sumCoordY: measurementSettings.sumCoordY + parseFloat(etrs.l),
+        sumCoordZ: measurementSettings.sumCoordZ + parseFloat(etrs.h),
+        formattedTime: `${hours}:${minutes}:${seconds}`,
+      });
+    } 
+
     // Clean up the interval when the component unmounts
     return () => {
-      clearInterval(intervalId)
-      updateData({measurementSettings:measurementSettings})
+      updateData({measurementSettings: measurementSettings});
     };
-  }, [measurementSettings.startTime, measurementSettings.endTime, nmeaParsed]);
+  }, [nmeaParsed]);
 
   return (
     <View style={styles.mereniContainer}>
       <TextInput
         style={styles.input}
-        value={ measurementSettings.nazev.toString()}
+        value={measurementSettings.nazev.toString()}
         placeholder="Název bodu"
         onChangeText={value => {
-          updateMeasurementSettings({nazev: parseInt(value)});
+          updateMeasurementSettings({nazev: value});
         }}
         keyboardType="numeric" // Set the keyboard to numeric mode
       />
       <View style={styles.buttonContainer}>
         <Button title={switchRtk} onPress={handleRtkPress} />
-        <Button
-          title={switchRaw}
-          style={styles.BTRaw}
-          onPress={handleRawPress}
-        />
+        <Button title={switchRaw} onPress={handleRawPress} />
       </View>
-
       <View style={styles.tableContainer}>
         <View style={styles.buttonContainer}>
           <View>
@@ -211,7 +258,9 @@ export default Measurement = ({nmeaParsed, exportRawData}) => {
             </View>
             <View style={styles.tableRow}>
               <Text style={styles.tableHeader}>Doba měření :</Text>
-              <Text style={styles.tableData}>{measurementSettings.formattedTime}</Text>
+              <Text style={styles.tableData}>
+                {measurementSettings.formattedTime}
+              </Text>
             </View>
             <View style={styles.tableRow}>
               <Text style={styles.tableHeader}>{switchY}</Text>

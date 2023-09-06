@@ -47,12 +47,12 @@ export default Header = ({nmeaParsed, modalType, updateModalType}) => {
     if(data.bluetoothSettings.isEnabled){
       setBluetoothStatus("black")
     } else {
-      setBluetoothStatus("blue")
+      setBluetoothStatus("aqua")
     }
     if(!data.ntripSettings.ntripConnect){
       setNtripStatus("black")
     } else {
-      setNtripStatus("blue")
+      setNtripStatus("orange")
     }
     
   }, [nmeaParsed, data.bluetoothSettings.isEnabled ,data.ntripSettings.ntripConnect]);
