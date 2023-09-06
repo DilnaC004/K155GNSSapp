@@ -19,6 +19,7 @@ packages:
 - connect bluetooth datastream to GPS.js object, not just GGA
 - write raw data
 - rewrite newPoint - updateCoordinates - Measurement.js
+- loading data from AsyncStorage
 
 - view Points in JTSK coordinates
 - map

@@ -133,6 +133,12 @@ export default Measurement = ({nmeaParsed, rawMeasurement}) => {
         formattedTime: '00:00:00',
       });
       updateMeasurementSettings({
+        coordAccuX: 0,
+        coordAccuY: 0,
+        coordAccuZ: 0,
+        sumCoordX: 0,
+        sumCoordY: 0,
+        sumCoordZ: 0,
         nazev: measurementSettings.nazev + 1,
       });
       clearInterval(measurementSettings.intervalRawMeasurement);
@@ -184,7 +190,6 @@ export default Measurement = ({nmeaParsed, rawMeasurement}) => {
 
   // Use useEffect to start and stop the timer
   useEffect(() => {
-    console.log(measurementSettings.sumCoordX, measurementSettings.sumCoordY, measurementSettings.sumCoordZ);
     let measuredTime = 0;
     const etrs = {
       b: nmeaParsed.lat,
