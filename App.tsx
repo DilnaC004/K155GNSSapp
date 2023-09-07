@@ -1,10 +1,7 @@
 import React, {useState, useEffect} from 'react';
-import {SafeAreaView, View, Alert} from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import {SafeAreaView, View, AppState} from 'react-native';
 import GPS from 'gps';
-import RNFS from 'react-native-fs';
-import Snackbar from 'react-native-snackbar';
-import useAsyncStorage from './components/Functions/AsyncStorageFunction';
+import useAsyncStorage from './components/hooks/useAsyncStorage';
 import Header from './components/Header';
 import Measurement from './components/Measurement';
 import Ntrip from './components/Header/Ntrip';
@@ -14,7 +11,6 @@ import Skyplot from './components/Header/Skyplot';
 import Point from './components/Header/Point';
 import Map from './components/Header/Map';
 import Placing from './components/Header/Placing';
-
 import {DataContext} from './components/Functions/DataContext';
 import configurationData from './components/configurationData';
 
@@ -25,8 +21,6 @@ export default function App(): JSX.Element {
   const [rtcmNtrip, setRtcmNtrip] = React.useState<any>(null);
   const [lastGGA, setLastGGA] = React.useState<any>(null);
 
-  const { setDataStorage, getDataStorage, clearDataStorage } = useAsyncStorage();
-
   const [data, setData] = React.useState(configurationData);
   const updateData = (newSettings: any) => {
     setData(prevSettings => ({
@@ -34,6 +28,8 @@ export default function App(): JSX.Element {
       ...newSettings,
     }));
   };
+  const { setDataStorage, getDataStorage, clearDataStorage } = useAsyncStorage(updateData);
+
   const getNmeaRead = (nmeaRead: any) => {
 
     setRawMeasurement(nmeaRead);
@@ -71,23 +67,21 @@ export default function App(): JSX.Element {
     }));
   };
 
-  useEffect(() => {
-    const retrievedData = getDataStorage();
-    console.log(retrievedData);
-    if(!retrievedData){
-      setData(retrievedData);
-      Snackbar.show({
-        text: `Data načtena z databáze`,
-        duration: Snackbar.LENGTH_SHORT,
-        textColor: 'red',
-        marginBottom: 5,
-      });
-    }
+  const handleAppStateChange = (nextAppState:any) => {
+    if (nextAppState === 'background') {
+      console.log('the app is closed');
+      setDataStorage(data);
+    }    
+  }
 
-    setDataStorage(data);
+  useEffect(() => {
+    getDataStorage();
+
+    const appStateId = AppState.addEventListener('change', handleAppStateChange);
 
     return () => {
       setDataStorage(data);
+      appStateId.remove();
     };
   }, []);
 

@@ -21,6 +21,7 @@ packages:
 - rewrite newPoint - updateCoordinates - Measurement.js
 - loading data from AsyncStorage
 
+- show all point properties on PointFlatList
 - view Points in JTSK coordinates
 - map
 - skyplot

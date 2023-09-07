@@ -1,11 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function useAsyncStorage() {
+export default function useAsyncStorage(updateData) {
 
- const setDataStorage = async (value: any) => {
+ const setDataStorage = async (value) => {
     const jsonValue = JSON.stringify(value);
     AsyncStorage.setItem('key', jsonValue)
-      .then(() => console.log('Saved data into Storage ' + value))
+      .then(() => console.log("Save data to storage"))
       .catch(e => {
         console.error('Error saving data:', e);
       });
@@ -14,13 +14,14 @@ export default function useAsyncStorage() {
     try {
       const dataStorage = await AsyncStorage.getItem('key');
       if (dataStorage) {
-        return JSON.parse(dataStorage);
+        console.log("Load data from storage");
+        updateData(JSON.parse(dataStorage));
       }
     } catch (e) {
       console.error('Error retrieving data:', e);
-      return null;
     }
   };
+
  const clearDataStorage = async () => {
     try {
       await AsyncStorage.clear();
@@ -29,5 +30,6 @@ export default function useAsyncStorage() {
       console.error('Error clearing AsyncStorage:', e);
     }
   };
+
 return {setDataStorage,getDataStorage, clearDataStorage}
 }
