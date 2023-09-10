@@ -4,6 +4,7 @@ import Snackbar from 'react-native-snackbar';
 import RNFS from 'react-native-fs';
 import {etrs2jtsk} from './Calculations/transformation';
 import {DataContext} from './Functions/DataContext';
+import {PERMISSIONS, request} from 'react-native-permissions';
 import {styles} from './Styles/styles';
 
 export default Measurement = ({nmeaParsed, rawMeasurement}) => {
@@ -47,9 +48,15 @@ export default Measurement = ({nmeaParsed, rawMeasurement}) => {
   const updateCoordinates = () => {
     const newPoint = {
       title: measurementSettings.nazev,
-      b: measurementSettings.sumCoordX / (measurementSettings.coordMeasuredTime+1),
-      l: measurementSettings.sumCoordY / (measurementSettings.coordMeasuredTime+1),
-      h: measurementSettings.sumCoordZ / (measurementSettings.coordMeasuredTime+1),
+      b:
+        measurementSettings.sumCoordX /
+        (measurementSettings.coordMeasuredTime + 1),
+      l:
+        measurementSettings.sumCoordY /
+        (measurementSettings.coordMeasuredTime + 1),
+      h:
+        measurementSettings.sumCoordZ /
+        (measurementSettings.coordMeasuredTime + 1),
       accuB: measurementSettings.coordAccuX,
       accuL: measurementSettings.coordAccuY,
       accuH: measurementSettings.coordAccuZ,
@@ -148,6 +155,23 @@ export default Measurement = ({nmeaParsed, rawMeasurement}) => {
   // Function to export points into txt
   const exportRawData = async filePath => {
     try {
+      const permision_result = await request(
+        PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE,
+      );
+
+      if (permision_result !== 'granted') {
+        Snackbar.show({
+          text: 'Nemáte oprávnění k zápisu do souboru',
+          duration: Snackbar.LENGTH_SHORT,
+          textColor: 'red',
+          marginBottom: 5,
+        });
+
+        console.log('Permission to access storage was denied');
+
+        return;
+      }
+
       await RNFS.appendFile(filePath, rawMeasurement.toString(), 'utf8'); //rewrite to streamdata
 
       console.log('File saved successfully to ' + filePath);
@@ -223,7 +247,7 @@ export default Measurement = ({nmeaParsed, rawMeasurement}) => {
         sumCoordZ: measurementSettings.sumCoordZ + parseFloat(etrs.h),
         formattedTime: `${hours}:${minutes}:${seconds}`,
       });
-    } 
+    }
 
     // Clean up the interval when the component unmounts
     return () => {
