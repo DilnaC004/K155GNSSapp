@@ -3,11 +3,11 @@
 // Zkontrolovat project ID, pokud neni zadny, vyber zakazku
 // Pokud neni null, zobraz body ze zakazky do console.log
 // Zobrazit v rolovacim menu pro vyber k vytyceni   --- POVEDLO SE
-// Po zakliknuti se spocte uhel a delka
-// Zobrazit uhel a delku k bodu
-// Ukazat smerovku
+// Po zakliknuti se spocte uhel a delka -- POVEDLO SE, napsat obecne
+// Zobrazit uhel a delku k bodu  -- POVEDLO SE
+// Ukazat smerovku  -- POVEDLO SE
 
-import React, {useState, useEffect, useContext} from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   SafeAreaView,
   View,
@@ -16,6 +16,7 @@ import {
   FlatList,
   TouchableOpacity,
   ScrollView,
+  Image,
   PermissionsAndroid,
   Platform,
   TextInput,
@@ -23,35 +24,36 @@ import {
   Switch,
 } from 'react-native';
 import Snackbar from 'react-native-snackbar';
-import {styles} from '../Styles/styles';
+import { styles } from '../Styles/styles';
 import IconMaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import {etrs2jtsk, jtsk2etrs} from '../Calculations/transformation';
+import { etrs2jtsk, jtsk2etrs } from '../Calculations/transformation';
 import GPS from 'gps';
-import {DataContext} from '../Functions/DataContext';
+import { DataContext } from '../Functions/DataContext';
 
 
 // Funkce pro nacteni dat zakazky
-const ItemPoint = ({item, onPress, backgroundColor, textColor, textColor1}) => (
+const ItemPoint = ({ item, onPress, backgroundColor, textColor, textColor1 }) => (
   <ScrollView
     horizontal
     contentContainerStyle={styles.scrollViewContent}
     showsHorizontalScrollIndicator={false}>
-    <Text style={[styles.title, {color: textColor1}]}>{item.title} </Text>
-    <Text style={[styles.title, {color: textColor1}]}>B </Text>
-    <Text style={[styles.title, {color: textColor}]}>{item.b} </Text>
-    <Text style={[styles.title, {color: textColor1}]}>L </Text>
-    <Text style={[styles.title, {color: textColor}]}>{item.l} </Text>
-    <Text style={[styles.title, {color: textColor1}]}>H </Text>
-    <Text style={[styles.title, {color: textColor}]}>{item.h} </Text>
+    <Text style={[styles.title, { color: textColor }]}>{item.title} </Text>
+    <Text style={[styles.title, { color: textColor1 }]}>B </Text>
+    <Text style={[styles.title, { color: textColor }]}>{item.b} </Text>
+    <Text style={[styles.title, { color: textColor1 }]}>L </Text>
+    <Text style={[styles.title, { color: textColor }]}>{item.l} </Text>
+    <Text style={[styles.title, { color: textColor1 }]}>H </Text>
+    <Text style={[styles.title, { color: textColor }]}>{item.h} </Text>
   </ScrollView>
 );
 
 export const Placing = () => {
-  const {data, updateData} = useContext(DataContext);
+  const { data, updateData } = useContext(DataContext);
   const gps = new GPS();
   var NMEA = null;
   const [dist, setDist] = useState(0);
-  var heading;
+  const [heading, setHeading] = useState(0);
+  const [heightDelta, setHeightDelta] = useState(0);
   const [points, setPoints] = useState(
     data.projects[data.projectSettings.projectId].points,
   );
@@ -67,7 +69,7 @@ export const Placing = () => {
   // Call the update routine directly with a NMEA sentence, which would
   // come from the serial port or stream-reader normally
   gps.update(
-    '$GPGGA,224900.000,5032.3762,N,01403.5393,E,1,04,7.8,498.6,M,48.0,M,,0000*5E',
+    '$GPGGA,224900.000,5032.3762,N,01503.5393,E,1,04,7.8,123.1,M,48.0,M,,0000*5E',
   );
 
   // Kopie ukladani souradnic bodu z importu
@@ -80,14 +82,12 @@ export const Placing = () => {
   };
 
   const calculate = (dist, heading, gps) => {
-    setDist(GPS.Distance(gps.lat, gps.lon, point.b, point.l) / 1000);
-    heading = GPS.Heading(gps.lat, gps.lon, point.b, point.l);
-    console.log(gps);
-    console.log(dist);
-    console.log(heading);
+    setDist((GPS.Distance(gps.state.lat, gps.state.lon, point.b, point.l) * 1000).toFixed(3)); // metry
+    setHeightDelta((point.h - gps.state.alt).toFixed(3));
+    setHeading((GPS.Heading(gps.state.lat, gps.state.lon, point.b, point.l)).toFixed(5));
   };
 
-  const renderItemPoint = ({item}) => {
+  const renderItemPoint = ({ item }) => {
     return (
       <View style={styles.buttonContainer}>
         <TouchableOpacity onPress={setPoint(item)}>
@@ -100,15 +100,23 @@ export const Placing = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Vytyčení</Text>
-      <Text style={styles.text}>Zvol bod z aktivni zakazky:</Text>
+      <Text style={styles.text}>Zvol bod z aktivní zakazky:</Text>
       <FlatList
         data={points}
         renderItem={renderItemPoint}
         keyExtractor={item => item.title}
       />
-      <Button title="Vytyčuj" onPress={() => {calculate(dist, heading, gps, points)}} />
-      <View style={styles.buttonContainer}>
-        <Text style={styles.title}>Vzdalenost: {dist}</Text>
+      <Button title="Vytyčuj" onPress={() => { calculate(dist, heading, gps) }} />
+      <View style={styles.container}>
+        <Text style={styles.title}>Vzdálenost: {dist} m</Text>
+        <Text style={styles.title}>Prevýšení: {heightDelta} m</Text>
+        <Text style={styles.title}>Směr: {heading}˚</Text>
+        <View style={styles.compassWrapper}>
+          <Image
+          source={require('./arrow.png')}
+          style={[styles.arrow, { transform: [{ rotate: heading + 'deg' }] }]}
+          />
+        </View>
       </View>
     </View>
   );
