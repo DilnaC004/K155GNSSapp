@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import { View, Text, TextInput, Button, Switch} from 'react-native';
-
+import Snackbar from 'react-native-snackbar';
 import { styles } from '../Styles/styles';
 import { etrs2jtsk, jtsk2etrs} from '../Calculations/transformation'
 
@@ -83,6 +83,13 @@ export default Importuj = ({ projectPoints, setProjectPoints }) => {
     setPointX('');
     setPointY('');
     setPointZ('');
+
+    Snackbar.show({
+      text: 'Bod uložen',
+      duration: Snackbar.LENGTH_SHORT,
+      textColor: 'green',
+      marginBottom: 5,
+    });
   };
 
   // Assuming you have a function to convert DMS (Degrees Minutes Seconds) to Decimal degrees
