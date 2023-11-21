@@ -32,6 +32,7 @@ export default FlatListPoint = ({
         <TouchableOpacity
           onPress={() => {
             deletePoint(item.title, data.projects[projectSettings.projectId].title);
+          onPress={() => {
           }}>
           <IconMaterialIcons name="delete" size={24} color="black" />
         </TouchableOpacity>
