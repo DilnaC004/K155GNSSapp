@@ -110,6 +110,7 @@ export default Project = ({clearStorage}) => {
           <FlatListPoint
             projectSettings={projectSettings}
             updateProjectSettings={updateProjectSettings}
+            placing = {false}
           />
         )}
       {projectSettings.showCreatePoint && ( // conditional rendering based on the new piece of state

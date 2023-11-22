@@ -33,7 +33,7 @@ import FlatListPoint from './ProjectComponents/FlatListPoint';
 
 export const Placing = () => {
   const {data, updateData} = useContext(DataContext);
-  const [placingSettings, setPlacingSettings] = useState(data.projectPlacing);
+  const [placingSettings, setPlacingSettings] = useState(data.placingSettings);
   const updatePlacingSettings = newSettings => {
     setPlacingSettings(prevSettings => ({
       ...prevSettings,
@@ -46,8 +46,10 @@ export const Placing = () => {
       dist: 0,
       selectedPoint: 0,
       heading: 0,
+      heightDelta: 0,
     });
   }, []);
+
 
   const gps = new GPS();
   var NMEA = null;
@@ -57,7 +59,6 @@ export const Placing = () => {
   const [points, setPoints] = useState(
     data.projects[data.projectSettings.projectId].points,
   );
-  const [point, setPoint] = useState(points[0]);
 
   // Add an event listener on all protocols
   gps.on('data', parsed => {
@@ -71,15 +72,18 @@ export const Placing = () => {
   );
 
   const calculate = (dist, heading, gps) => {
-    setDist(
-      (
-        GPS.Distance(gps.state.lat, gps.state.lon, point.b, point.l) * 1000
-      ).toFixed(3),
-    ); // metry
-    setHeightDelta((point.h - gps.state.alt).toFixed(3));
-    setHeading(
-      GPS.Heading(gps.state.lat, gps.state.lon, point.b, point.l).toFixed(5),
-    );
+    var point = placingSettings.points[placingSettings.selectedPoint]
+    updatePlacingSettings({
+      dist: GPS.Distance(gps.state.lat, gps.state.lon, point.b, point.l) * 1000,
+      heading: GPS.Heading(gps.state.lat, gps.state.lon, point.b, point.l),
+      heightDelta: (point.h - gps.state.alt)
+    });    
+  };
+
+  const click = (index) => {
+    console.log('Calling from Placing')
+    updatePlacingSettings({selectedPoint: index});
+
   };
 
   return (
@@ -88,7 +92,9 @@ export const Placing = () => {
       <Text style={styles.text}>Zvol bod z aktivní zakazky:</Text>
       <FlatListPoint
         projectSettings={data.projectSettings}
-        updateProjectSettings={updatePlacingSettings}
+        updateProjectSettings={click}
+        placing = {true}
+
       />
       <Button
         title="Vytyčuj"
@@ -97,13 +103,13 @@ export const Placing = () => {
         }}
       />
       <View style={styles.container}>
-        <Text style={styles.title}>Vzdálenost: {dist} m</Text>
-        <Text style={styles.title}>Prevýšení: {heightDelta} m</Text>
-        <Text style={styles.title}>Směr: {heading}˚</Text>
+        <Text style={styles.title}>Vzdálenost: {placingSettings.dist.toFixed(3)} m</Text>
+        <Text style={styles.title}>Prevýšení: {placingSettings.heightDelta.toFixed(3)} m</Text>
+        <Text style={styles.title}>Směr: {placingSettings.heading.toFixed(0)}˚</Text>
         <View style={styles.compassWrapper}>
           <Image
             source={require('./arrow.png')}
-            style={[styles.arrow, {transform: [{rotate: heading + 'deg'}]}]}
+            style={[styles.arrow, {transform: [{rotate: placingSettings.heading + 'deg'}]}]}
           />
         </View>
       </View>

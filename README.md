@@ -27,7 +27,10 @@ packages:
 - skyplot
 - continuous measurement on satellite
 - placing
+    - fix heading with mobile IMU data
 - import points
 - firebase upload
 - add unpaired bluetooth devices
 - i18n
+
+- adjust FlatlistPoint, so that you can view more point info (use Modal, X, Y, H, B, L)
