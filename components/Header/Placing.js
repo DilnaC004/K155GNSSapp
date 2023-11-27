@@ -1,12 +1,3 @@
-// Jak ulozit do prozatimni promenne po kliknuti
-
-// Zkontrolovat project ID, pokud neni zadny, vyber zakazku
-// Pokud neni null, zobraz body ze zakazky do console.log
-// Zobrazit v rolovacim menu pro vyber k vytyceni   --- POVEDLO SE
-// Po zakliknuti se spocte uhel a delka -- POVEDLO SE, napsat obecne
-// Zobrazit uhel a delku k bodu  -- POVEDLO SE
-// Ukazat smerovku  -- POVEDLO SE
-
 import React, {useState, useEffect, useContext} from 'react';
 import {
   SafeAreaView,
@@ -30,6 +21,7 @@ import {etrs2jtsk, jtsk2etrs} from '../Calculations/transformation';
 import GPS from 'gps';
 import {DataContext} from '../Functions/DataContext';
 import FlatListPoint from './ProjectComponents/FlatListPoint';
+import CompassHeading from 'react-native-compass-heading';
 
 export const Placing = () => {
   const {data, updateData} = useContext(DataContext);
@@ -50,15 +42,22 @@ export const Placing = () => {
     });
   }, []);
 
-
   const gps = new GPS();
   var NMEA = null;
-  const [dist, setDist] = useState(0);
-  const [heading, setHeading] = useState(0);
-  const [heightDelta, setHeightDelta] = useState(0);
-  const [points, setPoints] = useState(
-    data.projects[data.projectSettings.projectId].points,
-  );
+  const points = data.projects[data.projectSettings.projectId].points;
+  var compassHeading = 0;
+  var compassAccuracy = 0 ;
+  var positionJtsk;
+  var placingJtsk;
+
+  useEffect(() => {
+    const degree_update_rate = 3;
+
+    CompassHeading.start(degree_update_rate, ({compassHeading, compassAccuracy}) => {
+      console.log('CompassHeading: ', compassHeading, compassAccuracy);
+    });
+  }, []);
+
 
   // Add an event listener on all protocols
   gps.on('data', parsed => {
@@ -71,19 +70,23 @@ export const Placing = () => {
     '$GPGGA,224900.000,5032.3762,N,01503.5393,E,1,04,7.8,123.1,M,48.0,M,,0000*5E',
   );
 
-  const calculate = (dist, heading, gps) => {
+  const calculate = (gps) => {
     var point = placingSettings.points[placingSettings.selectedPoint]
+    positionJtsk = etrs2jtsk(gps.state.lat, gps.state.lon, gps.state.alt)
+    placingJtsk = etrs2jtsk(point.b, point.l, point.h)
+
     updatePlacingSettings({
       dist: GPS.Distance(gps.state.lat, gps.state.lon, point.b, point.l) * 1000,
       heading: GPS.Heading(gps.state.lat, gps.state.lon, point.b, point.l),
-      heightDelta: (point.h - gps.state.alt)
-    });    
+      heightDelta: (point.h - gps.state.alt),
+      deltaY: placingJtsk.Y - positionJtsk.Y,
+      deltaX: placingJtsk.X - positionJtsk.X,
+    });   
   };
-
+  
   const click = (index) => {
     console.log('Calling from Placing')
     updatePlacingSettings({selectedPoint: index});
-
   };
 
   return (
@@ -99,17 +102,19 @@ export const Placing = () => {
       <Button
         title="Vytyčuj"
         onPress={() => {
-          calculate(dist, heading, gps);
+          calculate(gps);
         }}
       />
       <View style={styles.container}>
         <Text style={styles.title}>Vzdálenost: {placingSettings.dist.toFixed(3)} m</Text>
         <Text style={styles.title}>Prevýšení: {placingSettings.heightDelta.toFixed(3)} m</Text>
         <Text style={styles.title}>Směr: {placingSettings.heading.toFixed(0)}˚</Text>
+        <Text style={styles.title}>delta Y: {placingSettings.deltaY.toFixed(3)} m</Text>
+        <Text style={styles.title}>delta X: {placingSettings.deltaX.toFixed(3)} m</Text>
         <View style={styles.compassWrapper}>
           <Image
             source={require('./arrow.png')}
-            style={[styles.arrow, {transform: [{rotate: placingSettings.heading + 'deg'}]}]}
+            style={[styles.arrow, {transform: [{rotate: (placingSettings.heading - compassHeading) + 'deg'}]}]}
           />
         </View>
       </View>

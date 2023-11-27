@@ -127,6 +127,8 @@ export default configurationData = {
     dist: 0,
     heading: 0,
     heightDelta: 0,
+    deltaY: 0,
+    deltaX: 0,
   },
   nmeaRead: [],
   rtcmNtrip: [],

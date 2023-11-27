@@ -12,6 +12,7 @@ packages:
 - yarn add react-native-document-picker 
 - npm i react-native-fs
 - npm i react-native-bluetooth-classic - https://github.com/kenjdavidson/react-native-bluetooth-classic
+- npm install react-native-compass-heading - https://github.com/firofame/react-native-compass-heading
 
 # TODO
 - separate ubx and nmea from bluetooth datastream
