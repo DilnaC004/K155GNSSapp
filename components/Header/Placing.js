@@ -85,7 +85,6 @@ export const Placing = () => {
   };
   
   const click = (index) => {
-    console.log('Calling from Placing')
     updatePlacingSettings({selectedPoint: index});
   };
 

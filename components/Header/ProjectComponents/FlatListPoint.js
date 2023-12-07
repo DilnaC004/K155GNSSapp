@@ -1,8 +1,11 @@
 import React, { useContext, useState } from 'react';
-import { FlatList, View, Text, TouchableOpacity, ScrollView, Modal } from 'react-native';
+import { FlatList, View, Text, TouchableOpacity, ScrollView, Modal, Button } from 'react-native';
 import IconMaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { DataContext } from '../../Functions/DataContext';
 import { styles } from '../../Styles/styles';
+import { etrs2jtsk } from '../../Calculations/transformation';
+
+
 
 const ItemID = ({ item, textColor }) => (
   <ScrollView
@@ -13,12 +16,18 @@ const ItemID = ({ item, textColor }) => (
   </ScrollView>
 );
 
-const ItemInfo = ({ item, textColor }) => (
+const ItemInfo = ({ item, textColor, jtskCoordinates }) => (
   <View>
     <Text style={[styles.title, { color: textColor }]}>Bod: {item.title}</Text>
     <Text style={[styles.title, { color: textColor }]}>B: {item.b}</Text>
     <Text style={[styles.title, { color: textColor }]}>L: {item.l}</Text>
     <Text style={[styles.title, { color: textColor }]}>H: {item.h}</Text>
+    <Text style={[styles.title, { color: textColor }]}>X: {jtskCoordinates.X.toFixed(3)}m</Text>
+    <Text style={[styles.title, { color: textColor }]}>Y: {jtskCoordinates.Y.toFixed(3)}m</Text>
+    <Text style={[styles.title, { color: textColor }]}>Hbpv: {jtskCoordinates.Hbpv.toFixed(3)}m</Text>
+    <Text style={[styles.title, { color: textColor }]}>PDOP: {item.pdop}</Text>
+    <Text style={[styles.title, { color: textColor }]}>Výška antény: {item.height}m</Text>
+    <Text style={[styles.title, { color: textColor }]}>Offset: {item.offset}m</Text>
   </View>
 );
 
@@ -28,8 +37,15 @@ export default FlatListPoint = ({
   placing,
 }) => {
   const { data, updateData } = useContext(DataContext);
-  const [modalVisible, setModalVisible] = useState(false);
+  const [modalVisible1, setModalVisible1] = useState(false);
+  const [modalVisible2, setModalVisible2] = useState(false);
   const [selectedPoint, setSelectedPoint] = useState(null);
+  const [jtskCoordinates, setJtskCoordinates] = useState(null);
+
+  const useEtrs2Jtsk = (item) => {
+    const tempJtsk = etrs2jtsk(item.b, item.l, item.h);
+    setJtskCoordinates(tempJtsk);
+  };
 
   const renderItemID = ({ item, index }) => {
     return (
@@ -38,27 +54,29 @@ export default FlatListPoint = ({
         <TouchableOpacity
           onPress={() => {
             setSelectedPoint(item);
-            setModalVisible(true);
+            useEtrs2Jtsk(item);
+            setModalVisible1(true);
           }}>
           <IconMaterialIcons name="info" size={24} color="black" />
         </TouchableOpacity>
-        {!placing &&
-          <TouchableOpacity
-            onPress={() => {
-              deletePoint(item.title, data.projects[projectSettings.projectId].title);
-            }}>
-            <IconMaterialIcons name="delete" size={24} color="black" />
-          </TouchableOpacity>}
         {placing && <TouchableOpacity
           onPress={() => {
             updateProjectSettings(index);
-            console.log('Kliknuto')
           }}>
           <IconMaterialIcons name="save" size={24} color="black" />
         </TouchableOpacity>}
+        {!placing &&
+          <TouchableOpacity
+            onPress={() => {
+              setSelectedPoint(item);
+              setModalVisible2(true);
+            }}>
+            <IconMaterialIcons name="delete" size={24} color="black" />
+          </TouchableOpacity>}
       </View >
     );
   };
+
 
   // Function to delete a point from a project in the data array
   const deletePoint = (pointTitleToDelete, projectTitleToDelete) => {
@@ -90,19 +108,47 @@ export default FlatListPoint = ({
       <Modal
         animationType="slide"
         transparent={true}
-        visible={modalVisible}
+        visible={modalVisible1}
         onRequestClose={() => {
-          setModalVisible(false);
+          setModalVisible1(false);
         }}>
         <View style={{ marginTop: 22 }}>
           <View style={styles.modalView}>
-            <ItemInfo item={selectedPoint} textColor={'black'} />
-            <TouchableOpacity
-              onPress={() => {
-                setModalVisible(!modalVisible);
-              }}>
-              <Text>Zavřít okno</Text>
-            </TouchableOpacity>
+            <ItemInfo item={selectedPoint} textColor={'black'} jtskCoordinates={jtskCoordinates} />
+            <Button
+                title="Zavřít okno"
+                onPress={() => {
+                  setModalVisible1(!modalVisible1);
+                }}
+              />
+          </View>
+        </View>
+      </Modal>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible2}
+        onRequestClose={() => {
+          setModalVisible2(false);
+        }}>
+        <View style={{ marginTop: 22 }}>
+          <View style={styles.modalView}>
+            <Text style={styles.title}>
+              Opravdu chcete smazat tento bod?
+            </Text>
+              <Button
+                title="Zpět"
+                onPress={() => {
+                  setModalVisible2(!modalVisible2);
+                }}
+              />
+            {!placing &&
+              <TouchableOpacity
+                onPress={() => {
+                  deletePoint(selectedPoint.title, data.projects[projectSettings.projectId].title);
+                }}>
+                <IconMaterialIcons name="delete" size={24} color="black" />
+              </TouchableOpacity>}
           </View>
         </View>
       </Modal>
