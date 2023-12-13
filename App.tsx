@@ -36,7 +36,7 @@ export default function App(): JSX.Element {
 
     for(let i = 0; i < nmeaRead.length; i++){
       if(nmeaRead[i].includes("$GNGGA")){
-        setLastGGA(nmeaRead[i]);
+        setLastGGA(nmeaRead[i]); // for RTCM 
         //console.log(nmeaRead[i]);
         gps.update(nmeaRead[i]);
       }
@@ -103,7 +103,7 @@ export default function App(): JSX.Element {
               rawMeasurement={rawMeasurement}
             />
           )}
-          {modalType.placing && <Placing />}
+          {modalType.placing && <Placing nmeaParsed={nmeaParsed}/>}
           {modalType.map && <Map />}
           {modalType.skyplot && <Skyplot />}
         </View>
