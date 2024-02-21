@@ -54,8 +54,9 @@ export const Placing = ({nmeaParsed}) => {
   var placingJtsk;
 
   useEffect(() => {
-    calculate(nmeaParsed)
-
+    if(placingSettings.points){
+      calculate(nmeaParsed)
+    }
   }, [placingSettings.selectedPoint]);
 
   const calculate = (nmeaParsed) => {

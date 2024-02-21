@@ -65,14 +65,6 @@ export default FlatListPoint = ({
           }}>
           <IconMaterialIcons name="save" size={24} color="black" />
         </TouchableOpacity>}
-        {!placing &&
-          <TouchableOpacity
-            onPress={() => {
-              setSelectedPoint(item);
-              setModalVisible2(true);
-            }}>
-            <IconMaterialIcons name="delete" size={24} color="black" />
-          </TouchableOpacity>}
       </View >
     );
   };
@@ -116,11 +108,18 @@ export default FlatListPoint = ({
           <View style={styles.modalView}>
             <ItemInfo item={selectedPoint} textColor={'black'} jtskCoordinates={jtskCoordinates} />
             <Button
-                title="Zavřít okno"
+              title="Zavřít okno"
+              onPress={() => {
+                setModalVisible1(!modalVisible1);
+              }}
+            />
+            {!placing &&
+              <TouchableOpacity
                 onPress={() => {
-                  setModalVisible1(!modalVisible1);
-                }}
-              />
+                  setModalVisible2(true);
+                }}>
+                <IconMaterialIcons name="delete" size={24} color="black" />
+              </TouchableOpacity>}
           </View>
         </View>
       </Modal>
@@ -131,17 +130,17 @@ export default FlatListPoint = ({
         onRequestClose={() => {
           setModalVisible2(false);
         }}>
-        <View style={{ marginTop: 22 }}>
+        <View style={{ marginTop: 270 }}>
           <View style={styles.modalView}>
             <Text style={styles.title}>
               Opravdu chcete smazat tento bod?
             </Text>
-              <Button
-                title="Zpět"
-                onPress={() => {
-                  setModalVisible2(!modalVisible2);
-                }}
-              />
+            <Button
+              title="Zpět"
+              onPress={() => {
+                setModalVisible2(!modalVisible2);
+              }}
+            />
             {!placing &&
               <TouchableOpacity
                 onPress={() => {
