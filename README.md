@@ -13,6 +13,7 @@ packages:
 - npm i react-native-fs
 - npm i react-native-bluetooth-classic - https://github.com/kenjdavidson/react-native-bluetooth-classic
 - npm install react-native-compass-heading - https://github.com/firofame/react-native-compass-heading
+- npm install react-native-maps - https://github.com/react-native-maps/react-native-maps
 
 # TODO
 - separate ubx and nmea from bluetooth datastream
@@ -30,3 +31,4 @@ packages:
 - firebase upload
 - add unpaired bluetooth devices
 - i18n
+- force light mode?

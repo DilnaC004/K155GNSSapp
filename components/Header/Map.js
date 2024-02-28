@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { SafeAreaView, View, Text, Button, PermissionsAndroid, Platform } from 'react-native';
 import Snackbar from 'react-native-snackbar';
 import { styles } from '../Styles/styles';
+import MapView from 'react-native-maps';
 
 
 
@@ -9,7 +10,7 @@ export const Map = () => {
 
   useEffect(() => {
     Snackbar.show({
-      text: 'Tato funkce není dostupná',
+      text: 'Tato funkce je ve vývoji',
       duration: Snackbar.LENGTH_SHORT,
       textColor: 'red',
       marginBottom: 5,
@@ -18,7 +19,7 @@ export const Map = () => {
   
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Mapa</Text>
+      <Text>Sem prijde zobrazeni mapy</Text>
     </View>
   );
 };

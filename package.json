@@ -23,6 +23,7 @@
     "react-native-device-info": "^10.8.0",
     "react-native-document-picker": "^9.0.1",
     "react-native-fs": "^2.20.0",
+    "react-native-maps": "^1.10.3",
     "react-native-permissions": "^3.8.4",
     "react-native-select-dropdown": "^3.3.4",
     "react-native-snackbar": "^2.6.2",
