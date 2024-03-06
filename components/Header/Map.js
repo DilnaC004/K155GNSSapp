@@ -3,10 +3,24 @@ import { SafeAreaView, View, Text, Button, PermissionsAndroid, Platform } from '
 import Snackbar from 'react-native-snackbar';
 import { styles } from '../Styles/styles';
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
+import { StyleSheet } from 'react-native';
 
 
 
 export const Map = () => {
+
+  const styles = StyleSheet.create({
+    container: {
+      ...StyleSheet.absoluteFillObject,
+      height: 400,
+      width: 400,
+      justifyContent: 'flex-end',
+      alignItems: 'center',
+    },
+    map: {
+      ...StyleSheet.absoluteFillObject,
+    },
+   });
 
   useEffect(() => {
     Snackbar.show({
@@ -21,6 +35,7 @@ export const Map = () => {
     <View style={styles.container}>
       <MapView
         provider={PROVIDER_GOOGLE}
+        style={styles.map}
         initialRegion={{
           latitude: 37.78825,
           longitude: -122.4324,
