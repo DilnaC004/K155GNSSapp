@@ -2,26 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { SafeAreaView, View, Text, Button, PermissionsAndroid, Platform } from 'react-native';
 import Snackbar from 'react-native-snackbar';
 import { styles } from '../Styles/styles';
-import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
-import { StyleSheet } from 'react-native';
-
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
 
 export const Map = () => {
-
-  const styles = StyleSheet.create({
-    container: {
-      ...StyleSheet.absoluteFillObject,
-      height: 400,
-      width: 400,
-      justifyContent: 'flex-end',
-      alignItems: 'center',
-    },
-    map: {
-      ...StyleSheet.absoluteFillObject,
-    },
-   });
-
   useEffect(() => {
     Snackbar.show({
       text: 'Tato funkce je ve vývoji',
@@ -32,18 +16,20 @@ export const Map = () => {
   }, []);
 
   return (
-    <View style={styles.container}>
+    <View style={styles.mapContainer}>
       <MapView
         provider={PROVIDER_GOOGLE}
         style={styles.map}
         initialRegion={{
-          latitude: 37.78825,
-          longitude: -122.4324,
-          latitudeDelta: 0.0922,
-          longitudeDelta: 0.0421,
-        }}
-      />
-      <Text>Ahoj sv2te</Text>
+          latitude: 50.1042375,
+          longitude: 14.3883522,
+          latitudeDelta: 0.015,
+          longitudeDelta: 0.015,
+        }}>
+        <Marker
+          coordinate={{ latitude: 50.1042375, longitude: 14.3883522 }}
+        />
+      </MapView>
     </View>
   );
 };

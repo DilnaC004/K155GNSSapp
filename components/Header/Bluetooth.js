@@ -1,14 +1,14 @@
-import React, {useState, useEffect, useContext, forwardRef} from 'react';
-import {View, Text, Button} from 'react-native';
-import {DataContext} from '../Functions/DataContext';
+import React, { useState, useEffect, useContext, forwardRef } from 'react';
+import { View, Text, Button, PermissionsAndroid } from 'react-native';
+import { DataContext } from '../Functions/DataContext';
 import SelectDropdown from 'react-native-select-dropdown';
 import RNBluetoothClassic from 'react-native-bluetooth-classic';
 import Snackbar from 'react-native-snackbar';
-import {styles} from '../Styles/styles';
+import { styles } from '../Styles/styles';
 import NmeaViewer from './NmeaViewer';
 
-export default Bluetooth = ({rtcmNtrip, getNmeaRead}) => {
-  const {data, updateData} = useContext(DataContext);
+export default Bluetooth = ({ rtcmNtrip, getNmeaRead }) => {
+  const { data, updateData } = useContext(DataContext);
   const [intervalId, setIntervalId] = useState(0);
   const [bluetoothSettings, setBluetoothSettings] = useState(
     data.bluetoothSettings,
@@ -25,9 +25,25 @@ export default Bluetooth = ({rtcmNtrip, getNmeaRead}) => {
 
   const scanForDevices = async () => {
     try {
-      let paired = await RNBluetoothClassic.getBondedDevices();
-      const pairedDeviced = paired;
-      updateBluetoothSettings({devices: pairedDeviced});
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+        {
+          title: 'Bluetooth scan permission',
+          message:
+            'K155GNSSapp need permission to scan Bluetooth devices ',
+          buttonNeutral: 'Ask Me Later',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        },
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        console.log('Access granted')
+        let paired = await RNBluetoothClassic.getBondedDevices();
+        const pairedDeviced = paired;
+        updateBluetoothSettings({ devices: pairedDeviced });
+      } else {
+        console.log('Access not granted')
+      }
     } catch (err) {
       Snackbar.show({
         text: err,
@@ -46,7 +62,7 @@ export default Bluetooth = ({rtcmNtrip, getNmeaRead}) => {
       console.log(
         'Disconnected from ' + bluetoothSettings.connectedDeviceClassic.name,
       );
-      updateBluetoothSettings({isEnabled: !bluetoothSettings.isEnabled});
+      updateBluetoothSettings({ isEnabled: !bluetoothSettings.isEnabled });
     }
     clearInterval(intervalId);
   };
@@ -64,7 +80,7 @@ export default Bluetooth = ({rtcmNtrip, getNmeaRead}) => {
         console.log(
           'Connecting to ' + bluetoothSettings.connectedDeviceClassic.name,
         );
-        updateBluetoothSettings({isEnabled: !bluetoothSettings.isEnabled});
+        updateBluetoothSettings({ isEnabled: !bluetoothSettings.isEnabled });
       } catch (err) {
         console.log(err);
         Snackbar.show({
@@ -73,7 +89,7 @@ export default Bluetooth = ({rtcmNtrip, getNmeaRead}) => {
           textColor: 'red',
           marginBottom: 5,
         });
-        updateBluetoothSettings({isEnabled: true});
+        updateBluetoothSettings({ isEnabled: true });
       }
     } else {
       Snackbar.show({
@@ -99,7 +115,7 @@ export default Bluetooth = ({rtcmNtrip, getNmeaRead}) => {
           storeData.push(readData);
         }
         getNmeaRead(storeData);
-        updateData({nmeaRead: storeData});
+        updateData({ nmeaRead: storeData });
       }
     } catch (err) {
       console.log(err);
@@ -169,7 +185,7 @@ export default Bluetooth = ({rtcmNtrip, getNmeaRead}) => {
             connectedDeviceClassic: bluetoothSettings.devices[index],
           });
         }}
-        renderDropdownIcon={() => {}}
+        renderDropdownIcon={() => { }}
         dropdownIconPosition={'right'}
       />
       <Button

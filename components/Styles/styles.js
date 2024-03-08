@@ -1,3 +1,5 @@
+import { StyleSheet } from 'react-native';
+
 export const styles = {
   mereniContainer: {
     paddingHorizontal: 16,
@@ -253,5 +255,15 @@ export const styles = {
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
+  },
+  mapContainer: {
+    ...StyleSheet.absoluteFillObject,
+    height: 400,
+    width: 400,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  map: {
+    ...StyleSheet.absoluteFillObject,
   },
 };
