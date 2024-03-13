@@ -25,7 +25,7 @@ export default Bluetooth = ({ rtcmNtrip, getNmeaRead }) => {
 
   const scanForDevices = async () => {
     const androidVersion = Platform.constants['Release'];
-    console.log('SDK ' + androidVersion);
+    console.log('Android ' + androidVersion);
     const granted = await PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
       {

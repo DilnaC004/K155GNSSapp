@@ -11,9 +11,12 @@ import { DataContext } from '../Functions/DataContext';
 export const Map = ({}) => {
   const { data } = useContext(DataContext);
   const point = data.projects[data.projectSettings.projectId].points
-  const [initialRegion, setInitialRegion] = useState(null);
-  const [region, setRegion] = useState(initialRegion);
-  const debouncedSetRegion = debounce(setRegion, 100);
+  const [region, setRegion] = useState({
+    latitude: 50.1042375,
+    longitude: 14.3883522,
+    latitudeDelta: 1,
+    longitudeDelta: 1,
+  });
 
   useEffect(() => {
     Snackbar.show({
@@ -24,8 +27,8 @@ export const Map = ({}) => {
     });
   }, []);
 
-  useEffect(() => {
-    if (point.length > 0 && !initialRegion) {
+  const fitMapbyPoints = () => {
+    if (point.length > 0) {
       const latitudes = point.map((point) => point.b);
       const longitudes = point.map((point) => point.l);
 
@@ -34,40 +37,29 @@ export const Map = ({}) => {
       const minLng = Math.min(...longitudes);
       const maxLng = Math.max(...longitudes);
 
-      const deltaLat = Math.abs(maxLat - minLat);
-      const deltaLng = Math.abs(maxLng - minLng);
-
-      setInitialRegion({
-        latitude: (maxLat + minLat) / 2,
-        longitude: (maxLng + minLng) / 2,
-        latitudeDelta: deltaLat * 1.5, // Add some padding to the delta
-        longitudeDelta: deltaLng * 1.5, // Add some padding to the delta
-      });
+      const newRegion = {
+        latitude: (minLat + maxLat) / 2,
+        longitude: (minLng + maxLng) / 2,
+        latitudeDelta: Math.abs(maxLat - minLat) + 0.05,
+        longitudeDelta: Math.abs(maxLng - minLng) + 0.05,
+      };
+      console.log(point);
+      console.log(newRegion);
+      setRegion(newRegion);
     }
-  }, [point]);
-
-  useEffect(() => {   /// SMAZAT
-    console.log('InitialRegion: ', initialRegion);
-  }, [initialRegion]);
-
-  const onRegionChange = (newRegion) => {
-    debouncedSetRegion(newRegion);
   };
 
+  
   useEffect(() => {
-    return () => {
-      debouncedSetRegion.cancel();
-    };
-  }, []);
+    fitMapbyPoints();
+  }, [point]);
 
   return (
     <View style={styles.mapContainer}>
       <MapView
         provider={PROVIDER_GOOGLE}
         style={styles.map}
-        region={region}
-        onRegionChange={onRegionChange}
-      >
+        region={region}>
         {point.map((point, index) => (
           <Marker
             key={index}
