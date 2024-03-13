@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, forwardRef } from 'react';
-import { View, Text, Button, PermissionsAndroid } from 'react-native';
+import { View, Text, Button, PermissionsAndroid, Platform } from 'react-native';
 import { DataContext } from '../Functions/DataContext';
 import SelectDropdown from 'react-native-select-dropdown';
 import RNBluetoothClassic from 'react-native-bluetooth-classic';
@@ -24,35 +24,48 @@ export default Bluetooth = ({ rtcmNtrip, getNmeaRead }) => {
   const switchConnect = bluetoothSettings.isEnabled ? 'Připoj' : 'Odpoj';
 
   const scanForDevices = async () => {
-    try {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-        {
-          title: 'Bluetooth scan permission',
-          message:
-            'K155GNSSapp need permission to scan Bluetooth devices ',
-          buttonNeutral: 'Ask Me Later',
-          buttonNegative: 'Cancel',
-          buttonPositive: 'OK',
-        },
-      );
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        console.log('Access granted')
+    const androidVersion = Platform.constants['Release'];
+    console.log('SDK ' + androidVersion);
+    const granted = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+      {
+        title: 'Bluetooth scan permission',
+        message: 'K155GNSSapp need permission to scan Bluetooth devices ',
+        buttonNeutral: 'Ask Me Later',
+        buttonNegative: 'Cancel',
+        buttonPositive: 'OK',
+      },
+    );
+    if (granted === PermissionsAndroid.RESULTS.GRANTED || androidVersion < 12) {
+      try {
+        console.log('Access granted');
         let paired = await RNBluetoothClassic.getBondedDevices();
-        const pairedDeviced = paired;
-        updateBluetoothSettings({ devices: pairedDeviced });
-      } else {
-        console.log('Access not granted')
+        const pairedDevices = paired;
+        updateBluetoothSettings({devices: pairedDevices});
+      } catch (err) {
+        Snackbar.show({
+          text: err.message, // Access the error message using err.message
+          duration: Snackbar.LENGTH_SHORT,
+          textColor: 'red',
+          marginBottom: 5,
+        });
       }
-    } catch (err) {
+    } else {
       Snackbar.show({
-        text: err,
+        text: 'Nemáš povolení', // Access the error message using err.message
         duration: Snackbar.LENGTH_SHORT,
         textColor: 'red',
         marginBottom: 5,
       });
     }
   };
+  
+  /*
+    if (granted === PermissionsAndroid.RESULTS.GRANTED || androidVersion<12){
+  } else {
+    console.log('Access not granted')
+  }
+  */
 
   const stopBluetoothConnection = async () => {
     if (bluetoothSettings.connectedDeviceClassic !== null) {
