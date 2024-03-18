@@ -30,12 +30,12 @@ export default Bluetooth = ({ rtcmNtrip, getNmeaRead }) => {
       PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
       {
         title: 'Bluetooth scan permission',
-        message: 'K155GNSSapp need permission to scan Bluetooth devices ',
+        message: 'K155GNSSapp needs permission to scan Bluetooth devices',
         buttonNeutral: 'Ask Me Later',
         buttonNegative: 'Cancel',
         buttonPositive: 'OK',
       },
-    );
+    ) === PermissionsAndroid.RESULTS.GRANTED;
     if (granted === PermissionsAndroid.RESULTS.GRANTED || androidVersion < 12) {
       try {
         console.log('Access granted');

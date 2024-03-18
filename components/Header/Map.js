@@ -2,11 +2,9 @@ import React, { useState, useEffect, useContext } from 'react';
 import { SafeAreaView, View, Text, Button, PermissionsAndroid, Platform } from 'react-native';
 import Snackbar from 'react-native-snackbar';
 import { styles } from '../Styles/styles';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { debounce } from 'lodash';
-import configurationData from '../configurationData';
+import MapView, { Marker, PROVIDER_GOOGLE, Callout } from 'react-native-maps';
 import { DataContext } from '../Functions/DataContext';
-
+import { etrs2jtsk } from '../Calculations/transformation';
 
 export const Map = ({}) => {
   const { data } = useContext(DataContext);
@@ -18,14 +16,14 @@ export const Map = ({}) => {
     longitudeDelta: 1,
   });
 
-  useEffect(() => {
-    Snackbar.show({
-      text: 'Tato funkce je ve vývoji',
-      duration: Snackbar.LENGTH_SHORT,
-      textColor: 'red',
-      marginBottom: 5,
-    });
-  }, []);
+  const CustomCallout = ({ title, description }) => {
+    return (
+      <View style={styles.mapCustomCallout}>
+        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.title}>{description}</Text>
+      </View>
+    );
+  };
 
   const fitMapbyPoints = () => {
     if (point.length > 0) {
@@ -40,11 +38,9 @@ export const Map = ({}) => {
       const newRegion = {
         latitude: (minLat + maxLat) / 2,
         longitude: (minLng + maxLng) / 2,
-        latitudeDelta: Math.abs(maxLat - minLat) + 0.05,
-        longitudeDelta: Math.abs(maxLng - minLng) + 0.05,
+        latitudeDelta: Math.abs(maxLat - minLat) + 0.5,
+        longitudeDelta: Math.abs(maxLng - minLng) + 0.5,
       };
-      console.log(point);
-      console.log(newRegion);
       setRegion(newRegion);
     }
   };
@@ -55,21 +51,29 @@ export const Map = ({}) => {
   }, [point]);
 
   return (
-    <View style={styles.mapContainer}>
+    <SafeAreaView style={styles.mapContainer}>
       <MapView
         provider={PROVIDER_GOOGLE}
         style={styles.map}
         region={region}>
-        {point.map((point, index) => (
-          <Marker
-            key={index}
-            coordinate={{ latitude: point.b, longitude: point.l }}
-            title={point.title}
-            calloutEnabled={true}
-          />
-        ))}
+        {point.map((point, index) => {
+          const jtskCoordinates = etrs2jtsk(point.b, point.l, point.h);
+          const pointDescription = 'Y = ' + jtskCoordinates.Y.toFixed(3) + 'm\nX = ' + jtskCoordinates.X.toFixed(3)+ 'm\nH = ' + jtskCoordinates.Hbpv.toFixed(3) + 'm';
+          return (
+            <Marker
+              key={index}
+              coordinate={{ latitude: point.b, longitude: point.l }}>
+                <Callout>
+                <CustomCallout
+                  title={point.title}
+                  description={pointDescription}
+                />
+              </Callout>
+            </Marker>
+          );
+        })}
       </MapView>
-    </View>
+    </SafeAreaView>
   );
 };
 

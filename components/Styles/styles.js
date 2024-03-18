@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
 
 export const styles = {
   mereniContainer: {
@@ -258,12 +258,18 @@ export const styles = {
   },
   mapContainer: {
     ...StyleSheet.absoluteFillObject,
-    height: 400,
-    width: 400,
+    height: Dimensions.get('window').height-50,
+    width: Dimensions.get('window').width,
     justifyContent: 'flex-end',
     alignItems: 'center',
   },
   map: {
     ...StyleSheet.absoluteFillObject,
   },
+  mapCustomCallout: {
+    width: 120, 
+    height: 80, 
+    backgroundColor: 'white', 
+    borderRadius: 10
+  }
 };
