@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, forwardRef } from 'react';
-import { View, Text, Button, PermissionsAndroid, Platform } from 'react-native';
+import { View, Text, Button, StatusBar, PermissionsAndroid, Platform } from 'react-native';
 import { DataContext } from '../Functions/DataContext';
 import SelectDropdown from 'react-native-select-dropdown';
 import RNBluetoothClassic from 'react-native-bluetooth-classic';
@@ -22,6 +22,48 @@ export default Bluetooth = ({ rtcmNtrip, getNmeaRead }) => {
   };
 
   const switchConnect = bluetoothSettings.isEnabled ? 'Připoj' : 'Odpoj';
+
+  const requestBluetoothPermission = async () => {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+        {
+          title: 'Bluetooth Permission',
+          message: 'K155GNSSapp needs permission to use Bluetooth',
+          buttonNeutral: 'Ask Me Later',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        },
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        console.log('Bluetooth permission granted');
+        Snackbar.show({
+          text: 'Bluetooth permission granted', // Access the error message using err.message
+          duration: Snackbar.LENGTH_SHORT,
+          textColor: 'red',
+          marginBottom: 5,
+        });
+      } else if (granted === PermissionsAndroid.RESULTS.DENIED){
+        console.log('Bluetooth permission denied');
+        Snackbar.show({
+          text: 'Bluetooth permission denied', // Access the error message using err.message
+          duration: Snackbar.LENGTH_SHORT,
+          textColor: 'red',
+          marginBottom: 5,
+        });
+      } else if (granted === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN){
+        Snackbar.show({
+          text: 'This app requires storage permission to function properly. Please enable the permission in the app settings.', // Access the error message using err.message
+          duration: Snackbar.LENGTH_SHORT,
+          textColor: 'red',
+          marginBottom: 5,
+        });
+      }
+    } catch (err) {
+      console.error('Error requesting Bluetooth permission:', err);
+    }
+  };
+  
 
   const scanForDevices = async () => {
     const androidVersion = Platform.constants['Release'];
@@ -180,6 +222,7 @@ export default Bluetooth = ({ rtcmNtrip, getNmeaRead }) => {
   return (
     <View>
       <Text style={styles.title}>Nastavení Bluetooth připojení:</Text>
+      <Button title="request permissions" onPress={requestBluetoothPermission} />
       <Button
         title="Scan for Bluetooth devices"
         onPress={() => {
