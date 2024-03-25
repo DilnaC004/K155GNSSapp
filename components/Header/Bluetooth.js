@@ -65,19 +65,30 @@ export default Bluetooth = ({ rtcmNtrip, getNmeaRead }) => {
   };
   
 
+  const getPermissions = async () => {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        console.log('You can BLE scan');
+      } else {
+        console.log('BLE scan permission denied');
+      }
+    } catch (err) {
+      console.warn(err);
+    }
+  };
+
+
+
+
   const scanForDevices = async () => {
     const androidVersion = Platform.constants['Release'];
     console.log('Android ' + androidVersion);
     const granted = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-      {
-        title: 'Bluetooth scan permission',
-        message: 'K155GNSSapp needs permission to scan Bluetooth devices',
-        buttonNeutral: 'Ask Me Later',
-        buttonNegative: 'Cancel',
-        buttonPositive: 'OK',
-      },
-    ) === PermissionsAndroid.RESULTS.GRANTED;
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,);
+
     if (granted === PermissionsAndroid.RESULTS.GRANTED || androidVersion < 12) {
       try {
         console.log('Access granted');
@@ -223,6 +234,7 @@ export default Bluetooth = ({ rtcmNtrip, getNmeaRead }) => {
     <View>
       <Text style={styles.title}>Nastavení Bluetooth připojení:</Text>
       <Button title="request permissions" onPress={requestBluetoothPermission} />
+      <Button title="Test Permissions" onPress={getPermissions} />
       <Button
         title="Scan for Bluetooth devices"
         onPress={() => {
