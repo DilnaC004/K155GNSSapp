@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext, forwardRef } from 'react';
 import { View, Text, Button, StatusBar, PermissionsAndroid, Platform } from 'react-native';
 import { DataContext } from '../Functions/DataContext';
 import SelectDropdown from 'react-native-select-dropdown';
+//import RNBluetoothClassic from 'react-native-bluetooth-classic';
 import Snackbar from 'react-native-snackbar';
 import { styles } from '../Styles/styles';
 import NmeaViewer from './NmeaViewer';
