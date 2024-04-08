@@ -3,9 +3,12 @@ import { View, Text, Button, StatusBar, PermissionsAndroid, Platform } from 'rea
 import { DataContext } from '../Functions/DataContext';
 import SelectDropdown from 'react-native-select-dropdown';
 //import RNBluetoothClassic from 'react-native-bluetooth-classic';
+import { BleManager } from 'react-native-ble-plx' 
 import Snackbar from 'react-native-snackbar';
 import { styles } from '../Styles/styles';
 import NmeaViewer from './NmeaViewer';
+
+export const manager = new BleManager() 
 
 export default Bluetooth = ({ rtcmNtrip, getNmeaRead }) => {
   const { data, updateData } = useContext(DataContext);
@@ -188,6 +191,39 @@ export default Bluetooth = ({ rtcmNtrip, getNmeaRead }) => {
     }
   };
 
+  const readBleConnection = () => {
+    manager.startDeviceScan(null, null, (error, device) => { 
+      if (error) { 
+        // Handle error (scanning will be stopped automatically) 
+        return 
+      } 
+   
+      // Check if it is a device, you are looking for based on advertisement data 
+      // or other criteria. 
+      if (device.name === 'TI BLE Sensor Tag' || device.name === 'SensorTag') { 
+        // Stop scanning as it's not necessary if you are scanning for one device. 
+  
+        connect() 
+        manager.stopDeviceScan() 
+   
+        // Proceed with connection. 
+      } 
+    }) 
+  };
+
+  useEffect(() => {
+    const stateChangeListener = manager.onStateChange(state => {
+      console.log('onStateChange: ', state);
+      if (state === State.PoweredOn) {
+        scan();
+      }
+    });
+
+    return () => {
+      stateChangeListener?.remove();
+    };
+  }, [manager]); 
+
   const setReadBluetoothConnection = () => {
     let newintervalId;
     if (
@@ -238,7 +274,7 @@ export default Bluetooth = ({ rtcmNtrip, getNmeaRead }) => {
       <Button
         title="Scan for Bluetooth devices"
         onPress={() => {
-          scanForDevices();
+          readBleConnection();
         }}
       />
       <SelectDropdown

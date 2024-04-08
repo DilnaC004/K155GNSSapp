@@ -1,6 +1,6 @@
 import React, {useEffect, useState,useContext} from 'react';
 import {View, Text, TouchableOpacity} from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import IconFontAwesome from 'react-native-vector-icons/FontAwesome';
 import IconFontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { DataContext } from './Functions/DataContext';
 import {styles} from './Styles/styles';
@@ -85,7 +85,7 @@ export default Header = ({nmeaParsed, modalType, updateModalType}) => {
             });
           }
         }}>
-        <Icon name="bluetooth" size={32} color={bluetoothStatus} />
+        <IconFontAwesome name="bluetooth" size={32} color={bluetoothStatus} />
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => {
@@ -141,7 +141,7 @@ export default Header = ({nmeaParsed, modalType, updateModalType}) => {
             });
           }
         }}>
-        <Icon name="folder" size={32} color="black" />
+        <IconFontAwesome name="folder" size={32} color="black" />
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => {
@@ -169,7 +169,7 @@ export default Header = ({nmeaParsed, modalType, updateModalType}) => {
             });
           }
         }}>
-        <Icon name="dot-circle-o" size={32} color={coordStatus} />
+        <IconFontAwesome name="dot-circle-o" size={32} color={coordStatus} />
         <Text style={styles.headerInfoText}>{nmeaParsed.quality}</Text>
       </TouchableOpacity>
       <TouchableOpacity
@@ -198,7 +198,7 @@ export default Header = ({nmeaParsed, modalType, updateModalType}) => {
             });
           }
         }}>
-        <Icon name="flag" size={32} color="black" />
+        <IconFontAwesome name="flag" size={32} color="black" />
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => {
@@ -226,7 +226,7 @@ export default Header = ({nmeaParsed, modalType, updateModalType}) => {
             });
           }
         }}>
-        <Icon name="map" size={32} color="black" />
+        <IconFontAwesome name="map" size={32} color="black" />
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => {

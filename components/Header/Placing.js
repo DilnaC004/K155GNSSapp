@@ -16,7 +16,6 @@ import {
 } from 'react-native';
 import Snackbar from 'react-native-snackbar';
 import {styles} from '../Styles/styles';
-import IconMaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import {etrs2jtsk, jtsk2etrs} from '../Calculations/transformation';
 import GPS from 'gps';
 import {DataContext} from '../Functions/DataContext';
