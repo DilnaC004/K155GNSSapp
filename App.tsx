@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import {SafeAreaView, View, AppState, PermissionsAndroid, Platform, Button } from 'react-native';
+import {SafeAreaView, View, AppState, PermissionsAndroid, Platform, Button, Text } from 'react-native';
 import GPS from 'gps';
 import useAsyncStorage from './components/hooks/useAsyncStorage';
 import Header from './components/Header';
@@ -14,17 +14,12 @@ import Placing from './components/Header/Placing';
 import {DataContext} from './components/Functions/DataContext';
 import configurationData from './components/configurationData';
 
-import { BleManager, Device, State } from 'react-native-ble-plx' 
-import Snackbar from 'react-native-snackbar';
-
 export default function App(): JSX.Element {
   const gps = new GPS();
   const [nmeaParsed, setNmeaParsed] = React.useState('');
   const [rawMeasurement, setRawMeasurement] = React.useState('');
   const [rtcmNtrip, setRtcmNtrip] = React.useState<any>(null);
   const [lastGGA, setLastGGA] = React.useState<any>(null);
-  const [manager, setManager] = useState<any>(null);
-  const [scanning, setScanning] = useState(false);
   const [data, setData] = React.useState(configurationData);
   const updateData = (newSettings: any) => {
     setData(prevSettings => ({
@@ -84,78 +79,11 @@ export default function App(): JSX.Element {
 
     const appStateId = AppState.addEventListener('change', handleAppStateChange);
 
-    if (!manager) {
-      const bleManager = new BleManager();
-      setManager(bleManager);
-    }
-
     return () => {
       setDataStorage(data);
       appStateId.remove();
     };
   }, []);
-
-  const requestBluetoothPermission = async () => {
-    if (Platform.OS === 'ios') {
-      return true
-    }
-    if (Platform.OS === 'android' && PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION) {
-      const apiLevel = parseInt(Platform.Version.toString(), 10)
-  
-      if (apiLevel < 31) {
-        const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION)
-        return granted === PermissionsAndroid.RESULTS.GRANTED
-      }
-      if (PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN && PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT) {
-        const result = await PermissionsAndroid.requestMultiple([
-          PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-          PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-        ])
-  
-        return (
-          result['android.permission.BLUETOOTH_CONNECT'] === PermissionsAndroid.RESULTS.GRANTED &&
-          result['android.permission.BLUETOOTH_SCAN'] === PermissionsAndroid.RESULTS.GRANTED &&
-          result['android.permission.ACCESS_FINE_LOCATION'] === PermissionsAndroid.RESULTS.GRANTED
-        )
-      }
-    }
-    Snackbar.show({
-      text: 'Permission have not been granted', // Access the error message using err.message
-      duration: Snackbar.LENGTH_SHORT,
-      textColor: 'red',
-      marginBottom: 5,
-    });
-  
-    return false
-  }
-
-  const scanForDevices = async () => {
-    if (!scanning) {
-      setScanning(true);
-      try {
-        const permissionGranted = await requestBluetoothPermission();
-        if (permissionGranted) {
-          console.log("scanning")
-          manager.startDeviceScan(null, null, (error: any, device: any) => {
-            console.log(device);
-            if (error) {
-              console.error("Error scanning for devices:", error);
-              return;
-            }
-            if (device) {
-              console.log("Found device:", device.name);
-              // Handle the discovered device here
-            }
-          });
-        }
-      } catch (error) {
-        console.error("Error scanning for devices:", error);
-      } finally {
-        setScanning(false);
-      }
-    }
-  };
 
   return (
     <SafeAreaView>
@@ -164,7 +92,6 @@ export default function App(): JSX.Element {
           nmeaParsed={nmeaParsed}
           modalType={modalType}
           updateModalType={updateModalType}></Header>
-          <Button title='Scan Bluetooth Devices' onPress={scanForDevices} />
         <View>
           {modalType.bluetooth && <Bluetooth rtcmNtrip={rtcmNtrip} getNmeaRead={getNmeaRead}/>}
           {modalType.ntrip && <Ntrip getRtcmNtrip={getRtcmNtrip} lastGGA={lastGGA} />}

@@ -7,6 +7,7 @@ import { BleManager } from 'react-native-ble-plx'
 import Snackbar from 'react-native-snackbar';
 import { styles } from '../Styles/styles';
 import NmeaViewer from './NmeaViewer';
+import useBLE from '../hooks/useBLE';
 
 export const manager = new BleManager() 
 
@@ -16,6 +17,16 @@ export default Bluetooth = ({ rtcmNtrip, getNmeaRead }) => {
   const [bluetoothSettings, setBluetoothSettings] = useState(
     data.bluetoothSettings,
   );
+  const switchConnect = bluetoothSettings.isEnabled ? 'Připoj' : 'Odpoj';
+  const {
+    requestPermissions,
+    scanForPeripherals,
+    connectToDevice,
+    allDevices,
+    connectedDevice,
+    disconnectFromDevice,
+    onDataReceived,
+  } = useBLE(); // Use the useBLE hook
 
   const updateBluetoothSettings = newSettings => {
     setBluetoothSettings(prevSettings => ({
@@ -24,7 +35,102 @@ export default Bluetooth = ({ rtcmNtrip, getNmeaRead }) => {
     }));
   };
 
-  const switchConnect = bluetoothSettings.isEnabled ? 'Připoj' : 'Odpoj';
+  const scanForDevices = () => {
+    requestPermissions(isGranted => {
+      if (isGranted) {
+        console.log("scanning");
+        scanForPeripherals();
+        console.log(allDevices);
+      }
+    });
+  };
+  
+
+  return (
+    <View>
+      <Text style={styles.title}>Nastavení Bluetooth připojení:</Text>
+      <Button
+        title={bluetoothSettings.isEnabled ? 'Stop' : 'Scan'}
+        onPress={() => {
+          scanForDevices();
+          updateBluetoothSettings({isEnabled: !bluetoothSettings.isEnabled,});
+        }}
+      />
+      {bluetoothSettings.isEnabled && allDevices.map(device => (
+        <Button
+          key={device.id}
+          title={device.id}
+          color={connectedDevice == device ? 'red' : 'blue'}
+          onPress={() => {
+            if (bluetoothSettings.isEnabled) {
+              connectToDevice(device);
+              onDataReceived();
+            } else {
+              disconnectFromDevice(device);
+            }
+          }}
+        />
+      ))}
+      <NmeaViewer nmeaMessages={data.nmeaRead} />
+    </View>
+  );
+};
+
+/*
+  useEffect(() => {
+    const stateChangeListener = manager.onStateChange(state => {
+      console.log('onStateChange: ', state);
+      if (state === State.PoweredOn) {
+        scan();
+      }
+    });
+
+    return () => {
+      stateChangeListener?.remove();
+    };
+  }, [manager]); 
+
+  useEffect(() => {
+    setReadBluetoothConnection();
+
+    return () => {
+      updateData({
+        bluetoothSettings: bluetoothSettings,
+      });
+    };
+  }, [bluetoothSettings.isEnabled]);
+
+  const setReadBluetoothConnection = () => {
+    let newintervalId;
+    if (
+      !bluetoothSettings.isEnabled &&
+      bluetoothSettings.connectedDeviceClassic !== null
+    ) {
+      newintervalId = setInterval(() => {
+        readBluetoothConnection();
+        sendRtcm();
+      }, 1000);
+      setIntervalId(newintervalId);
+    } else {
+      console.log('clear interval');
+      clearInterval(intervalId);
+    }
+  };
+
+  const sendRtcm = async () => {
+    if (rtcmNtrip != null) {
+      try {
+        await RNBluetoothClassic.writeToDevice(
+          bluetoothSettings.connectedDeviceClassic.address,
+          rtcmNtrip,
+          'ascii',
+        );
+        console.log('rtcm ' + rtcmNtrip);
+      } catch (err) {
+        console.log(err);
+      }
+    }
+  };
 
   const requestBluetoothPermission = async () => {
     try {
@@ -86,42 +192,7 @@ export default Bluetooth = ({ rtcmNtrip, getNmeaRead }) => {
 
 
 
-  const scanForDevices = async () => {
-    const androidVersion = Platform.constants['Release'];
-    console.log('Android ' + androidVersion);
-    const granted = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,);
 
-    if (granted === PermissionsAndroid.RESULTS.GRANTED || androidVersion < 12) {
-      try {
-        console.log('Access granted');
-        let paired = await RNBluetoothClassic.getBondedDevices();
-        const pairedDevices = paired;
-        updateBluetoothSettings({devices: pairedDevices});
-      } catch (err) {
-        Snackbar.show({
-          text: err.message, // Access the error message using err.message
-          duration: Snackbar.LENGTH_SHORT,
-          textColor: 'red',
-          marginBottom: 5,
-        });
-      }
-    } else {
-      Snackbar.show({
-        text: 'Nemáš povolení', // Access the error message using err.message
-        duration: Snackbar.LENGTH_SHORT,
-        textColor: 'red',
-        marginBottom: 5,
-      });
-    }
-  };
-  
-  /*
-    if (granted === PermissionsAndroid.RESULTS.GRANTED || androidVersion<12){
-  } else {
-    console.log('Access not granted')
-  }
-  */
 
   const stopBluetoothConnection = async () => {
     if (bluetoothSettings.connectedDeviceClassic !== null) {
@@ -210,99 +281,4 @@ export default Bluetooth = ({ rtcmNtrip, getNmeaRead }) => {
       } 
     }) 
   };
-
-  useEffect(() => {
-    const stateChangeListener = manager.onStateChange(state => {
-      console.log('onStateChange: ', state);
-      if (state === State.PoweredOn) {
-        scan();
-      }
-    });
-
-    return () => {
-      stateChangeListener?.remove();
-    };
-  }, [manager]); 
-
-  const setReadBluetoothConnection = () => {
-    let newintervalId;
-    if (
-      !bluetoothSettings.isEnabled &&
-      bluetoothSettings.connectedDeviceClassic !== null
-    ) {
-      newintervalId = setInterval(() => {
-        readBluetoothConnection();
-        sendRtcm();
-      }, 1000);
-      setIntervalId(newintervalId);
-    } else {
-      console.log('clear interval');
-      clearInterval(intervalId);
-    }
-  };
-
-  const sendRtcm = async () => {
-    if (rtcmNtrip != null) {
-      try {
-        await RNBluetoothClassic.writeToDevice(
-          bluetoothSettings.connectedDeviceClassic.address,
-          rtcmNtrip,
-          'ascii',
-        );
-        console.log('rtcm ' + rtcmNtrip);
-      } catch (err) {
-        console.log(err);
-      }
-    }
-  };
-
-  useEffect(() => {
-    setReadBluetoothConnection();
-
-    return () => {
-      updateData({
-        bluetoothSettings: bluetoothSettings,
-      });
-    };
-  }, [bluetoothSettings.isEnabled]);
-
-  return (
-    <View>
-      <Text style={styles.title}>Nastavení Bluetooth připojení:</Text>
-      <Button title="request permissions" onPress={requestBluetoothPermission} />
-      <Button title="Test Permissions" onPress={getPermissions} />
-      <Button
-        title="Scan for Bluetooth devices"
-        onPress={() => {
-          readBleConnection();
-        }}
-      />
-      <SelectDropdown
-        style={styles.selectDropdown}
-        data={bluetoothSettings.devices.map(mntp => mntp.name)}
-        disabled={bluetoothSettings.devices.length === 0}
-        defaultValueByIndex={0}
-        defaultButtonText="žádné připojené zařízení"
-        buttonStyle={styles.dropdownBtnStyle}
-        onSelect={(_, index) => {
-          updateBluetoothSettings({
-            connectedDeviceClassic: bluetoothSettings.devices[index],
-          });
-        }}
-        renderDropdownIcon={() => { }}
-        dropdownIconPosition={'right'}
-      />
-      <Button
-        title={switchConnect}
-        onPress={() => {
-          if (bluetoothSettings.isEnabled) {
-            startBluetoothConnection();
-          } else {
-            stopBluetoothConnection();
-          }
-        }}
-      />
-      <NmeaViewer nmeaMessages={data.nmeaRead} />
-    </View>
-  );
-};
+  */
