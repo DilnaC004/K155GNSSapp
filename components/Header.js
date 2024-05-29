@@ -1,5 +1,5 @@
 import React, {useEffect, useState,useContext} from 'react';
-import {View, Text, TouchableOpacity} from 'react-native';
+import {View, Text, TouchableOpacity, Image} from 'react-native';
 import IconFontAwesome from 'react-native-vector-icons/FontAwesome';
 import IconFontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { DataContext } from './Functions/DataContext';
@@ -85,7 +85,10 @@ export default Header = ({nmeaParsed, modalType, updateModalType}) => {
             });
           }
         }}>
-        <IconFontAwesome name="bluetooth" size={32} color={bluetoothStatus} />
+        <Image
+            source={require('./Images/bluetooth.png')}
+            style={styles.icon}
+          />
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => {
@@ -113,7 +116,10 @@ export default Header = ({nmeaParsed, modalType, updateModalType}) => {
             });
           }
         }}>
-        <IconFontAwesome5 name="server" size={32} color={ntripStatus} />
+        <Image
+            source={require('./Images/server.png')}
+            style={[styles.icon]}
+          />
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => {
@@ -141,7 +147,10 @@ export default Header = ({nmeaParsed, modalType, updateModalType}) => {
             });
           }
         }}>
-        <IconFontAwesome name="folder" size={32} color="black" />
+        <Image
+            source={require('./Images/folder.png')}
+            style={[styles.icon]}
+          />
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => {
@@ -169,7 +178,10 @@ export default Header = ({nmeaParsed, modalType, updateModalType}) => {
             });
           }
         }}>
-        <IconFontAwesome name="dot-circle-o" size={32} color={coordStatus} />
+        <Image
+            source={require('./Images/signal.png')}
+            style={[styles.icon]}
+          />
         <Text style={styles.headerInfoText}>{nmeaParsed.quality}</Text>
       </TouchableOpacity>
       <TouchableOpacity
@@ -198,7 +210,10 @@ export default Header = ({nmeaParsed, modalType, updateModalType}) => {
             });
           }
         }}>
-        <IconFontAwesome name="flag" size={32} color="black" />
+        <Image
+            source={require('./Images/location_mark_pinned.png')}
+            style={[styles.icon]}
+          />
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => {
@@ -226,7 +241,10 @@ export default Header = ({nmeaParsed, modalType, updateModalType}) => {
             });
           }
         }}>
-        <IconFontAwesome name="map" size={32} color="black" />
+        <Image
+            source={require('./Images/map_location_mark.png')}
+            style={[styles.icon]}
+          />
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => {
@@ -254,7 +272,10 @@ export default Header = ({nmeaParsed, modalType, updateModalType}) => {
             });
           }
         }}>
-        <IconFontAwesome5 name="satellite" size={32} color="black" />
+        <Image
+            source={require('./Images/graph.png')}
+            style={[styles.icon]}
+          />
       </TouchableOpacity>
     </View>
   );

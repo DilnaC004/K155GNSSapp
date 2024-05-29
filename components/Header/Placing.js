@@ -94,7 +94,7 @@ export const Placing = ({nmeaParsed}) => {
         <Text style={styles.title}>delta X: {placingSettings.deltaX.toFixed(3)} m</Text>
         <View style={styles.compassWrapper}>
           <Image
-            source={require('./arrow.png')}
+            source={require('../Images/arrow.png')}
             style={[styles.arrow, {transform: [{rotate: (placingSettings.heading - compassHeading) + 'deg'}]}]}
           />
         </View>

@@ -7,6 +7,7 @@ import {
   Button,
   PermissionsAndroid,
   Platform,
+  Image
 } from 'react-native';
 import IconMaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { DataContext } from '../../Functions/DataContext';
@@ -52,7 +53,10 @@ export default FlatListProject = ({
           onPress={() => {
             deleteProject(item.title);
           }}>
-          <IconMaterialIcons name="delete" size={24} color="black" />
+          <Image
+            source={require('../../Images/trash.png')}
+            style={[styles.icon]}
+          />
         </TouchableOpacity>
       </View>
     );

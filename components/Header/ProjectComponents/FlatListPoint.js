@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { FlatList, View, Text, TouchableOpacity, ScrollView, Modal, Button } from 'react-native';
+import { FlatList, View, Text, TouchableOpacity, ScrollView, Modal, Button, Image } from 'react-native';
 import IconMaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { DataContext } from '../../Functions/DataContext';
 import { styles } from '../../Styles/styles';
@@ -57,13 +57,19 @@ export default FlatListPoint = ({
             useEtrs2Jtsk(item);
             setModalVisible1(true);
           }}>
-          <IconMaterialIcons name="info" size={24} color="black" />
+          <Image
+            source={require('../../Images/info.png')}
+            style={[styles.icon]}
+          />
         </TouchableOpacity>
         {placing && <TouchableOpacity
           onPress={() => {
             updateProjectSettings(index);
           }}>
-          <IconMaterialIcons name="save" size={24} color="black" />
+          <Image
+            source={require('../../Images/trash.png')}
+            style={[styles.icon]}
+          />
         </TouchableOpacity>}
       </View >
     );
@@ -118,7 +124,10 @@ export default FlatListPoint = ({
                 onPress={() => {
                   setModalVisible2(true);
                 }}>
-                <IconMaterialIcons name="delete" size={24} color="black" />
+                <Image
+                  source={require('../../Images/trash.png')}
+                  style={[styles.icon]}
+                />
               </TouchableOpacity>}
           </View>
         </View>
@@ -146,7 +155,10 @@ export default FlatListPoint = ({
                 onPress={() => {
                   deletePoint(selectedPoint.title, data.projects[projectSettings.projectId].title);
                 }}>
-                <IconMaterialIcons name="delete" size={24} color="black" />
+                <Image
+                  source={require('../../Images/trash.png')}
+                  style={[styles.icon]}
+                />
               </TouchableOpacity>}
           </View>
         </View>

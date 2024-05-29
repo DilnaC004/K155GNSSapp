@@ -271,5 +271,9 @@ export const styles = {
     height: 80, 
     backgroundColor: 'white', 
     borderRadius: 10
+  },
+  icon: {
+    width: 30,
+    height: 30
   }
 };
