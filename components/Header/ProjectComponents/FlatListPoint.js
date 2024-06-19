@@ -67,7 +67,7 @@ export default FlatListPoint = ({
             updateProjectSettings(index);
           }}>
           <Image
-            source={require('../../Images/trash.png')}
+            source={require('../../Images/flag.png')}
             style={[styles.icon]}
           />
         </TouchableOpacity>}

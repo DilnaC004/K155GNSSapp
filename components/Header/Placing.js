@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useContext} from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import {
   SafeAreaView,
   View,
@@ -13,17 +13,18 @@ import {
   TextInput,
   Alert,
   Switch,
+  Animated
 } from 'react-native';
 import Snackbar from 'react-native-snackbar';
-import {styles} from '../Styles/styles';
-import {etrs2jtsk, jtsk2etrs} from '../Calculations/transformation';
+import { styles } from '../Styles/styles';
+import { etrs2jtsk, jtsk2etrs } from '../Calculations/transformation';
 import GPS from 'gps';
-import {DataContext} from '../Functions/DataContext';
+import { DataContext } from '../Functions/DataContext';
 import FlatListPoint from './ProjectComponents/FlatListPoint';
 import CompassHeading from 'react-native-compass-heading';
 
-export const Placing = ({nmeaParsed}) => {
-  const {data, updateData} = useContext(DataContext);
+export const Placing = ({ nmeaParsed }) => {
+  const { data, updateData } = useContext(DataContext);
   const [placingSettings, setPlacingSettings] = useState(data.placingSettings);
   const updatePlacingSettings = newSettings => {
     setPlacingSettings(prevSettings => ({
@@ -31,10 +32,19 @@ export const Placing = ({nmeaParsed}) => {
       ...newSettings,
     }));
   };
-  const degree_update_rate = 3;
-  CompassHeading.start(degree_update_rate, ({compassHeading, compassAccuracy}) => {
-    console.log('CompassHeading: ', compassHeading, compassAccuracy);
-  });
+
+  // Compass
+  const [heading, setHeading] = useState(0);
+  useEffect(() => {
+    const degreeUpdateRate = 3;
+    CompassHeading.start(degreeUpdateRate, ({ heading, accuracy }) => {
+      console.log("CompassHeading: ", heading, accuracy);
+      setHeading(heading);
+    });
+    return () => {
+      CompassHeading.stop();
+    };
+  }, []);
 
   useEffect(() => {
     updatePlacingSettings({
@@ -47,13 +57,11 @@ export const Placing = ({nmeaParsed}) => {
   }, []);
 
   const points = data.projects[data.projectSettings.projectId].points;
-  var compassHeading = 0;
-  var compassAccuracy = 0 ;
   var positionJtsk;
   var placingJtsk;
 
   useEffect(() => {
-    if(placingSettings.points){
+    if (placingSettings.points) {
       calculate(nmeaParsed)
     }
   }, [placingSettings.selectedPoint]);
@@ -69,11 +77,11 @@ export const Placing = ({nmeaParsed}) => {
       heightDelta: (point.h - nmeaParsed.alt),
       deltaY: placingJtsk.Y - positionJtsk.Y,
       deltaX: placingJtsk.X - positionJtsk.X,
-    });   
+    });
   };
-  
+
   const click = (index) => {
-    updatePlacingSettings({selectedPoint: index});
+    updatePlacingSettings({ selectedPoint: index });
   };
 
   return (
@@ -83,7 +91,7 @@ export const Placing = ({nmeaParsed}) => {
       <FlatListPoint
         projectSettings={data.projectSettings}
         updateProjectSettings={click}
-        placing = {true}
+        placing={true}
 
       />
       <View style={styles.container}>
@@ -95,7 +103,7 @@ export const Placing = ({nmeaParsed}) => {
         <View style={styles.compassWrapper}>
           <Image
             source={require('../Images/arrow.png')}
-            style={[styles.arrow, {transform: [{rotate: (placingSettings.heading - compassHeading) + 'deg'}]}]}
+            style={[styles.arrow, { transform: [{ rotate: (placingSettings.heading == null ? 0 : placingSettings.heading - heading) + 'deg' }] }]}
           />
         </View>
       </View>

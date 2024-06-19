@@ -94,7 +94,8 @@ function useBLE(): BluetoothLowEnergyApi {
       try {
         const deviceConnection = await bleManager.connectToDevice(device.id);
         setConnectedDevice(deviceConnection);
-        await deviceConnection.discoverAllServicesAndCharacteristics();
+        const services = await deviceConnection.discoverAllServicesAndCharacteristics();
+        console.log("Dostupne sluzby: " + services.serviceUUIDs);
         bleManager.stopDeviceScan();
         Snackbar.show({
           text: 'Connected to device', // Access the error message using err.message
@@ -123,13 +124,15 @@ function useBLE(): BluetoothLowEnergyApi {
     };
 
     useEffect(() => {
-      if (connectedDevice) {
-        const subscription = connectedDevice.monitorCharacteristicForService(
+      if (connectedDevice) {    
+        //const subscription = bleManager.monitorCharacteristicForDevice(     // alternativa
+          //String(connectedDevice),
+        const subscription = connectedDevice.monitorCharacteristicForService(   
           '0000ffe0-0000-1000-8000-00805f9b34fb', // HM -10 BLE
           '0000ffe1-0000-1000-8000-00805f9b34fb', // HM -10 BLE
           (error, characteristic) => {
             if (error) {
-              console.error('Error monitoring characteristic:', error);
+              console.error('Error monitoring characteristic:', error, connectedDevice.id);
               return;
             }
             if (characteristic) {

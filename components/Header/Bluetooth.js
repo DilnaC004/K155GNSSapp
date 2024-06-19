@@ -3,13 +3,13 @@ import { View, Text, Button, StatusBar, PermissionsAndroid, Platform } from 'rea
 import { DataContext } from '../Functions/DataContext';
 import SelectDropdown from 'react-native-select-dropdown';
 //import RNBluetoothClassic from 'react-native-bluetooth-classic';
-import { BleManager } from 'react-native-ble-plx' 
+import { BleManager } from 'react-native-ble-plx'
 import Snackbar from 'react-native-snackbar';
 import { styles } from '../Styles/styles';
 import NmeaViewer from './NmeaViewer';
 import useBLE from '../hooks/useBLE';
 
-export const manager = new BleManager() 
+export const manager = new BleManager()
 
 export default Bluetooth = ({ rtcmNtrip, getNmeaRead }) => {
   const { data, updateData } = useContext(DataContext);
@@ -44,7 +44,7 @@ export default Bluetooth = ({ rtcmNtrip, getNmeaRead }) => {
       }
     });
   };
-  
+
 
   return (
     <View>
@@ -53,14 +53,16 @@ export default Bluetooth = ({ rtcmNtrip, getNmeaRead }) => {
         title={bluetoothSettings.isEnabled ? 'Stop' : 'Scan'}
         onPress={() => {
           scanForDevices();
-          updateBluetoothSettings({isEnabled: !bluetoothSettings.isEnabled,});
+          updateBluetoothSettings({ isEnabled: !bluetoothSettings.isEnabled, });
         }}
       />
       {bluetoothSettings.isEnabled && allDevices.map(device => (
         <Button
           key={device.id}
           title={device.id}
-          color={connectedDevice == device ? 'red' : 'blue'}
+          // 18:62:E4:2B:CE:D4 je K155GNSS
+          // 18:62:E4:29:F7:BC je 
+          color={connectedDevice == device ? 'red' : 'blue'}  // Neobarvi tlacitko
           onPress={() => {
             if (bluetoothSettings.isEnabled) {
               connectToDevice(device);
@@ -71,6 +73,7 @@ export default Bluetooth = ({ rtcmNtrip, getNmeaRead }) => {
           }}
         />
       ))}
+
       <NmeaViewer nmeaMessages={data.nmeaRead} />
     </View>
   );
