@@ -103,6 +103,11 @@ function useBLE(): BluetoothLowEnergyApi {
           textColor: 'red',
           marginBottom: 5,
         });
+        // if (device.name == null){    // Nefunguje podle predstav
+        //   device.name = "NoName";
+        // } else {
+        //   device.name = device.name;
+        // }
       } catch (e) {
         console.log('FAILED TO CONNECT', e);
       }
