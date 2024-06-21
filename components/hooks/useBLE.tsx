@@ -11,10 +11,10 @@ import {PERMISSIONS, requestMultiple} from 'react-native-permissions';
 import DeviceInfo from 'react-native-device-info';
 import Snackbar from 'react-native-snackbar';
 
-
 const HEART_RATE_UUID = '0000180d-0000-1000-8000-00805f9b34fb';
 const HEART_RATE_CHARACTERISTIC = '00002a37-0000-1000-8000-00805f9b34fb';
-
+const monitoredBleCharacteristic = '0000ffe0-0000-1000-8000-00805f9b34fb';
+const monitoredBleService = '0000ffe1-0000-1000-8000-00805f9b34fb';
 const bleManager = new BleManager();
 
 type VoidCallback = (result: boolean) => void;
@@ -22,7 +22,7 @@ type VoidCallback = (result: boolean) => void;
 interface BluetoothLowEnergyApi {
   requestPermissions(cb: VoidCallback): Promise<void>;
   scanForPeripherals(): void;
-  connectToDevice: (deviceId: Device) => Promise<void>;
+  connectToDevice: (device: Device) => Promise<void>;
   disconnectFromDevice: () => void;
   connectedDevice: Device | null;
   allDevices: Device[];
@@ -32,7 +32,7 @@ interface BluetoothLowEnergyApi {
 function useBLE(): BluetoothLowEnergyApi {
   const [allDevices, setAllDevices] = useState<Device[]>([]);
   const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
-  const [heartRate, setHeartRate] = useState<number>(0);
+  const [isConnected, setIsConnected] = useState<boolean>(false);
 
   const requestPermissions = async (cb: VoidCallback) => {
     if (Platform.OS === 'android') {
@@ -72,7 +72,7 @@ function useBLE(): BluetoothLowEnergyApi {
     }
   };
 
-  const isDuplicteDevice = (devices: Device[], nextDevice: Device) =>
+  const isDuplicateDevice = (devices: Device[], nextDevice: Device) =>
     devices.findIndex(device => nextDevice.id === device.id) > -1;
 
   const scanForPeripherals = () =>
@@ -81,80 +81,71 @@ function useBLE(): BluetoothLowEnergyApi {
         console.log(error);
       }
       if (device) {
-          setAllDevices((prevState: Device[]) => {
-            if (!isDuplicteDevice(prevState, device)) {
-              return [...prevState, device];
-            }
-            return prevState;
-          });
+        setAllDevices((prevState: Device[]) => {
+          if (!isDuplicateDevice(prevState, device)) {
+            return [...prevState, device];
+          }
+          return prevState;
+        });
       }
     });
 
-    const connectToDevice = async (device: Device) => {
-      try {
-        const deviceConnection = await bleManager.connectToDevice(device.id);
-        setConnectedDevice(deviceConnection);
-        const services = await deviceConnection.discoverAllServicesAndCharacteristics();
-        console.log("Dostupne sluzby: " + services.serviceUUIDs);
-        bleManager.stopDeviceScan();
-        Snackbar.show({
-          text: 'Connected to device', // Access the error message using err.message
-          duration: Snackbar.LENGTH_SHORT,
-          textColor: 'red',
-          marginBottom: 5,
-        });
-        // if (device.name == null){    // Nefunguje podle predstav
-        //   device.name = "NoName";
-        // } else {
-        //   device.name = device.name;
-        // }
-      } catch (e) {
-        console.log('FAILED TO CONNECT', e);
-      }
-    };
+  const connectToDevice = async (device: Device) => {
+    try {
+      const deviceConnection = await bleManager.connectToDevice(device.id);
+      await deviceConnection.discoverAllServicesAndCharacteristics();
+      setConnectedDevice(deviceConnection);
+      setIsConnected(true);
+      bleManager.stopDeviceScan();
+      Snackbar.show({
+        text: 'Connected to device: ' + (device.name ? device.name : device.id),
+        duration: Snackbar.LENGTH_SHORT,
+        textColor: 'red',
+        marginBottom: 5,
+      });
+    } catch (e) {
+      console.error('FAILED TO CONNECT', e);
+      setIsConnected(false);
+    }
+  };
 
-  
-    const disconnectFromDevice = () => {
-      if (connectedDevice) {
-        bleManager.cancelDeviceConnection(connectedDevice.id);
-        setConnectedDevice(null);
-        setHeartRate(0);
-      }
-    };
+  const disconnectFromDevice = () => {
+    if (connectedDevice) {
+      bleManager.cancelDeviceConnection(connectedDevice.id);
+      setConnectedDevice(null);
+      setIsConnected(false);
+      Snackbar.show({
+        text: 'Disconnected from device: ' + (connectedDevice.name ? connectedDevice.name : connectedDevice.id),
+        duration: Snackbar.LENGTH_SHORT,
+        textColor: 'red',
+        marginBottom: 5,
+      });
+    }
+  };
 
-    const onDataReceived = (data: string) => {
-      // Handle received data
-      console.log(data);
-      // Process received data as needed
-    };
+  const onDataReceived = (data: string) => {
+    // Odsud resit co s daty, poslat do parseru NMEA zpravy a aktualizovat polohu
+    console.log(data);
+  };
 
-    useEffect(() => {
-      if (connectedDevice) {    
-        //const subscription = bleManager.monitorCharacteristicForDevice(     // alternativa
-          //String(connectedDevice),
-        const subscription = connectedDevice.monitorCharacteristicForService(   
-          '0000ffe0-0000-1000-8000-00805f9b34fb', // HM -10 BLE
-          '0000ffe1-0000-1000-8000-00805f9b34fb', // HM -10 BLE
-          (error, characteristic) => {
-            if (error) {
-              console.error('Error monitoring characteristic:', error, connectedDevice.id);
-              return;
-            }
-            if (characteristic) {
-              // Characteristic value received
-              const data = characteristic.value;
-              if (data) {
-                onDataReceived(data);
-              }
-            }
+  useEffect(() => {
+    if (isConnected && connectedDevice) {
+      const subscription = connectedDevice.monitorCharacteristicForService(monitoredBleCharacteristic, monitoredBleService,
+        (error, characteristic) => {
+          if (error) {
+            console.log('Error monitoring characteristic:', error);
+            return;
           }
-        );
-        return () => {
-          // Clean up subscription when component unmounts
-          subscription.remove();
-        };
-      }
-    }, [connectedDevice, onDataReceived]);
+          if (characteristic?.value) {
+            onDataReceived(characteristic.value);
+          }
+        }
+      );
+      return () => {
+        subscription.remove();
+      };
+    }
+  }, [isConnected, connectedDevice]);
 
   return {
     scanForPeripherals,

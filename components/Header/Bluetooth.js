@@ -45,7 +45,6 @@ export default Bluetooth = ({ rtcmNtrip, getNmeaRead }) => {
     });
   };
 
-
   return (
     <View>
       <Text style={styles.title}>Nastavení Bluetooth připojení:</Text>
@@ -59,16 +58,15 @@ export default Bluetooth = ({ rtcmNtrip, getNmeaRead }) => {
       {bluetoothSettings.isEnabled && allDevices.map(device => (
         <Button
           key={device.id}
-          title={device.id}
-          // 18:62:E4:2B:CE:D4 je K155GNSS
-          // 18:62:E4:29:F7:BC je 
-          color={connectedDevice == device ? 'red' : 'blue'}  // Neobarvi tlacitko
+          title={device.name ? device.name : device.id}
+          color={connectedDevice?.id == device.id ? 'red' : 'blue'}
           onPress={() => {
-            if (bluetoothSettings.isEnabled) {
+            if (connectedDevice?.id == device.id && connectedDevice != null){
+              disconnectFromDevice(device);
+            }
+            else if (bluetoothSettings.isEnabled) {
               connectToDevice(device);
               onDataReceived();
-            } else {
-              disconnectFromDevice(device);
             }
           }}
         />
