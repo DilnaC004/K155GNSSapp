@@ -11,22 +11,14 @@ import useBLE from '../hooks/useBLE';
 
 export const manager = new BleManager()
 
-export default Bluetooth = ({ rtcmNtrip, getNmeaRead }) => {
+export default Bluetooth = ({ rtcmNtrip, getNmeaRead, requestPermissions, scanForPeripherals, connectToDevice, allDevices, connectedDevice, disconnectFromDevice, onDataReceived }) => {
   const { data, updateData } = useContext(DataContext);
   const [intervalId, setIntervalId] = useState(0);
   const [bluetoothSettings, setBluetoothSettings] = useState(
     data.bluetoothSettings,
   );
   const switchConnect = bluetoothSettings.isEnabled ? 'Připoj' : 'Odpoj';
-  const {
-    requestPermissions,
-    scanForPeripherals,
-    connectToDevice,
-    allDevices,
-    connectedDevice,
-    disconnectFromDevice,
-    onDataReceived,
-  } = useBLE(); // Use the useBLE hook
+ // Use the useBLE hook
 
   const updateBluetoothSettings = newSettings => {
     setBluetoothSettings(prevSettings => ({
@@ -67,6 +59,7 @@ export default Bluetooth = ({ rtcmNtrip, getNmeaRead }) => {
             else if (bluetoothSettings.isEnabled) {
               connectToDevice(device);
               onDataReceived();
+              getNmeaRead(data);
             }
           }}
         />

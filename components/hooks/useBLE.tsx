@@ -10,6 +10,7 @@ import {
 import {PERMISSIONS, requestMultiple} from 'react-native-permissions';
 import DeviceInfo from 'react-native-device-info';
 import Snackbar from 'react-native-snackbar';
+import base64 from 'react-native-base64';
 
 const HEART_RATE_UUID = '0000180d-0000-1000-8000-00805f9b34fb';
 const HEART_RATE_CHARACTERISTIC = '00002a37-0000-1000-8000-00805f9b34fb';
@@ -125,7 +126,13 @@ function useBLE(): BluetoothLowEnergyApi {
 
   const onDataReceived = (data: string) => {
     // Odsud resit co s daty, poslat do parseru NMEA zpravy a aktualizovat polohu
-    console.log(data);
+    try {
+      var decodedData = base64.decode(data);
+      data = decodedData;
+      console.log(data);
+    } catch {
+      console.log("An error occured")
+    }
   };
 
   useEffect(() => {

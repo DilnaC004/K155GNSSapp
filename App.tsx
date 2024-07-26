@@ -1,5 +1,5 @@
-import React, {useState, useEffect} from 'react';
-import {SafeAreaView, View, AppState, PermissionsAndroid, Platform, Button, Text } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { SafeAreaView, View, AppState, PermissionsAndroid, Platform, Button, Text } from 'react-native';
 import GPS from 'gps';
 import useAsyncStorage from './components/hooks/useAsyncStorage';
 import Header from './components/Header';
@@ -11,8 +11,9 @@ import Skyplot from './components/Header/Skyplot';
 import Point from './components/Header/Point';
 import Map from './components/Header/Map';
 import Placing from './components/Header/Placing';
-import {DataContext} from './components/Functions/DataContext';
+import { DataContext } from './components/Functions/DataContext';
 import configurationData from './components/configurationData';
+import useBLE from './components/hooks/useBLE';
 
 export default function App(): JSX.Element {
   const gps = new GPS();
@@ -29,12 +30,22 @@ export default function App(): JSX.Element {
   };
   const { setDataStorage, getDataStorage, clearDataStorage } = useAsyncStorage(updateData);
 
+  const {
+    requestPermissions,
+    scanForPeripherals,
+    connectToDevice,
+    allDevices,
+    connectedDevice,
+    disconnectFromDevice,
+    onDataReceived,
+  } = useBLE();
+
   const getNmeaRead = (nmeaRead: any) => {
 
     setRawMeasurement(nmeaRead);
 
-    for(let i = 0; i < nmeaRead.length; i++){
-      if(nmeaRead[i].includes("$GNGGA")){
+    for (let i = 0; i < nmeaRead.length; i++) {
+      if (nmeaRead[i].includes("$GNGGA")) {
         setLastGGA(nmeaRead[i]); // for RTCM 
         //console.log(nmeaRead[i]);
         gps.update(nmeaRead[i]);
@@ -43,9 +54,10 @@ export default function App(): JSX.Element {
 
     gps.on('data', parsed => {
       setNmeaParsed(parsed);
+      console.log(parsed)
     });
   };
-  const valueContext = {data, updateData}; // Provide valueContext to all components in App
+  const valueContext = { data, updateData }; // Provide valueContext to all components in App
   const getRtcmNtrip = (rtcmNtrip: any) => {
     setRtcmNtrip(rtcmNtrip);
     console.log(rtcmNtrip);
@@ -67,11 +79,11 @@ export default function App(): JSX.Element {
     }));
   };
 
-  const handleAppStateChange = (nextAppState:any) => {
+  const handleAppStateChange = (nextAppState: any) => {
     if (nextAppState === 'background') {
       console.log('the app is closed');
       setDataStorage(data);
-    }    
+    }
   }
 
   useEffect(() => {
@@ -93,7 +105,9 @@ export default function App(): JSX.Element {
           modalType={modalType}
           updateModalType={updateModalType}></Header>
         <View>
-          {modalType.bluetooth && <Bluetooth rtcmNtrip={rtcmNtrip} getNmeaRead={getNmeaRead}/>}
+          {modalType.bluetooth && <Bluetooth rtcmNtrip={rtcmNtrip} getNmeaRead={getNmeaRead} requestPermissions={requestPermissions}
+            scanForPeripherals={scanForPeripherals} connectToDevice={connectToDevice} allDevices={allDevices} connectedDevice={connectedDevice} 
+            disconnectFromDevice={disconnectFromDevice} onDataReceived={onDataReceived}/>}
           {modalType.ntrip && <Ntrip getRtcmNtrip={getRtcmNtrip} lastGGA={lastGGA} />}
           {modalType.project && <Project clearStorage={clearDataStorage} />}
           {modalType.point && <Point />}
@@ -103,7 +117,7 @@ export default function App(): JSX.Element {
               rawMeasurement={rawMeasurement}
             />
           )}
-          {modalType.placing && <Placing nmeaParsed={nmeaParsed}/>}
+          {modalType.placing && <Placing nmeaParsed={nmeaParsed} />}
           {modalType.map && <Map />}
           {modalType.skyplot && <Skyplot />}
         </View>
