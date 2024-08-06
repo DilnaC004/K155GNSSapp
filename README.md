@@ -4,6 +4,9 @@ How to set up development environment - https://reactnative.dev/docs/environment
 
 run project with - yarn start
 
+Which NMEA sentences does SW Maps use? Why can't I see the GNSS skyplot and accuracy?
+SW Maps uses the NMEA GGA and RMC sentences for position and time, GSA and GSV sentences for skyplot display, and the GST sentence for accuracy. Enable these messages in your receiver.
+
 packages:
 - yarn add react-native-vector-icons
 - yarn add react-native-ble-plx

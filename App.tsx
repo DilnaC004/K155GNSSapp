@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { SafeAreaView, View, AppState, PermissionsAndroid, Platform, Button, Text } from 'react-native';
-import GPS from 'gps';
 import useAsyncStorage from './components/hooks/useAsyncStorage';
 import Header from './components/Header';
 import Measurement from './components/Measurement';
@@ -16,7 +15,6 @@ import configurationData from './components/configurationData';
 import useBLE from './components/hooks/useBLE';
 
 export default function App(): JSX.Element {
-  const gps = new GPS();
   const [nmeaParsed, setNmeaParsed] = React.useState('');
   const [rawMeasurement, setRawMeasurement] = React.useState('');
   const [rtcmNtrip, setRtcmNtrip] = React.useState<any>(null);
@@ -29,12 +27,9 @@ export default function App(): JSX.Element {
     }));
   };
   const { setDataStorage, getDataStorage, clearDataStorage } = useAsyncStorage(updateData);
-  const getNmeaRead = (nmeaRead: string) => {
-    setRawMeasurement(nmeaRead);
-    gps.update(nmeaRead); 
-    gps.on('data', parsed => {
+  const getNmeaRead = (parsed:any) => {
       setNmeaParsed(parsed);
-    });
+      console.log(parsed.lon)
   };
   const {
     requestPermissions,
@@ -43,7 +38,7 @@ export default function App(): JSX.Element {
     allDevices,
     connectedDevice,
     disconnectFromDevice,
-  } = useBLE(lastGGA, getNmeaRead);
+  } = useBLE(getNmeaRead);
   
   const valueContext = { data, updateData }; // Provide valueContext to all components in App
   const getRtcmNtrip = (rtcmNtrip: any) => {
