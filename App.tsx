@@ -29,7 +29,13 @@ export default function App(): JSX.Element {
     }));
   };
   const { setDataStorage, getDataStorage, clearDataStorage } = useAsyncStorage(updateData);
-
+  const getNmeaRead = (nmeaRead: string) => {
+    setRawMeasurement(nmeaRead);
+    gps.update(nmeaRead); 
+    gps.on('data', parsed => {
+      setNmeaParsed(parsed);
+    });
+  };
   const {
     requestPermissions,
     scanForPeripherals,
@@ -37,26 +43,8 @@ export default function App(): JSX.Element {
     allDevices,
     connectedDevice,
     disconnectFromDevice,
-    onDataReceived,
-  } = useBLE(lastGGA);
-
-  const getNmeaRead = (nmeaRead: any) => {
-
-    setRawMeasurement(nmeaRead);
-
-    for (let i = 0; i < nmeaRead.length; i++) {
-      if (nmeaRead[i].includes("$GNGGA")) {
-        setLastGGA(nmeaRead[i]); // for RTCM 
-        //console.log(nmeaRead[i]);
-        gps.update(nmeaRead[i]);
-      }
-    }
-
-    gps.on('data', parsed => {
-      setNmeaParsed(parsed);
-      console.log(parsed)
-    });
-  };
+  } = useBLE(lastGGA, getNmeaRead);
+  
   const valueContext = { data, updateData }; // Provide valueContext to all components in App
   const getRtcmNtrip = (rtcmNtrip: any) => {
     setRtcmNtrip(rtcmNtrip);
@@ -107,7 +95,7 @@ export default function App(): JSX.Element {
         <View>
           {modalType.bluetooth && <Bluetooth rtcmNtrip={rtcmNtrip} getNmeaRead={getNmeaRead} requestPermissions={requestPermissions}
             scanForPeripherals={scanForPeripherals} connectToDevice={connectToDevice} allDevices={allDevices} connectedDevice={connectedDevice} 
-            disconnectFromDevice={disconnectFromDevice} onDataReceived={onDataReceived}/>}
+            disconnectFromDevice={disconnectFromDevice}/>}
           {modalType.ntrip && <Ntrip getRtcmNtrip={getRtcmNtrip} lastGGA={lastGGA} />}
           {modalType.project && <Project clearStorage={clearDataStorage} />}
           {modalType.point && <Point />}

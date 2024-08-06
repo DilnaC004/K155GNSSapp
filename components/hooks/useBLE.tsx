@@ -26,13 +26,13 @@ interface BluetoothLowEnergyApi {
   disconnectFromDevice: () => void;
   connectedDevice: Device | null;
   allDevices: Device[];
-  onDataReceived: (data: string) => void;
 }
 
-function useBLE(lastGGA: string): BluetoothLowEnergyApi {
+function useBLE(lastGGA: string, getNmeaRead: (nmeaSentence: string) => void): BluetoothLowEnergyApi {
   const [allDevices, setAllDevices] = useState<Device[]>([]);
   const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
   const [isConnected, setIsConnected] = useState<boolean>(false);
+  let buffer = '';  // Buffer to store partial data
 
   const requestPermissions = async (cb: VoidCallback) => {
     if (Platform.OS === 'android') {
@@ -97,15 +97,13 @@ function useBLE(lastGGA: string): BluetoothLowEnergyApi {
       setConnectedDevice(deviceConnection);
       setIsConnected(true);
       bleManager.stopDeviceScan();
+      startStreamingData(deviceConnection);
       Snackbar.show({
         text: 'Connected to device: ' + (device.name ? device.name : device.id),
         duration: Snackbar.LENGTH_SHORT,
         textColor: 'red',
         marginBottom: 5,
       });
-      if (connectedDevice) {
-        startStreamingData(connectedDevice);
-      }
     } catch (e) {
       console.error('FAILED TO CONNECT', e);
       setIsConnected(false);
@@ -126,78 +124,49 @@ function useBLE(lastGGA: string): BluetoothLowEnergyApi {
     }
   };
 
-  const onDataReceived = (data: string) => {
-    try {
-      var decodedData = base64.decode(data);
-      data = decodedData;
-      console.log(data);
-    } catch {
-      console.log("An error occured in onDataReceived")
+  const onHeartRateUpdate = (
+    error: BleError | null,
+    characteristic: Characteristic | null,
+  ) => {
+    if (error) {
+      console.log(error);
+      return -1;
+    } else if (!characteristic?.value) {
+      console.log('No Data was recieved');
+      return -1;
+    }
+
+    const rawData = base64.decode(characteristic.value);
+    // Append the new data to the buffer
+    buffer += rawData;
+
+    // Split the buffer by the NMEA sentence delimiter '$'
+    let startIdx;
+    while ((startIdx = buffer.indexOf('$')) !== -1) {
+      // Check if there is another '$' indicating the end of the current NMEA sentence
+      let endIdx = buffer.indexOf('$', startIdx + 1);
+      if (endIdx === -1) {
+      // If there is no second '$', break the loop to wait for more data
+      break;
+    }
+    // Extract the NMEA sentence
+    const nmeaSentence = buffer.slice(startIdx, endIdx);
+    buffer = buffer.slice(endIdx);  // Update the buffer to remove the processed NMEA sentence
+    getNmeaRead(nmeaSentence);
     }
   };
 
-  const startStreamingData = async (connectedDevice: Device) => {
-    if (connectedDevice)
-      try {
-        await connectedDevice.writeCharacteristicWithoutResponseForService(
-          monitoredBleService,
-          writeChar,
-          base64.encode(lastGGA)
-        );
-        const currentNMEA = await connectedDevice.readCharacteristicForService(
-          monitoredBleService,
-          monitoredBleCharacteristic
-        );
-
-        if (currentNMEA.value) {
-          console.log("Response: " + currentNMEA.value);
-          onDataReceived(currentNMEA.value);
-        } else {
-          console.log("No Value!");
-        }
-      } catch (error: any) {
-        console.error("Error in startStreamingData:", error);
-        throw new Error(error);
-      }
-  };
-
-  useEffect(() => {
-    if (connectedDevice) {
-      startStreamingData(connectedDevice);
+  const startStreamingData = async (device: Device) => {
+    if (device) {
+      device.monitorCharacteristicForService(
+        monitoredBleCharacteristic,
+        monitoredBleService,
+        onHeartRateUpdate,
+      );
+    } else {
+      console.log('No Device Connected');
     }
-  }, [connectedDevice]);
-
-  // useEffect(() => {
-  //   let subscription: any;
-  //   if (isConnected && connectedDevice) {
-  //     subscription = connectedDevice.monitorCharacteristicForService(monitoredBleCharacteristic, monitoredBleService,
-  //       (error, characteristic) => {
-  //         if (error) {
-  //           console.log('Error monitoring characteristic:', error);
-  //           return;
-  //         }
-  //         if (characteristic?.value) {
-  //           onDataReceived(characteristic.value);
-  //         }
-  //       }
-  //     );
-  //     return () => {
-  //       subscription.remove();
-  //     };
-  //   }
-  // }, [isConnected, connectedDevice]);
-
-  // useEffect(() => {
-  //   if (isConnected && connectedDevice) {
-  //     connectedDevice.readCharacteristicForService(monitoredBleCharacteristic, monitoredBleService)
-  //     .then(characteristic => {
-  //       console.log('Read characteristic value:', characteristic.value)
-  //     })
-  //     .catch(error => {
-  //       console.error('Read characteristic error:', error)
-  //     })
-  //   }
-  // }, [isConnected, connectedDevice]);
+  };
 
   return {
     scanForPeripherals,
@@ -206,7 +175,6 @@ function useBLE(lastGGA: string): BluetoothLowEnergyApi {
     allDevices,
     connectedDevice,
     disconnectFromDevice,
-    onDataReceived,
   };
 }
 
