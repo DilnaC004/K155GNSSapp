@@ -38,7 +38,7 @@ export default function App(): JSX.Element {
     connectedDevice,
     disconnectFromDevice,
     onDataReceived,
-  } = useBLE();
+  } = useBLE(lastGGA);
 
   const getNmeaRead = (nmeaRead: any) => {
 

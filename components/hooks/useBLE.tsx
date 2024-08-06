@@ -12,10 +12,9 @@ import DeviceInfo from 'react-native-device-info';
 import Snackbar from 'react-native-snackbar';
 import base64 from 'react-native-base64';
 
-const HEART_RATE_UUID = '0000180d-0000-1000-8000-00805f9b34fb';
-const HEART_RATE_CHARACTERISTIC = '00002a37-0000-1000-8000-00805f9b34fb';
 const monitoredBleCharacteristic = '0000ffe0-0000-1000-8000-00805f9b34fb';
 const monitoredBleService = '0000ffe1-0000-1000-8000-00805f9b34fb';
+const writeChar = "0000fff2-0000-1000-8000-00805f9b34fb";
 const bleManager = new BleManager();
 
 type VoidCallback = (result: boolean) => void;
@@ -30,7 +29,7 @@ interface BluetoothLowEnergyApi {
   onDataReceived: (data: string) => void;
 }
 
-function useBLE(): BluetoothLowEnergyApi {
+function useBLE(lastGGA: string): BluetoothLowEnergyApi {
   const [allDevices, setAllDevices] = useState<Device[]>([]);
   const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
   const [isConnected, setIsConnected] = useState<boolean>(false);
@@ -104,6 +103,9 @@ function useBLE(): BluetoothLowEnergyApi {
         textColor: 'red',
         marginBottom: 5,
       });
+      if (connectedDevice) {
+        startStreamingData(connectedDevice);
+      }
     } catch (e) {
       console.error('FAILED TO CONNECT', e);
       setIsConnected(false);
@@ -125,34 +127,77 @@ function useBLE(): BluetoothLowEnergyApi {
   };
 
   const onDataReceived = (data: string) => {
-    // Odsud resit co s daty, poslat do parseru NMEA zpravy a aktualizovat polohu
     try {
       var decodedData = base64.decode(data);
       data = decodedData;
       console.log(data);
     } catch {
-      console.log("An error occured")
+      console.log("An error occured in onDataReceived")
     }
   };
 
-  useEffect(() => {
-    if (isConnected && connectedDevice) {
-      const subscription = connectedDevice.monitorCharacteristicForService(monitoredBleCharacteristic, monitoredBleService,
-        (error, characteristic) => {
-          if (error) {
-            console.log('Error monitoring characteristic:', error);
-            return;
-          }
-          if (characteristic?.value) {
-            onDataReceived(characteristic.value);
-          }
+  const startStreamingData = async (connectedDevice: Device) => {
+    if (connectedDevice)
+      try {
+        await connectedDevice.writeCharacteristicWithoutResponseForService(
+          monitoredBleService,
+          writeChar,
+          base64.encode(lastGGA)
+        );
+        const currentNMEA = await connectedDevice.readCharacteristicForService(
+          monitoredBleService,
+          monitoredBleCharacteristic
+        );
+
+        if (currentNMEA.value) {
+          console.log("Response: " + currentNMEA.value);
+          onDataReceived(currentNMEA.value);
+        } else {
+          console.log("No Value!");
         }
-      );
-      return () => {
-        subscription.remove();
-      };
+      } catch (error: any) {
+        console.error("Error in startStreamingData:", error);
+        throw new Error(error);
+      }
+  };
+
+  useEffect(() => {
+    if (connectedDevice) {
+      startStreamingData(connectedDevice);
     }
-  }, [isConnected, connectedDevice]);
+  }, [connectedDevice]);
+
+  // useEffect(() => {
+  //   let subscription: any;
+  //   if (isConnected && connectedDevice) {
+  //     subscription = connectedDevice.monitorCharacteristicForService(monitoredBleCharacteristic, monitoredBleService,
+  //       (error, characteristic) => {
+  //         if (error) {
+  //           console.log('Error monitoring characteristic:', error);
+  //           return;
+  //         }
+  //         if (characteristic?.value) {
+  //           onDataReceived(characteristic.value);
+  //         }
+  //       }
+  //     );
+  //     return () => {
+  //       subscription.remove();
+  //     };
+  //   }
+  // }, [isConnected, connectedDevice]);
+
+  // useEffect(() => {
+  //   if (isConnected && connectedDevice) {
+  //     connectedDevice.readCharacteristicForService(monitoredBleCharacteristic, monitoredBleService)
+  //     .then(characteristic => {
+  //       console.log('Read characteristic value:', characteristic.value)
+  //     })
+  //     .catch(error => {
+  //       console.error('Read characteristic error:', error)
+  //     })
+  //   }
+  // }, [isConnected, connectedDevice]);
 
   return {
     scanForPeripherals,
