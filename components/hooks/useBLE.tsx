@@ -37,6 +37,7 @@ function useBLE(getNmeaRead: (parsed: any) => void): BluetoothLowEnergyApi {
   let gnrmcFound = false;
   let lastGGA = '';  
   const gps = new GPS();
+  let intervalId: NodeJS.Timeout | null = null;
 
   const requestPermissions = async (cb: VoidCallback) => {
     if (Platform.OS === 'android') {
@@ -114,21 +115,29 @@ function useBLE(getNmeaRead: (parsed: any) => void): BluetoothLowEnergyApi {
     }
   };
 
-  const disconnectFromDevice = () => {
+  const disconnectFromDevice = async () => {
     if (connectedDevice) {
-      bleManager.cancelDeviceConnection(connectedDevice.id);
-      setConnectedDevice(null);
-      setIsConnected(false);
-      Snackbar.show({
-        text: 'Disconnected from device: ' + (connectedDevice.name ? connectedDevice.name : connectedDevice.id),
-        duration: Snackbar.LENGTH_SHORT,
-        textColor: 'red',
-        marginBottom: 5,
-      });
+      try {
+        await bleManager.cancelDeviceConnection(connectedDevice.id);
+        setConnectedDevice(null);
+        setIsConnected(false);
+        if (intervalId) {
+          clearInterval(intervalId);
+          intervalId = null;
+        }
+        Snackbar.show({
+          text: 'Disconnected from device: ' + (connectedDevice.name ? connectedDevice.name : connectedDevice.id),
+          duration: Snackbar.LENGTH_SHORT,
+          textColor: 'red',
+          marginBottom: 5,
+        });
+      } catch (e) {
+        console.error('Failed to disconnect', e);
+      }
     }
-  };
+  };  
 
-  const onHeartRateUpdate = (
+  const onNmeaRateUpdate = (
     error: BleError | null,
     characteristic: Characteristic | null,
   ) => {
@@ -156,13 +165,13 @@ function useBLE(getNmeaRead: (parsed: any) => void): BluetoothLowEnergyApi {
       // Extract the NMEA sentence
       const nmeaSentence = buffer.slice(startIdx, endIdx);
       buffer = buffer.slice(endIdx);  // Update the buffer to remove the processed NMEA sentence
-
+  
       console.log(nmeaSentence);
       // Check if the sentence is $GNGST
       if (nmeaSentence.includes('$GNGST')) {
         gnrmcFound = true;
       }
-
+  
       if (nmeaSentence.includes('$GNGGA')) {
         lastGGA = nmeaSentence;
         //gps.update(nmeaSentence);
@@ -171,34 +180,51 @@ function useBLE(getNmeaRead: (parsed: any) => void): BluetoothLowEnergyApi {
       // Call getNmeaRead if $GNGST is found
       if (gnrmcFound) {
         gps.on('data', parsed => {
-          getNmeaRead(parsed);
-          console.log(parsed.lon)
+          try {
+            getNmeaRead(parsed);
+            console.log(parsed.lon);
+          } catch (e) {
+            console.error('Failed to process NMEA data', e);
+          }
         });
-
+  
         gnrmcFound = false;  // Reset the flag
       }
     }
-  };  
+  };
+  
 
   const startStreamingData = async (device: Device) => {
-    if (device) {
-      device.monitorCharacteristicForService(
-        monitoredBleCharacteristic,
-        monitoredBleService,
-        onHeartRateUpdate,
-      );
-    // Set up a timer to send the data every 10 seconds
-    setInterval(() => {
-      device.writeCharacteristicWithoutResponseForService(
-        monitoredBleService,
-        writeChar,
-        base64.encode(lastGGA)
-      );
-    }, 10000); // 10000 milliseconds = 10 seconds
-    } else {
-      console.log('No Device Connected');
+    try {
+      if (device) {
+        device.monitorCharacteristicForService(
+          monitoredBleCharacteristic,
+          monitoredBleService,
+          onNmeaRateUpdate,
+        );
+        
+        // Set up a timer to send the data every 10 seconds
+        intervalId = setInterval(async () => {
+          if (isConnected && connectedDevice) {
+            try {
+              await device.writeCharacteristicWithoutResponseForService(
+                monitoredBleService,
+                writeChar,
+                base64.encode(lastGGA)
+              );
+            } catch (e) {
+              console.error('Failed to write characteristic', e);
+            }
+          }
+        }, 10000); // 10000 milliseconds = 10 seconds
+      } else {
+        console.log('No Device Connected');
+      }
+    } catch (e) {
+      console.error('Failed to stream data', e);
     }
   };
+  
 
   return {
     scanForPeripherals,
