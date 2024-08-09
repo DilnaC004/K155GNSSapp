@@ -112,6 +112,7 @@ export default FlatListPoint = ({
         }}>
         <View style={{ marginTop: 22 }}>
           <View style={styles.modalView}>
+            <Text style={styles.modalTitle}>Podrobnosti bodu</Text>
             <ItemInfo item={selectedPoint} textColor={'black'} jtskCoordinates={jtskCoordinates} />
             <Button
               title="Zavřít okno"

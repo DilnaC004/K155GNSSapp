@@ -37,3 +37,4 @@ packages:
 - add unpaired bluetooth devices
 - i18n
 - force light mode?
+- dodelat preposilani RTK korekci do GNSS - moznost vypnuti, restartu, ukladani mnozstvi stazenych dat

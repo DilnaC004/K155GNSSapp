@@ -199,6 +199,11 @@ export const styles = {
     fontWeight: 'bold',
     marginBottom: 8,
   },
+  modalTitle: {
+    fontWeight: 'bold',
+    fontSize: 25,
+    marginBottom: 8,
+  },
   nastCenter: {
     flexDirection: 'row',
     alignItems: 'center',

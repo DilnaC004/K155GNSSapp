@@ -29,7 +29,7 @@ interface BluetoothLowEnergyApi {
   allDevices: Device[];
 }
 
-function useBLE(getNmeaRead: (parsed: any) => void): BluetoothLowEnergyApi {
+function useBLE(getNmeaRead: (parsed: any) => void, rtcmNtrip: string): BluetoothLowEnergyApi {
   const [allDevices, setAllDevices] = useState<Device[]>([]);
   const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
   const [isConnected, setIsConnected] = useState<boolean>(false);
@@ -137,7 +137,7 @@ function useBLE(getNmeaRead: (parsed: any) => void): BluetoothLowEnergyApi {
     }
   };  
 
-  const onNmeaRateUpdate = (
+  const onNmeaUpdate = (
     error: BleError | null,
     characteristic: Characteristic | null,
   ) => {
@@ -200,7 +200,7 @@ function useBLE(getNmeaRead: (parsed: any) => void): BluetoothLowEnergyApi {
         device.monitorCharacteristicForService(
           monitoredBleCharacteristic,
           monitoredBleService,
-          onNmeaRateUpdate,
+          onNmeaUpdate,
         );
         
         // Set up a timer to send the data every 10 seconds
@@ -210,7 +210,7 @@ function useBLE(getNmeaRead: (parsed: any) => void): BluetoothLowEnergyApi {
               await device.writeCharacteristicWithoutResponseForService(
                 monitoredBleService,
                 writeChar,
-                base64.encode(lastGGA)
+                base64.encode(rtcmNtrip)
               );
             } catch (e) {
               console.error('Failed to write characteristic', e);

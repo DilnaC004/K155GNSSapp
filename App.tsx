@@ -38,7 +38,7 @@ export default function App(): JSX.Element {
     allDevices,
     connectedDevice,
     disconnectFromDevice,
-  } = useBLE(getNmeaRead);
+  } = useBLE(getNmeaRead, rtcmNtrip);
   
   const valueContext = { data, updateData }; // Provide valueContext to all components in App
   const getRtcmNtrip = (rtcmNtrip: any) => {

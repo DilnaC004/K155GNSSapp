@@ -1,13 +1,14 @@
-import React, {useState, useRef, useEffect, useContext} from 'react';
-import {View, Text, TextInput, Button, ScrollView} from 'react-native';
+import React, { useState, useRef, useEffect, useContext } from 'react';
+import { View, Text, TextInput, Button, ScrollView } from 'react-native';
 import Snackbar from 'react-native-snackbar';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import SelectDropdown from 'react-native-select-dropdown';
 import RowWithLabelAndValue from './RowWithLabelAndValue';
-import {encode} from 'base-64';
+import { encode } from 'base-64';
 import TcpSocket from 'react-native-tcp-socket';
 import { DataContext } from '../Functions/DataContext';
 import { styles } from '../Styles/styles';
+import FlatListMountpoint from './ProjectComponents/FlatListMountpoint';
 
 class Mountpoint {
   constructor(sourceTableString) {
@@ -27,10 +28,11 @@ class Mountpoint {
   }
 }
 
-const Ntrip = ({getRtcmNtrip, lastGGA}) => {
+const Ntrip = ({ getRtcmNtrip, lastGGA }) => {
   const [intervalLastGGA, setIntervalLastGGA] = useState(0);
-  const { data, updateData} = useContext(DataContext);
+  const { data, updateData } = useContext(DataContext);
   const [ntripSettings, setNtripSettings] = useState(data.ntripSettings);
+  const [selectedMntp, setSelectedMntp] = useState(null); // State for selected mountpoint
   const updateNtripSettings = newSettings => {
     setNtripSettings(prevSettings => ({
       ...prevSettings,
@@ -38,13 +40,9 @@ const Ntrip = ({getRtcmNtrip, lastGGA}) => {
     }));
   };
 
-  const switchConnect  = ntripSettings.ntripConnect ? 'Odpoj se' : 'Připoj se k Ntrip serveru';
-  const mountpointSelectRef = useRef();
+  const switchConnect = ntripSettings.ntripConnect ? 'Odpoj se' : 'Připoj se k Ntrip serveru';
 
   const handleMntpSelectChange = () => {
-    // Perform logic based on MNTP selection change
-    //setShowFlatList(true); // set to true when button is clicked
-
     console.log('Zkouším se připojit k Czepos');
     const options = {
       host: ntripSettings.ntripIp,
@@ -82,15 +80,12 @@ const Ntrip = ({getRtcmNtrip, lastGGA}) => {
 
       updateNtripSettings({
         mountpoints: mountpoints,
-        selectedMntp: mountpoints[0],
       });
-
-      mountpointSelectRef.current.selectIndex(0);
     });
 
     client.on('error', function (error) {
       console.log(error);
-      updateNtripSettings({mountpoints: [], selectedMntp: null});
+      updateNtripSettings({ mountpoints: [], selectedMntp: null });
       Snackbar.show({
         text: `Chyba komunikace se serverem \r\nhttp://${ntripSettings.ntripIp}:${ntripSettings.ntripPort}`,
         duration: Snackbar.LENGTH_SHORT,
@@ -104,8 +99,17 @@ const Ntrip = ({getRtcmNtrip, lastGGA}) => {
     });
   };
 
-  //TODO : dodelat preposilani RTK korekci do GNSS - moznost vypnuti, restartu, ukladani mnozstvi stazenych dat
   const onNtripConnect = () => {
+    if (!selectedMntp) {
+      Snackbar.show({
+        text: "Před připojením vyber mountpoint.",
+        duration: Snackbar.LENGTH_SHORT,
+        textColor: 'red',
+        marginBottom: 5,
+      });
+      return;
+    }
+
     console.log('Zkouším stahovat ntrip korekce');
 
     const options = {
@@ -113,14 +117,12 @@ const Ntrip = ({getRtcmNtrip, lastGGA}) => {
       port: ntripSettings.ntripPort,
     };
 
-    console.log(options);
-    // Create socket
     let client = TcpSocket.createConnection(options, () => {
-      updateNtripSettings({clientWrapper:client});
+      updateNtripSettings({ clientWrapper: client });
 
       let connectionString =
         'GET /' +
-        ntripSettings.selectedMntp.id +
+        selectedMntp.id +
         ' HTTP/1.0\r\n' +
         'Host: ' +
         `http://${ntripSettings.ntripIp}:${ntripSettings.ntripPort}` +
@@ -132,19 +134,18 @@ const Ntrip = ({getRtcmNtrip, lastGGA}) => {
         )}` +
         '\r\n\r\n\r\n';
 
-      // Write on the socket
       client.write(connectionString);
 
-      if(ntripSettings.selectedMntp.isVirtual && lastGGA !=null){
+      if (selectedMntp.isVirtual && lastGGA != null) {
         console.log('Sending GGA')
 
         let interval = setInterval(() => {
           client.write(lastGGA);
-        },20000);
+        }, 20000);
 
         setIntervalLastGGA(interval);
 
-      } else if(lastGGA == null){
+      } else if (lastGGA == null) {
         Snackbar.show({
           text: "Pro využítí virtuální stanice připojte GNSS přijímač",
           duration: Snackbar.LENGTH_SHORT,
@@ -153,14 +154,7 @@ const Ntrip = ({getRtcmNtrip, lastGGA}) => {
         });
       }
 
-      updateNtripSettings({ntripConnect:true});
-/*
-      setTimeout(() => {
-        client.end();
-        console.log('Client byl ukončen : DEBUG!!');
-        updateNtripSettings({ntripConnect:false});
-      }, 10000);
-      */
+      updateNtripSettings({ ntripConnect: true });
     });
 
     client.on('data', function (data) {
@@ -185,65 +179,51 @@ const Ntrip = ({getRtcmNtrip, lastGGA}) => {
   const onNtripClose = () => {
     ntripSettings.clientWrapper.end();
     clearInterval(intervalLastGGA);
-    updateNtripSettings({ntripConnect:false});
+    updateNtripSettings({ ntripConnect: false });
+  }
+
+  const onSelectMountpoint = (selectedMountpoint) => {
+    setSelectedMntp(selectedMountpoint); // Update selected mountpoint
   }
 
   useEffect(() => {
+    // Whenever lastGGA is updated, send it to the Ntrip server if connected
+    if (selectedMntp?.isVirtual && lastGGA != null && ntripSettings.ntripConnect) {
+      console.log('Sending GGA to Ntrip Server');
+      ntripSettings.clientWrapper?.write(lastGGA);
+    }
     return () => {
       updateData({
-        ntripSettings:ntripSettings,
+        ntripSettings: ntripSettings,
       })
     };
-  },[ntripSettings]);
+  }, [ntripSettings, lastGGA]);
 
   return (
-    <ScrollView style={styles.nastContainer}>
+    <View style={styles.nastContainer}>
       <Text style={styles.title}>Nastavení NTRIP připojení</Text>
       <Text>IP adresa NTRIP serveru:</Text>
       <TextInput
         style={styles.input}
         placeholder="Ip adresa serveru..."
         value={ntripSettings.ntripIp}
-        onChangeText={text => updateNtripSettings({ntripIp: text})}
+        onChangeText={text => updateNtripSettings({ ntripIp: text })}
       />
       <Text>Port NTRIP serveru:</Text>
       <TextInput
         style={styles.input}
         placeholder="port..."
         value={ntripSettings.ntripPort}
-        onChangeText={text => updateNtripSettings({ntripPort: text})}
+        onChangeText={text => updateNtripSettings({ ntripPort: text })}
       />
-      <Text>Vyber mountpoint:</Text>
-      <View style={styles.selectDropdown}>
-        <SelectDropdown
-          style={styles.selectDropdown}
-          ref={mountpointSelectRef}
-          data={ntripSettings.mountpoints.map(mntp => mntp.name)}
-          disabled={ntripSettings.mountpoints.length === 0}
-          defaultValueByIndex={0}
-          defaultButtonText="žádná data"
-          buttonStyle={styles.dropdownBtnStyle}
-          onSelect={(_, index) => {
-            updateNtripSettings({
-              selectedMntp: ntripSettings.mountpoints[index],
-            });
-          }}
-          renderDropdownIcon={isOpened => {
-            return (
-              <FontAwesome5
-                name={isOpened ? 'chevron-up' : 'chevron-down'}
-                color={'#444'}
-                size={18}
-              />
-            );
-          }}
-          dropdownIconPosition={'right'}
-        />
-      </View>
       <Button
         title="Vyhledej MountPointy"
         style={styles.button}
         onPress={handleMntpSelectChange}
+      />
+      <FlatListMountpoint
+        mountpoints={ntripSettings.mountpoints}
+        onSelectMountpoint={onSelectMountpoint}
       />
       <View style={styles.hrLine} />
       <Text style={styles.title}>Připojení k NTRIP serveru:</Text>
@@ -251,49 +231,27 @@ const Ntrip = ({getRtcmNtrip, lastGGA}) => {
         style={styles.input}
         placeholder="Uživatelské jméno"
         value={ntripSettings.ntripUsername}
-        onChangeText={text => updateNtripSettings({ntripUsername: text})}
+        onChangeText={text => updateNtripSettings({ ntripUsername: text })}
       />
       <TextInput
         style={styles.input}
         placeholder="Heslo"
         value={ntripSettings.ntripPassword}
-        onChangeText={text => updateNtripSettings({ntripPassword: text})}
+        onChangeText={text => updateNtripSettings({ ntripPassword: text })}
         secureTextEntry
       />
       <Button
         title={switchConnect}
         style={styles.button}
         onPress={() => {
-            if(!ntripSettings.ntripConnect){
-                onNtripConnect();
-            } else {
-                onNtripClose();
-            }
-          }}
+          if (!ntripSettings.ntripConnect) {
+            onNtripConnect();
+          } else {
+            onNtripClose();
+          }
+        }}
       />
-      <View style={styles.hrLine} />
-      {ntripSettings.selectedMntp !== null && (
-        <View style={styles.mountpointInfo}>
-          <Text style={styles.title}>Podrobnosti mountpointu</Text>
-          <RowWithLabelAndValue
-            label="Název"
-            value={ntripSettings.selectedMntp.id}
-          />
-          <RowWithLabelAndValue
-            label="Formát dat"
-            value={ntripSettings.selectedMntp.format}
-          />
-          <RowWithLabelAndValue
-            label="Navigační sytémy"
-            value={ntripSettings.selectedMntp.navSystem}
-          />
-          <RowWithLabelAndValue
-            label="Je virtuální"
-            value={ntripSettings.selectedMntp.isVirtual ? 'Ano' : 'Ne'}
-          />
-        </View>
-      )}
-    </ScrollView>
+    </View>
   );
 };
 
