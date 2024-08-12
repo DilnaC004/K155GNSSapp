@@ -174,7 +174,7 @@ function useBLE(getNmeaRead: (parsed: any) => void, rtcmNtrip: string): Bluetoot
   
       if (nmeaSentence.includes('$GNGGA')) {
         lastGGA = nmeaSentence;
-        //gps.update(nmeaSentence);
+        gps.update(nmeaSentence);
       }
   
       // Call getNmeaRead if $GNGST is found

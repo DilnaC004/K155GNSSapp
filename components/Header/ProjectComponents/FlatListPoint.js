@@ -155,6 +155,8 @@ export default FlatListPoint = ({
               <TouchableOpacity
                 onPress={() => {
                   deletePoint(selectedPoint.title, data.projects[projectSettings.projectId].title);
+                  setModalVisible1(!modalVisible1);
+                  setModalVisible2(!modalVisible2);
                 }}>
                 <Image
                   source={require('../../Images/trash.png')}

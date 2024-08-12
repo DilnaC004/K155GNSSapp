@@ -37,6 +37,19 @@ const FlatListMountpoint = ({ mountpoints, onSelectMountpoint }) => {
     />
   );
 
+  const getCarrierText = (carrier) => {
+    switch (carrier) {
+      case '0':
+        return 'Žádné informace';
+      case '1':
+        return 'L1';
+      case '2':
+        return 'L1+L2';
+      default:
+        return 'Chyba';
+    }
+  };
+
   return (
     <View style={{ height: 240 }}>
       <FlatList
@@ -55,7 +68,7 @@ const FlatListMountpoint = ({ mountpoints, onSelectMountpoint }) => {
             <Text style={styles.title}>ID: {selectedMountpoint.id}</Text>
             <Text style={styles.title}>Název: {selectedMountpoint.name}</Text>
             <Text style={styles.title}>Formát dat: {selectedMountpoint.format}</Text>
-            <Text style={styles.title}>Nosič: {selectedMountpoint.carrier}</Text>
+            <Text style={styles.title}>Nosné vlny: {getCarrierText(selectedMountpoint.carrier)}</Text>
             <Text style={styles.title}>Navigační sytémy: {selectedMountpoint.navSystem}</Text>
             <Text style={styles.title}>Síť: {selectedMountpoint.networkName}</Text>
             <Text style={styles.title}>Stát: {selectedMountpoint.country}</Text>

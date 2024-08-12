@@ -44,10 +44,10 @@ export default Header = ({nmeaParsed, modalType, updateModalType}) => {
         setCoordStatus('black');
         break;
     }
-    if(data.bluetoothSettings.isEnabled){
+    if(!data.bluetoothSettings.isConnected){
       setBluetoothStatus("black")
     } else {
-      setBluetoothStatus("aqua")
+      setBluetoothStatus("orange")
     }
     if(!data.ntripSettings.ntripConnect){
       setNtripStatus("black")
@@ -55,7 +55,7 @@ export default Header = ({nmeaParsed, modalType, updateModalType}) => {
       setNtripStatus("orange")
     }
     
-  }, [nmeaParsed, data.bluetoothSettings.isEnabled ,data.ntripSettings.ntripConnect]);
+  }, [nmeaParsed, data.bluetoothSettings.isConnected ,data.ntripSettings.ntripConnect]);
 
   return (
     <View style={styles.headerContainer}>
@@ -87,7 +87,9 @@ export default Header = ({nmeaParsed, modalType, updateModalType}) => {
         }}>
         <Image
             source={require('./Images/bluetooth.png')}
-            style={styles.icon}
+            style={[styles.icon,
+              { borderColor: bluetoothStatus}
+            ]}
           />
       </TouchableOpacity>
       <TouchableOpacity
@@ -118,7 +120,9 @@ export default Header = ({nmeaParsed, modalType, updateModalType}) => {
         }}>
         <Image
             source={require('./Images/server.png')}
-            style={[styles.icon]}
+            style={[styles.icon,
+              { borderColor: ntripStatus}
+            ]}
           />
       </TouchableOpacity>
       <TouchableOpacity
@@ -180,7 +184,9 @@ export default Header = ({nmeaParsed, modalType, updateModalType}) => {
         }}>
         <Image
             source={require('./Images/signal.png')}
-            style={[styles.icon]}
+            style={[styles.icon,
+              { borderColor: coordStatus}
+            ]}
           />
         <Text style={styles.headerInfoText}>{nmeaParsed.quality}</Text>
       </TouchableOpacity>

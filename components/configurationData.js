@@ -90,7 +90,8 @@ export default configurationData = {
     showCreatePoint: false,
   },
   bluetoothSettings: {
-    isEnabled: true,
+    isEnabled: false,
+    isConnected: false,
     devices: [],
     connectedDeviceClassic: null,
   },

@@ -21,10 +21,9 @@ export default Bluetooth = ({ rtcmNtrip, getNmeaRead, requestPermissions, scanFo
  // Use the useBLE hook
 
   const updateBluetoothSettings = newSettings => {
-    setBluetoothSettings(prevSettings => ({
-      ...prevSettings,
-      ...newSettings,
-    }));
+    const updatedSettings = { ...bluetoothSettings, ...newSettings };
+    setBluetoothSettings(updatedSettings);
+    updateData({ bluetoothSettings: updatedSettings });
   };
 
   const scanForDevices = () => {
@@ -32,7 +31,9 @@ export default Bluetooth = ({ rtcmNtrip, getNmeaRead, requestPermissions, scanFo
       if (isGranted) {
         console.log("scanning");
         scanForPeripherals();
-        console.log(allDevices);
+        setTimeout(() => {
+          console.log(allDevices);
+        }, 5000);
       }
     });
   };
@@ -55,9 +56,11 @@ export default Bluetooth = ({ rtcmNtrip, getNmeaRead, requestPermissions, scanFo
           onPress={() => {
             if (connectedDevice?.id == device.id && connectedDevice != null){
               disconnectFromDevice(device);
+              updateBluetoothSettings({ isConnected: false });
             }
             else if (bluetoothSettings.isEnabled) {
               connectToDevice(device);
+              updateBluetoothSettings({ isConnected: true });
               getNmeaRead(data);
             }
           }}

@@ -17,7 +17,7 @@ class Mountpoint {
     this.id = sourceTableData[1];
     this.name = sourceTableData[2];
     this.format = sourceTableData[3];
-    this.carrier = sourceTableData[4];
+    this.carrier = sourceTableData[5];
     this.navSystem = sourceTableData[6];
     this.networkName = sourceTableData[7];
     this.country = sourceTableData[8];
