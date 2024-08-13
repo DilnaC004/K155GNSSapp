@@ -4,7 +4,7 @@ import Snackbar from 'react-native-snackbar';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import SelectDropdown from 'react-native-select-dropdown';
 import RowWithLabelAndValue from './RowWithLabelAndValue';
-import { encode } from 'base-64';
+import { encode, decode } from 'base-64';
 import TcpSocket from 'react-native-tcp-socket';
 import { DataContext } from '../Functions/DataContext';
 import { styles } from '../Styles/styles';
@@ -61,10 +61,10 @@ const Ntrip = ({ getRtcmNtrip, lastGGA }) => {
       // Write on the socket
       client.write(connectionString);
 
-      setTimeout(() => {
-        client.end();
-        console.log('Client byl ukončen : DEBUG!!');
-      }, 10000);
+      // setTimeout(() => {
+      //   client.end();
+      //   console.log('Client byl ukončen : DEBUG!!');
+      // }, 10000);
     });
 
     client.on('data', function (data) {
@@ -135,11 +135,16 @@ const Ntrip = ({ getRtcmNtrip, lastGGA }) => {
         '\r\n\r\n\r\n';
 
       client.write(connectionString);
+      // Send the GGA message immediately after connecting
+      if (lastGGA != null) {    // selectedMntp.isVirtual &&  // Doesn't have to be virtual
+        console.log('Sending initial GGA');       // Debugging log
 
-      if (selectedMntp.isVirtual && lastGGA != null) {
-        console.log('Sending GGA')
+        // Send the GGA message immediately
+        client.write(lastGGA);
 
+        // Set up a regular interval to send GGA
         let interval = setInterval(() => {
+          console.log('Sending GGA on interval'); // Debugging log
           client.write(lastGGA);
         }, 20000);
 
@@ -158,7 +163,8 @@ const Ntrip = ({ getRtcmNtrip, lastGGA }) => {
     });
 
     client.on('data', function (data) {
-      getRtcmNtrip(data);
+      const byteArray = Array.from(data);
+      getRtcmNtrip(byteArray); // This sends an array of bytes
     });
 
     client.on('error', function (error) {
@@ -188,7 +194,7 @@ const Ntrip = ({ getRtcmNtrip, lastGGA }) => {
 
   useEffect(() => {
     // Whenever lastGGA is updated, send it to the Ntrip server if connected
-    if (selectedMntp?.isVirtual && lastGGA != null && ntripSettings.ntripConnect) {
+    if (lastGGA != null && ntripSettings.ntripConnect) {    // selectedMntp?.isVirtual && (vytazeno z podminky)
       console.log('Sending GGA to Ntrip Server');
       ntripSettings.clientWrapper?.write(lastGGA);
     }

@@ -44,6 +44,15 @@ export default Project = ({clearStorage}) => {
     }
   };
 
+  const closeAll = () => {
+    updateProjectSettings({
+      showFlatList: false,
+      showCreatePoint: false,
+      showCreateProject: false,
+      showPointFlatList: false
+    });
+  }
+
   useEffect(() => {
     return () => {
       updateData({
@@ -60,6 +69,7 @@ export default Project = ({clearStorage}) => {
         <Button
           title="Vyber Zakázku"
           onPress={() => {
+            closeAll();
             updateProjectSettings({
               showFlatList: !projectSettings.showFlatList,
             });
@@ -68,6 +78,7 @@ export default Project = ({clearStorage}) => {
         <Button
           title="Vytvoř zakázku"
           onPress={() => {
+            closeAll();
             updateProjectSettings({
               showCreateProject: !projectSettings.showCreateProject,
             });
@@ -87,6 +98,7 @@ export default Project = ({clearStorage}) => {
         <Button
           title="Zobraz uložené body"
           onPress={() => {
+            closeAll();
             if (projectSettings.projectId != 'null') {
               updateProjectSettings({
                 showPointFlatList: !projectSettings.showPointFlatList,
@@ -97,6 +109,7 @@ export default Project = ({clearStorage}) => {
         <Button
           title="Vlož bod"
           onPress={() => {
+            closeAll();
             if (projectSettings.projectId != 'null') {
               updateProjectSettings({
                 showCreatePoint: !projectSettings.showCreatePoint,

@@ -1,13 +1,13 @@
 /* eslint-disable no-bitwise */
-import {useState, useEffect} from 'react';
-import {PermissionsAndroid, Platform} from 'react-native';
+import { useState, useEffect } from 'react';
+import { PermissionsAndroid, Platform } from 'react-native';
 import {
   BleError,
   BleManager,
   Characteristic,
   Device,
 } from 'react-native-ble-plx';
-import {PERMISSIONS, requestMultiple} from 'react-native-permissions';
+import { PERMISSIONS, requestMultiple } from 'react-native-permissions';
 import DeviceInfo from 'react-native-device-info';
 import Snackbar from 'react-native-snackbar';
 import base64 from 'react-native-base64';
@@ -29,13 +29,13 @@ interface BluetoothLowEnergyApi {
   allDevices: Device[];
 }
 
-function useBLE(getNmeaRead: (parsed: any) => void, rtcmNtrip: string): BluetoothLowEnergyApi {
+function useBLE(getNmeaRead: (parsed: any) => void, rtcmNtrip: Uint8Array, ntripConnect: boolean): BluetoothLowEnergyApi {
   const [allDevices, setAllDevices] = useState<Device[]>([]);
   const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
   const [isConnected, setIsConnected] = useState<boolean>(false);
   let buffer = '';  // Buffer to store partial data
   let gnrmcFound = false;
-  let lastGGA = '';  
+  let lastGGA = '';
   const gps = new GPS();
   let intervalId: NodeJS.Timeout | null = null;
 
@@ -64,11 +64,11 @@ function useBLE(getNmeaRead: (parsed: any) => void, rtcmNtrip: string): Bluetoot
 
         const isGranted =
           result['android.permission.BLUETOOTH_CONNECT'] ===
-            PermissionsAndroid.RESULTS.GRANTED &&
+          PermissionsAndroid.RESULTS.GRANTED &&
           result['android.permission.BLUETOOTH_SCAN'] ===
-            PermissionsAndroid.RESULTS.GRANTED &&
+          PermissionsAndroid.RESULTS.GRANTED &&
           result['android.permission.ACCESS_FINE_LOCATION'] ===
-            PermissionsAndroid.RESULTS.GRANTED;
+          PermissionsAndroid.RESULTS.GRANTED;
 
         cb(isGranted);
       }
@@ -135,66 +135,71 @@ function useBLE(getNmeaRead: (parsed: any) => void, rtcmNtrip: string): Bluetoot
         console.error('Failed to disconnect', e);
       }
     }
-  };  
+  };
 
   const onNmeaUpdate = (
     error: BleError | null,
     characteristic: Characteristic | null,
   ) => {
-    if (error) {
-      console.log(error);
-      return -1;
-    } else if (!characteristic?.value) {
-      console.log('No Data was received');
-      return -1;
-    }
-  
-    const rawData = base64.decode(characteristic.value);
-    // Append the new data to the buffer
-    buffer += rawData;
-  
-    // Split the buffer by the NMEA sentence delimiter '$'
-    let startIdx;
-    while ((startIdx = buffer.indexOf('$')) !== -1) {
-      // Check if there is another '$' indicating the end of the current NMEA sentence
-      let endIdx = buffer.indexOf('$', startIdx + 1);
-      if (endIdx === -1) {
-        // If there is no second '$', break the loop to wait for more data
-        break;
+    try {
+      if (error) {
+        console.log(error);
+        return;
+      } else if (!characteristic?.value) {
+        console.log('No Data was received');
+        return;
       }
-      // Extract the NMEA sentence
-      const nmeaSentence = buffer.slice(startIdx, endIdx);
-      buffer = buffer.slice(endIdx);  // Update the buffer to remove the processed NMEA sentence
-  
-      console.log(nmeaSentence);
-      // Check if the sentence is $GNGST
-      if (nmeaSentence.includes('$GNGST')) {
-        gnrmcFound = true;
+
+      const rawData = base64.decode(characteristic.value);
+      // Append the new data to the buffer
+      buffer += rawData;
+
+      // Split the buffer by the NMEA sentence delimiter '$'
+      let startIdx;
+      while ((startIdx = buffer.indexOf('$')) !== -1) {
+        // Check if there is another '$' indicating the end of the current NMEA sentence
+        let endIdx = buffer.indexOf('$', startIdx + 1);
+        if (endIdx === -1) {
+          // If there is no second '$', break the loop to wait for more data
+          break;
+        }
+        // Extract the NMEA sentence
+        const nmeaSentence = buffer.slice(startIdx, endIdx);
+        buffer = buffer.slice(endIdx);  // Update the buffer to remove the processed NMEA sentence
+
+        // console.log(nmeaSentence); // Debugging log
+        // Check if the sentence is $GNGST
+        if (nmeaSentence.includes('$GNGST')) {
+          gnrmcFound = true;
+        }
+
+        if (nmeaSentence.includes('$GNGGA')) {
+          lastGGA = nmeaSentence;
+          gps.update(nmeaSentence);
+
+        }
+
+        // Call getNmeaRead if $GNGST is found
+        if (gnrmcFound) {
+          gps.on('data', parsed => {
+            try {
+              getNmeaRead(parsed);
+              console.log(parsed.lon);
+            } catch (e) {
+              console.error('Failed to process NMEA data', e);
+            }
+          });
+
+          gnrmcFound = false;  // Reset the flag
+        }
       }
-  
-      if (nmeaSentence.includes('$GNGGA')) {
-        lastGGA = nmeaSentence;
-        gps.update(nmeaSentence);
-      }
-  
-      // Call getNmeaRead if $GNGST is found
-      if (gnrmcFound) {
-        gps.on('data', parsed => {
-          try {
-            getNmeaRead(parsed);
-            console.log(parsed.lon);
-          } catch (e) {
-            console.error('Failed to process NMEA data', e);
-          }
-        });
-  
-        gnrmcFound = false;  // Reset the flag
-      }
+    } catch (e) {
+      console.error("An error occurred: " + e);
     }
   };
-  
 
   const startStreamingData = async (device: Device) => {
+    console.log("Starting the data stream")
     try {
       if (device) {
         device.monitorCharacteristicForService(
@@ -202,21 +207,27 @@ function useBLE(getNmeaRead: (parsed: any) => void, rtcmNtrip: string): Bluetoot
           monitoredBleService,
           onNmeaUpdate,
         );
-        
-        // Set up a timer to send the data every 10 seconds
+
+        // Set up a timer to send the data every 5 seconds
         intervalId = setInterval(async () => {
-          if (isConnected && connectedDevice) {
+          console.log(ntripConnect);  // Use ntripConnect from props
+          if (device && ntripConnect) {  // Use ntripConnect
             try {
+              // Debugging log
+              console.log("Trying to write to BLE")
+              const encodedData = base64.encodeFromByteArray(rtcmNtrip);
+              //console.log("Ntrip data going to BLE" + encodedData);
               await device.writeCharacteristicWithoutResponseForService(
                 monitoredBleService,
                 writeChar,
-                base64.encode(rtcmNtrip)
+                encodedData
               );
+              console.log('Data written successfully')
             } catch (e) {
               console.error('Failed to write characteristic', e);
             }
           }
-        }, 10000); // 10000 milliseconds = 10 seconds
+        }, 5000); // 5000 milliseconds = 5 seconds
       } else {
         console.log('No Device Connected');
       }
@@ -224,7 +235,6 @@ function useBLE(getNmeaRead: (parsed: any) => void, rtcmNtrip: string): Bluetoot
       console.error('Failed to stream data', e);
     }
   };
-  
 
   return {
     scanForPeripherals,

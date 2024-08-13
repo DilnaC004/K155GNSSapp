@@ -36,7 +36,7 @@ export const Placing = ({ nmeaParsed }) => {
   // Compass
   const [heading, setHeading] = useState(0);
   useEffect(() => {
-    const degreeUpdateRate = 3;
+    const degreeUpdateRate = 2;
     CompassHeading.start(degreeUpdateRate, ({ heading, accuracy }) => {
       console.log("CompassHeading: ", heading, accuracy);
       setHeading(heading);

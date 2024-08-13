@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, View, AppState, PermissionsAndroid, Platform, Button, Text } from 'react-native';
+import { SafeAreaView, View, AppState } from 'react-native';
 import useAsyncStorage from './components/hooks/useAsyncStorage';
 import Header from './components/Header';
 import Measurement from './components/Measurement';
@@ -15,22 +15,26 @@ import configurationData from './components/configurationData';
 import useBLE from './components/hooks/useBLE';
 
 export default function App(): JSX.Element {
-  const [nmeaParsed, setNmeaParsed] = React.useState('');
-  const [rawMeasurement, setRawMeasurement] = React.useState('');
-  const [rtcmNtrip, setRtcmNtrip] = React.useState<any>(null);
-  const [lastGGA, setLastGGA] = React.useState<any>(null);
-  const [data, setData] = React.useState(configurationData);
+  const [nmeaParsed, setNmeaParsed] = useState('');
+  const [rawMeasurement, setRawMeasurement] = useState('');
+  const [rtcmNtrip, setRtcmNtrip] = useState<Uint8Array>(new Uint8Array());
+  const [lastGGA, setLastGGA] = useState<any>(null);
+  const [data, setData] = useState(configurationData);
+
   const updateData = (newSettings: any) => {
     setData(prevSettings => ({
       ...prevSettings,
       ...newSettings,
     }));
   };
+
   const { setDataStorage, getDataStorage, clearDataStorage } = useAsyncStorage(updateData);
-  const getNmeaRead = (parsed:any) => {
-      setNmeaParsed(parsed);
-      console.log(parsed.lon)
+
+  const getNmeaRead = (parsed: any) => {
+    setNmeaParsed(parsed);
+    console.log(parsed.lon);
   };
+
   const {
     requestPermissions,
     scanForPeripherals,
@@ -38,14 +42,16 @@ export default function App(): JSX.Element {
     allDevices,
     connectedDevice,
     disconnectFromDevice,
-  } = useBLE(getNmeaRead, rtcmNtrip);
-  
-  const valueContext = { data, updateData }; // Provide valueContext to all components in App
+  } = useBLE(getNmeaRead, rtcmNtrip, data.ntripSettings.ntripConnect);
+
+  const valueContext = { data, updateData };
+
   const getRtcmNtrip = (rtcmNtrip: any) => {
     setRtcmNtrip(rtcmNtrip);
-    console.log(rtcmNtrip);
+    //console.log(rtcmNtrip);   // NTRIP data logs
   };
-  const [modalType, setmodalType] = React.useState({
+
+  const [modalType, setmodalType] = useState({
     point: false,
     placing: false,
     skyplot: false,
@@ -55,6 +61,7 @@ export default function App(): JSX.Element {
     map: false,
     measurement: true,
   });
+
   const updateModalType = (newSettings: any) => {
     setmodalType(prevSettings => ({
       ...prevSettings,
@@ -67,11 +74,12 @@ export default function App(): JSX.Element {
       console.log('the app is closed');
       setDataStorage(data);
     }
-  }
+  };
 
   useEffect(() => {
     getDataStorage();
-
+    // Force written GGA
+    setLastGGA("$GPGGA,172814.0,3723.46587704,N,12202.26957864,W,2,6,1.2,18.893,M,-25.669,M,2.0 0031*4F"); // Comment out
     const appStateId = AppState.addEventListener('change', handleAppStateChange);
 
     return () => {
@@ -86,11 +94,19 @@ export default function App(): JSX.Element {
         <Header
           nmeaParsed={nmeaParsed}
           modalType={modalType}
-          updateModalType={updateModalType}></Header>
+          updateModalType={updateModalType}
+        />
         <View>
-          {modalType.bluetooth && <Bluetooth rtcmNtrip={rtcmNtrip} getNmeaRead={getNmeaRead} requestPermissions={requestPermissions}
-            scanForPeripherals={scanForPeripherals} connectToDevice={connectToDevice} allDevices={allDevices} connectedDevice={connectedDevice} 
-            disconnectFromDevice={disconnectFromDevice}/>}
+          {modalType.bluetooth && <Bluetooth 
+            rtcmNtrip={rtcmNtrip} 
+            getNmeaRead={getNmeaRead} 
+            requestPermissions={requestPermissions}
+            scanForPeripherals={scanForPeripherals} 
+            connectToDevice={connectToDevice} 
+            allDevices={allDevices} 
+            connectedDevice={connectedDevice} 
+            disconnectFromDevice={disconnectFromDevice}
+          />}
           {modalType.ntrip && <Ntrip getRtcmNtrip={getRtcmNtrip} lastGGA={lastGGA} />}
           {modalType.project && <Project clearStorage={clearDataStorage} />}
           {modalType.point && <Point />}
