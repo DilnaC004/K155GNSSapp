@@ -170,6 +170,7 @@ function useBLE(getNmeaRead: (parsed: any) => void): BluetoothLowEnergyApi {
         }
         // Extract the NMEA sentence
         const nmeaSentence = buffer.slice(startIdx, endIdx);
+        console.log(nmeaSentence);
         buffer = buffer.slice(endIdx);  // Update the buffer to remove the processed NMEA sentence
 
         // Check if the sentence is $GNGST
@@ -229,8 +230,6 @@ function useBLE(getNmeaRead: (parsed: any) => void): BluetoothLowEnergyApi {
     }
       
   };
-
-
 
   return {
     scanForPeripherals,

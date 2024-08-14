@@ -13,6 +13,7 @@ import Placing from './components/Header/Placing';
 import { DataContext } from './components/Functions/DataContext';
 import configurationData from './components/configurationData';
 import useBLE from './components/hooks/useBLE';
+import base64 from 'react-native-base64';
 
 export default function App(): JSX.Element {
   const [nmeaParsed, setNmeaParsed] = useState('');
@@ -47,7 +48,8 @@ export default function App(): JSX.Element {
 
   const valueContext = { data, updateData };
   const getRtcmNtrip = (rtcmNtrip: any) => {
-    setRtcmNtrip(rtcmNtrip);
+    const encodedData = base64.encodeFromByteArray(rtcmNtrip);
+    setRtcmNtrip(encodedData);
     //console.log("Ntrip - rtcm -", rtcmNtrip);
   };
 
