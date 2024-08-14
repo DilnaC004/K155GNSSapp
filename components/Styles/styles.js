@@ -280,6 +280,6 @@ export const styles = {
   icon: {
     width: 30,
     height: 30,
-    borderWidth: 1,
+    borderWidth: 2,
   }
 };

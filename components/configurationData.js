@@ -118,6 +118,7 @@ export default configurationData = {
     boolRtk: false,
     boolRaw: false,
     formattedTime: '00:00:00',
+    count:0,
     startTime: null,
     endTime: null,
     intervalRawMeasurement: 0,

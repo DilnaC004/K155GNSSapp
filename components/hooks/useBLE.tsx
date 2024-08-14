@@ -13,9 +13,10 @@ import Snackbar from 'react-native-snackbar';
 import base64 from 'react-native-base64';
 import GPS from 'gps';
 
-const monitoredBleCharacteristic = '0000ffe0-0000-1000-8000-00805f9b34fb';
+const monitoredBleCharacteristic = '0000ffe0-0000-1000-8000-00805f9b34fb'; 
 const monitoredBleService = '0000ffe1-0000-1000-8000-00805f9b34fb';
-const writeChar = "0000fff2-0000-1000-8000-00805f9b34fb";
+const writeChar = '0000ffe1-0000-1000-8000-00805f9b34fb';
+
 const bleManager = new BleManager();
 
 type VoidCallback = (result: boolean) => void;
@@ -27,12 +28,16 @@ interface BluetoothLowEnergyApi {
   disconnectFromDevice: () => void;
   connectedDevice: Device | null;
   allDevices: Device[];
+  rtcmNtrip: string;
+  setRtcmNtrip: (data: string) => void;
+  startSendingNtripData: (device: Device) => void;
 }
 
-function useBLE(getNmeaRead: (parsed: any) => void, rtcmNtrip: Uint8Array, ntripConnect: boolean): BluetoothLowEnergyApi {
+function useBLE(getNmeaRead: (parsed: any) => void): BluetoothLowEnergyApi {
   const [allDevices, setAllDevices] = useState<Device[]>([]);
   const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
   const [isConnected, setIsConnected] = useState<boolean>(false);
+  const [rtcmNtrip, setRtcmNtrip] = useState('');
   let buffer = '';  // Buffer to store partial data
   let gnrmcFound = false;
   let lastGGA = '';
@@ -99,6 +104,7 @@ function useBLE(getNmeaRead: (parsed: any) => void, rtcmNtrip: Uint8Array, ntrip
     try {
       const deviceConnection = await bleManager.connectToDevice(device.id);
       await deviceConnection.discoverAllServicesAndCharacteristics();
+      console.log(deviceConnection.serviceUUIDs);
       setConnectedDevice(deviceConnection);
       setIsConnected(true);
       bleManager.stopDeviceScan();
@@ -141,7 +147,6 @@ function useBLE(getNmeaRead: (parsed: any) => void, rtcmNtrip: Uint8Array, ntrip
     error: BleError | null,
     characteristic: Characteristic | null,
   ) => {
-    try {
       if (error) {
         console.log(error);
         return;
@@ -167,7 +172,6 @@ function useBLE(getNmeaRead: (parsed: any) => void, rtcmNtrip: Uint8Array, ntrip
         const nmeaSentence = buffer.slice(startIdx, endIdx);
         buffer = buffer.slice(endIdx);  // Update the buffer to remove the processed NMEA sentence
 
-        // console.log(nmeaSentence); // Debugging log
         // Check if the sentence is $GNGST
         if (nmeaSentence.includes('$GNGST')) {
           gnrmcFound = true;
@@ -175,27 +179,18 @@ function useBLE(getNmeaRead: (parsed: any) => void, rtcmNtrip: Uint8Array, ntrip
 
         if (nmeaSentence.includes('$GNGGA')) {
           lastGGA = nmeaSentence;
-          gps.update(nmeaSentence);
-
+          gps.updatePartial(nmeaSentence);
         }
 
         // Call getNmeaRead if $GNGST is found
         if (gnrmcFound) {
           gps.on('data', parsed => {
-            try {
-              getNmeaRead(parsed);
-              console.log(parsed.lon);
-            } catch (e) {
-              console.error('Failed to process NMEA data', e);
-            }
+            getNmeaRead(parsed);
           });
 
           gnrmcFound = false;  // Reset the flag
         }
       }
-    } catch (e) {
-      console.error("An error occurred: " + e);
-    }
   };
 
   const startStreamingData = async (device: Device) => {
@@ -207,32 +202,6 @@ function useBLE(getNmeaRead: (parsed: any) => void, rtcmNtrip: Uint8Array, ntrip
           monitoredBleService,
           onNmeaUpdate,
         );
-
-        // Set up a timer to send the data every 5 seconds
-        intervalId = setInterval(async () => {
-          console.log(ntripConnect);  // Use ntripConnect from props
-          if (device) {  
-            try {
-              if (!ntripConnect) {
-                throw new Error("ntripConnect is false");
-              }
-          
-              // Debugging log
-              console.log("Trying to write to BLE");
-              const encodedData = base64.encodeFromByteArray(rtcmNtrip);
-              //console.log("Ntrip data going to BLE" + encodedData);
-              await device.writeCharacteristicWithoutResponseForService(
-                monitoredBleService,
-                writeChar,
-                encodedData
-              );
-              console.log('Data written successfully');
-            } catch (e) {
-              console.error('Failed to write characteristic', e);
-            }
-          }
-          
-        }, 5000); // 5000 milliseconds = 5 seconds
       } else {
         console.log('No Device Connected');
       }
@@ -241,6 +210,28 @@ function useBLE(getNmeaRead: (parsed: any) => void, rtcmNtrip: Uint8Array, ntrip
     }
   };
 
+  const startSendingNtripData = async (device: Device) => {
+    console.log("Starting sending rtcm")
+    
+    try {
+      if (device) {
+        //console.log("Ntrip data going to BLE" + encodedData);
+        await device?.writeCharacteristicWithoutResponseForService(
+          monitoredBleCharacteristic,
+          writeChar,
+          rtcmNtrip
+        );
+      } else {
+        console.log('No Device Connected');
+      }
+    } catch (e) {
+      console.error('Failed to send data', e);
+    }
+      
+  };
+
+
+
   return {
     scanForPeripherals,
     requestPermissions,
@@ -248,6 +239,9 @@ function useBLE(getNmeaRead: (parsed: any) => void, rtcmNtrip: Uint8Array, ntrip
     allDevices,
     connectedDevice,
     disconnectFromDevice,
+    rtcmNtrip,
+    setRtcmNtrip,
+    startSendingNtripData,
   };
 }
 

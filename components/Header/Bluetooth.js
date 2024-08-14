@@ -11,7 +11,7 @@ import useBLE from '../hooks/useBLE';
 
 export const manager = new BleManager()
 
-export default Bluetooth = ({ rtcmNtrip, getNmeaRead, requestPermissions, scanForPeripherals, connectToDevice, allDevices, connectedDevice, disconnectFromDevice}) => {
+export default Bluetooth = ({ getNmeaRead, requestPermissions, scanForPeripherals, connectToDevice, allDevices, connectedDevice, disconnectFromDevice}) => {
   const { data, updateData } = useContext(DataContext);
   const [intervalId, setIntervalId] = useState(0);
   const [bluetoothSettings, setBluetoothSettings] = useState(

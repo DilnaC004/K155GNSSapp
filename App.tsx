@@ -17,7 +17,6 @@ import useBLE from './components/hooks/useBLE';
 export default function App(): JSX.Element {
   const [nmeaParsed, setNmeaParsed] = useState('');
   const [rawMeasurement, setRawMeasurement] = useState('');
-  const [rtcmNtrip, setRtcmNtrip] = useState<Uint8Array>(new Uint8Array());
   const [lastGGA, setLastGGA] = useState<any>(null);
   const [data, setData] = useState(configurationData);
 
@@ -31,8 +30,8 @@ export default function App(): JSX.Element {
   const { setDataStorage, getDataStorage, clearDataStorage } = useAsyncStorage(updateData);
 
   const getNmeaRead = (parsed: any) => {
+    //console.log(parsed);
     setNmeaParsed(parsed);
-    console.log(parsed.lon);
   };
 
   const {
@@ -42,13 +41,14 @@ export default function App(): JSX.Element {
     allDevices,
     connectedDevice,
     disconnectFromDevice,
-  } = useBLE(getNmeaRead, rtcmNtrip, data.ntripSettings.ntripConnect);
+    setRtcmNtrip,
+    startSendingNtripData,
+  } = useBLE(getNmeaRead);
 
   const valueContext = { data, updateData };
-
   const getRtcmNtrip = (rtcmNtrip: any) => {
     setRtcmNtrip(rtcmNtrip);
-    //console.log(rtcmNtrip);   // NTRIP data logs
+    //console.log("Ntrip - rtcm -", rtcmNtrip);
   };
 
   const [modalType, setmodalType] = useState({
@@ -79,7 +79,7 @@ export default function App(): JSX.Element {
   useEffect(() => {
     getDataStorage();
     // Force written GGA
-    setLastGGA("$GPGGA,172814.0,3723.46587704,N,12202.26957864,W,2,6,1.2,18.893,M,-25.669,M,2.0 0031*4F"); // Comment out
+    setLastGGA("$GNGGA,172814.0,3723.46587704,N,12202.26957864,W,2,6,1.2,18.893,M,-25.669,M,2.0 0031*4F"); // Comment out
     const appStateId = AppState.addEventListener('change', handleAppStateChange);
 
     return () => {
@@ -98,7 +98,6 @@ export default function App(): JSX.Element {
         />
         <View>
           {modalType.bluetooth && <Bluetooth 
-            rtcmNtrip={rtcmNtrip} 
             getNmeaRead={getNmeaRead} 
             requestPermissions={requestPermissions}
             scanForPeripherals={scanForPeripherals} 
@@ -107,7 +106,7 @@ export default function App(): JSX.Element {
             connectedDevice={connectedDevice} 
             disconnectFromDevice={disconnectFromDevice}
           />}
-          {modalType.ntrip && <Ntrip getRtcmNtrip={getRtcmNtrip} lastGGA={lastGGA} />}
+          {modalType.ntrip && <Ntrip getRtcmNtrip={getRtcmNtrip} lastGGA={lastGGA} startSendingNtripData={startSendingNtripData} connectedDevice={connectedDevice}/>}
           {modalType.project && <Project clearStorage={clearDataStorage} />}
           {modalType.point && <Point />}
           {modalType.measurement && (

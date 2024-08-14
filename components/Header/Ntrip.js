@@ -4,7 +4,7 @@ import Snackbar from 'react-native-snackbar';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import SelectDropdown from 'react-native-select-dropdown';
 import RowWithLabelAndValue from './RowWithLabelAndValue';
-import { encode, decode } from 'base-64';
+import { encode, decode, base64 } from 'base-64';
 import TcpSocket from 'react-native-tcp-socket';
 import { DataContext } from '../Functions/DataContext';
 import { styles } from '../Styles/styles';
@@ -28,7 +28,7 @@ class Mountpoint {
   }
 }
 
-const Ntrip = ({ getRtcmNtrip, lastGGA }) => {
+const Ntrip = ({ getRtcmNtrip, lastGGA, startSendingNtripData, connectedDevice, }) => {
   const [intervalLastGGA, setIntervalLastGGA] = useState(0);
   const { data, updateData } = useContext(DataContext);
   const [ntripSettings, setNtripSettings] = useState(data.ntripSettings);
@@ -136,22 +136,25 @@ const Ntrip = ({ getRtcmNtrip, lastGGA }) => {
         '\r\n\r\n\r\n';
 
       client.write(connectionString);
+
+      startSendingNtripData(connectedDevice); //Start sending rtcm to BLE to Ublox
+
       // Send the GGA message immediately after connecting
-      if (lastGGA != null) {    // selectedMntp.isVirtual &&  // Doesn't have to be virtual
-        console.log('Sending initial GGA');       // Debugging log
+      if (lastGGA != null && selectedMntp.isVirtual) {
+        console.log('Sending initial GGA', lastGGA);       // Debugging log
 
         // Send the GGA message immediately
         client.write(lastGGA);
 
         // Set up a regular interval to send GGA
         let interval = setInterval(() => {
-          console.log('Sending GGA on interval'); // Debugging log
+          console.log('Sending GGA on interval', lastGGA); // Debugging log
           client.write(lastGGA);
         }, 20000);
 
         setIntervalLastGGA(interval);
 
-      } else if (lastGGA == null) {
+      } else if (lastGGA == null && selectedMntp.isVirtual) {
         Snackbar.show({
           text: "Pro využítí virtuální stanice připojte GNSS přijímač",
           duration: Snackbar.LENGTH_SHORT,
@@ -164,8 +167,7 @@ const Ntrip = ({ getRtcmNtrip, lastGGA }) => {
     });
 
     client.on('data', function (data) {
-      const byteArray = Array.from(data);
-      getRtcmNtrip(byteArray); // This sends an array of bytes
+      getRtcmNtrip(data.toString());
     });
 
     client.on('error', function (error) {
@@ -174,6 +176,7 @@ const Ntrip = ({ getRtcmNtrip, lastGGA }) => {
 
     client.on('close', function () {
       console.log('Connection closed!');
+      getRtcmNtrip(""); // clear RTCM ntrip
       Snackbar.show({
         text: `Ukončena komunikace se serverem \r\nhttp://${ntripSettings.ntripIp}:${ntripSettings.ntripPort}`,
         duration: Snackbar.LENGTH_SHORT,
@@ -197,7 +200,7 @@ const Ntrip = ({ getRtcmNtrip, lastGGA }) => {
 
   useEffect(() => {
     // Whenever lastGGA is updated, send it to the Ntrip server if connected
-    if (lastGGA != null && ntripSettings.ntripConnect) {    // selectedMntp?.isVirtual && (vytazeno z podminky)
+    if (lastGGA != null && ntripSettings.ntripConnect && selectedMntp?.isVirtual) { 
       console.log('Sending GGA to Ntrip Server');
       ntripSettings.clientWrapper?.write(lastGGA);
     }
