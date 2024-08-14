@@ -38,6 +38,7 @@ const Ntrip = ({ getRtcmNtrip, lastGGA }) => {
       ...prevSettings,
       ...newSettings,
     }));
+    updateData({ ntripSettings: newSettings });
   };
 
   const switchConnect = ntripSettings.ntripConnect ? 'Odpoj se' : 'Připoj se k Ntrip serveru';
@@ -186,7 +187,9 @@ const Ntrip = ({ getRtcmNtrip, lastGGA }) => {
     ntripSettings.clientWrapper.end();
     clearInterval(intervalLastGGA);
     updateNtripSettings({ ntripConnect: false });
+    setIntervalLastGGA(0); // Ensure the interval state is reset
   }
+  
 
   const onSelectMountpoint = (selectedMountpoint) => {
     setSelectedMntp(selectedMountpoint); // Update selected mountpoint

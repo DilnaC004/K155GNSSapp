@@ -55,7 +55,7 @@ export default Bluetooth = ({ rtcmNtrip, getNmeaRead, requestPermissions, scanFo
           color={connectedDevice?.id == device.id ? 'red' : 'blue'}
           onPress={() => {
             if (connectedDevice?.id == device.id && connectedDevice != null){
-              disconnectFromDevice(device);
+              disconnectFromDevice();
               updateBluetoothSettings({ isConnected: false });
             }
             else if (bluetoothSettings.isEnabled) {

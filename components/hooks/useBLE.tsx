@@ -120,7 +120,7 @@ function useBLE(getNmeaRead: (parsed: any) => void, rtcmNtrip: Uint8Array, ntrip
       try {
         await bleManager.cancelDeviceConnection(connectedDevice.id);
         setConnectedDevice(null);
-        setIsConnected(false);
+        setIsConnected(false); // Ensure the state is reset to false
         if (intervalId) {
           clearInterval(intervalId);
           intervalId = null;
@@ -135,7 +135,7 @@ function useBLE(getNmeaRead: (parsed: any) => void, rtcmNtrip: Uint8Array, ntrip
         console.error('Failed to disconnect', e);
       }
     }
-  };
+  };  
 
   const onNmeaUpdate = (
     error: BleError | null,
@@ -211,10 +211,14 @@ function useBLE(getNmeaRead: (parsed: any) => void, rtcmNtrip: Uint8Array, ntrip
         // Set up a timer to send the data every 5 seconds
         intervalId = setInterval(async () => {
           console.log(ntripConnect);  // Use ntripConnect from props
-          if (device && ntripConnect) {  // Use ntripConnect
+          if (device) {  
             try {
+              if (!ntripConnect) {
+                throw new Error("ntripConnect is false");
+              }
+          
               // Debugging log
-              console.log("Trying to write to BLE")
+              console.log("Trying to write to BLE");
               const encodedData = base64.encodeFromByteArray(rtcmNtrip);
               //console.log("Ntrip data going to BLE" + encodedData);
               await device.writeCharacteristicWithoutResponseForService(
@@ -222,11 +226,12 @@ function useBLE(getNmeaRead: (parsed: any) => void, rtcmNtrip: Uint8Array, ntrip
                 writeChar,
                 encodedData
               );
-              console.log('Data written successfully')
+              console.log('Data written successfully');
             } catch (e) {
               console.error('Failed to write characteristic', e);
             }
           }
+          
         }, 5000); // 5000 milliseconds = 5 seconds
       } else {
         console.log('No Device Connected');
