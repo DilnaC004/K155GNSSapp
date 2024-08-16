@@ -18,8 +18,10 @@ import base64 from 'react-native-base64';
 export default function App(): JSX.Element {
   const [nmeaParsed, setNmeaParsed] = useState('');
   const [rawMeasurement, setRawMeasurement] = useState('');
-  const [lastGGA, setLastGGA] = useState<any>(null);
+  const [lastGGA, setLastGGA] = useState('');
   const [data, setData] = useState(configurationData);
+  let checkParsedLon = 0;
+
 
   const updateData = (newSettings: any) => {
     setData(prevSettings => ({
@@ -31,8 +33,17 @@ export default function App(): JSX.Element {
   const { setDataStorage, getDataStorage, clearDataStorage } = useAsyncStorage(updateData);
 
   const getNmeaRead = (parsed: any) => {
-    //console.log(parsed);
-    setNmeaParsed(parsed);
+    console.log(parsed.lon)
+
+    if (parsed.lon !== checkParsedLon) {
+      setNmeaParsed(parsed);
+      checkParsedLon = parsed.lon;
+    }
+  };
+  
+
+  const getLastGGA= (lastGGA: string) => {
+    setLastGGA(lastGGA);
   };
 
   const {
@@ -44,7 +55,7 @@ export default function App(): JSX.Element {
     disconnectFromDevice,
     setRtcmNtrip,
     startSendingNtripData,
-  } = useBLE(getNmeaRead);
+  } = useBLE(getNmeaRead, getLastGGA);
 
   const valueContext = { data, updateData };
   const getRtcmNtrip = (rtcmNtrip: any) => {
@@ -81,7 +92,6 @@ export default function App(): JSX.Element {
   useEffect(() => {
     getDataStorage();
     // Force written GGA
-    setLastGGA("$GNGGA,172814.0,3723.46587704,N,12202.26957864,W,2,6,1.2,18.893,M,-25.669,M,2.0 0031*4F"); // Comment out
     const appStateId = AppState.addEventListener('change', handleAppStateChange);
 
     return () => {

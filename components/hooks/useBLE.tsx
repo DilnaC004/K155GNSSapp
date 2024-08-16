@@ -13,6 +13,7 @@ import Snackbar from 'react-native-snackbar';
 import base64 from 'react-native-base64';
 import GPS from 'gps';
 
+
 const monitoredBleCharacteristic = '0000ffe0-0000-1000-8000-00805f9b34fb'; 
 const monitoredBleService = '0000ffe1-0000-1000-8000-00805f9b34fb';
 const writeChar = '0000ffe1-0000-1000-8000-00805f9b34fb';
@@ -33,14 +34,12 @@ interface BluetoothLowEnergyApi {
   startSendingNtripData: (device: Device) => void;
 }
 
-function useBLE(getNmeaRead: (parsed: any) => void): BluetoothLowEnergyApi {
+function useBLE(getNmeaRead: (parsed: any) => void,getLastGGA: (lastGGA: string) => void): BluetoothLowEnergyApi {
   const [allDevices, setAllDevices] = useState<Device[]>([]);
   const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [rtcmNtrip, setRtcmNtrip] = useState('');
   let buffer = '';  // Buffer to store partial data
-  let gnrmcFound = false;
-  let lastGGA = '';
   const gps = new GPS();
   let intervalId: NodeJS.Timeout | null = null;
 
@@ -161,36 +160,27 @@ function useBLE(getNmeaRead: (parsed: any) => void): BluetoothLowEnergyApi {
 
       // Split the buffer by the NMEA sentence delimiter '$'
       let startIdx;
-      while ((startIdx = buffer.indexOf('$')) !== -1) {
+      while ((startIdx = buffer.indexOf('\r\n')) !== -1) {
         // Check if there is another '$' indicating the end of the current NMEA sentence
-        let endIdx = buffer.indexOf('$', startIdx + 1);
+        let endIdx = buffer.indexOf('\r\n', startIdx + 1);
         if (endIdx === -1) {
           // If there is no second '$', break the loop to wait for more data
           break;
         }
         // Extract the NMEA sentence
         const nmeaSentence = buffer.slice(startIdx, endIdx);
-        console.log(nmeaSentence);
         buffer = buffer.slice(endIdx);  // Update the buffer to remove the processed NMEA sentence
 
-        // Check if the sentence is $GNGST
-        if (nmeaSentence.includes('$GNGST')) {
-          gnrmcFound = true;
+        gps.updatePartial(nmeaSentence);
+
+        if (nmeaSentence.includes('GNGGA')) {
+          getLastGGA(nmeaSentence);
         }
 
-        if (nmeaSentence.includes('$GNGGA')) {
-          lastGGA = nmeaSentence;
-          gps.updatePartial(nmeaSentence);
-        }
-
-        // Call getNmeaRead if $GNGST is found
-        if (gnrmcFound) {
-          gps.on('data', parsed => {
-            getNmeaRead(parsed);
-          });
-
-          gnrmcFound = false;  // Reset the flag
-        }
+        gps.on('data', parsed => {
+          getNmeaRead(gps.state);
+          //console.log(gps.state);  
+        });
       }
   };
 
@@ -216,7 +206,7 @@ function useBLE(getNmeaRead: (parsed: any) => void): BluetoothLowEnergyApi {
     
     try {
       if (device) {
-        //console.log("Ntrip data going to BLE" + encodedData);
+        console.log("write rtcm")
         await device?.writeCharacteristicWithoutResponseForService(
           monitoredBleCharacteristic,
           writeChar,
