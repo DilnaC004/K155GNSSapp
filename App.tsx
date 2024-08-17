@@ -16,7 +16,19 @@ import useBLE from './components/hooks/useBLE';
 import base64 from 'react-native-base64';
 
 export default function App(): JSX.Element {
-  const [nmeaParsed, setNmeaParsed] = useState('');
+  const [nmeaParsed, setNmeaParsed] = useState({
+    "alt": 400.91, 
+    "errors": 3, 
+    "fix": "3D", 
+    "hdop": 0.63, 
+    "lat": 49.487174215, 
+    "lon": 16.67260698, 
+    "pdop": 1.09,
+    "processed": 193, 
+    "speed": 0.033336,
+    "time": "2024-08-17T08:39:55.000Z",
+    "track": null, 
+    "vdop": 0.89});
   const [rawMeasurement, setRawMeasurement] = useState('');
   const [lastGGA, setLastGGA] = useState('');
   const [data, setData] = useState(configurationData);
@@ -33,15 +45,19 @@ export default function App(): JSX.Element {
   const { setDataStorage, getDataStorage, clearDataStorage } = useAsyncStorage(updateData);
 
   const getNmeaRead = (parsed: any) => {
-    console.log(parsed.lon)
-
-    if (parsed.lon !== checkParsedLon) {
-      setNmeaParsed(parsed);
+    if (parsed.lon !== checkParsedLon) { // Update only if lon change
+      setNmeaParsed(prevState => ({
+        ...prevState,             // Keep other properties the same
+        lon: parsed.lon,          // Update lon
+        lat: parsed.lat,          // Update lat
+        alt: parsed.alt,           // Update alt
+        pdop: parsed.pdop,
+        quality: parsed.quality,
+      }));
       checkParsedLon = parsed.lon;
     }
   };
   
-
   const getLastGGA= (lastGGA: string) => {
     setLastGGA(lastGGA);
   };
