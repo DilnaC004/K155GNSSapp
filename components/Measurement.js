@@ -193,6 +193,9 @@ export default Measurement = ({nmeaParsed, rawMeasurement}) => {
   };
 
   const storeRawData = () => {
+
+    console.log(rawMeasurement);
+    /*
     const filePath =
       RNFS.DownloadDirectoryPath +
       '/raw_' +
@@ -210,6 +213,7 @@ export default Measurement = ({nmeaParsed, rawMeasurement}) => {
         intervalRawMeasurement: interval,
       });
     }
+      */
   };
 
   // Use useEffect to start and stop the timer

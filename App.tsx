@@ -62,6 +62,10 @@ export default function App(): JSX.Element {
     setLastGGA(lastGGA);
   };
 
+  const getRawMeasurement= (data: string) => {
+    setRawMeasurement(data);
+  };
+
   const {
     requestPermissions,
     scanForPeripherals,
@@ -71,7 +75,7 @@ export default function App(): JSX.Element {
     disconnectFromDevice,
     setRtcmNtrip,
     startSendingNtripData,
-  } = useBLE(getNmeaRead, getLastGGA);
+  } = useBLE(getNmeaRead, getLastGGA, getRawMeasurement);
 
   const valueContext = { data, updateData };
   const getRtcmNtrip = (rtcmNtrip: any) => {

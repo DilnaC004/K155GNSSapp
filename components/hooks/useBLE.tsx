@@ -34,7 +34,7 @@ interface BluetoothLowEnergyApi {
   startSendingNtripData: (device: Device) => void;
 }
 
-function useBLE(getNmeaRead: (parsed: any) => void,getLastGGA: (lastGGA: string) => void): BluetoothLowEnergyApi {
+function useBLE(getNmeaRead: (parsed: any) => void, getLastGGA: (lastGGA: string) => void, getRawMeasurement: (lastGGA: string) => void): BluetoothLowEnergyApi {
   const [allDevices, setAllDevices] = useState<Device[]>([]);
   const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
   const [isConnected, setIsConnected] = useState<boolean>(false);
@@ -146,42 +146,62 @@ function useBLE(getNmeaRead: (parsed: any) => void,getLastGGA: (lastGGA: string)
     error: BleError | null,
     characteristic: Characteristic | null,
   ) => {
-      if (error) {
-        console.log(error);
-        return;
-      } else if (!characteristic?.value) {
-        console.log('No Data was received');
-        return;
-      }
-
-      const rawData = base64.decode(characteristic.value);
-      // Append the new data to the buffer
-      buffer += rawData;
-
-      // Split the buffer by the NMEA sentence delimiter '$'
-      let startIdx;
-      while ((startIdx = buffer.indexOf('\r\n')) !== -1) {
-        // Check if there is another '$' indicating the end of the current NMEA sentence
-        let endIdx = buffer.indexOf('\r\n', startIdx + 1);
-        if (endIdx === -1) {
-          // If there is no second '$', break the loop to wait for more data
-          break;
-        }
-        // Extract the NMEA sentence
-        const nmeaSentence = buffer.slice(startIdx, endIdx);
-        buffer = buffer.slice(endIdx);  // Update the buffer to remove the processed NMEA sentence
-
+    if (error) {
+      console.log(error);
+      return;
+    } else if (!characteristic?.value) {
+      console.log('No Data was received');
+      return;
+    }
+  
+    // Decode the base64-encoded BLE characteristic value
+    const rawData = base64.decode(characteristic.value);
+    buffer += rawData;
+  
+    // Process the buffer for RTCM and NMEA sentences
+    while (buffer.length > 0) {
+      if (buffer[0] === '$') {
+        // This is an NMEA sentence
+        const endIdx = buffer.indexOf('\r\n');
+        if (endIdx === -1) break; // Wait for more data if no end found
+        
+        const nmeaSentence = buffer.slice(0, endIdx + 2);
+        buffer = buffer.slice(endIdx + 2);
+  
+        // Process NMEA sentence
         gps.updatePartial(nmeaSentence);
-
         if (nmeaSentence.includes('GNGGA')) {
           getLastGGA(nmeaSentence);
         }
-
+  
         gps.on('data', parsed => {
           getNmeaRead(gps.state);
-          //console.log(gps.state);  
         });
+  
+      } else if (buffer.charCodeAt(0) === 0xD3) {
+        // This is an RTCM message (starts with 0xD3)
+        if (buffer.length < 3) break; // Wait for more data
+  
+        // Extract the length of the RTCM message
+        const length = ((buffer.charCodeAt(1) & 0x03) << 8) | buffer.charCodeAt(2);
+  
+        // Total message length = preamble (1 byte) + length (2 bytes) + message + CRC (3 bytes)
+        const totalLength = length + 6;
+  
+        if (buffer.length < totalLength) break; // Wait for more data
+  
+        const rtcmMessage = buffer.slice(0, totalLength);
+        buffer = buffer.slice(totalLength);
+  
+        // Process the RTCM message
+        getRawMeasurement(rtcmMessage);
+  
+      } else {
+        // Unknown data, possibly corruption or noise. Skip or log it.
+        console.log("Unknown data in buffer, skipping.");
+        buffer = buffer.slice(1);
       }
+    }
   };
 
   const startStreamingData = async (device: Device) => {
