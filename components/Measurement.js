@@ -193,27 +193,37 @@ export default Measurement = ({nmeaParsed, rawMeasurement}) => {
   };
 
   const storeRawData = () => {
-
-    console.log(rawMeasurement);
-    /*
     const filePath =
-      RNFS.DownloadDirectoryPath +
-      '/raw_' +
-      `${data.measurementSettings.nazev}.txt`; // work only on Android
+      RNFS.DownloadDirectoryPath + '/raw_' + `${data.measurementSettings.nazev}.txt`; // Works only on Android
+  
     let storeData = [];
+  
+    // Check if raw measurement storage is enabled
     if (!measurementSettings.boolRaw) {
       storeData.push(rawMeasurement);
-      console.log(storeData);
-      let interval = setInterval(() => {
-        exportRawData(filePath);
-        console.log(storeData.length);
-        storeData = [];
+  
+      // Save data to the file every 20 seconds
+      const interval = setInterval(() => {
+        if (storeData.length > 0) {
+          const dataToWrite = storeData.join('\n') + '\n';
+          RNFS.appendFile(filePath, dataToWrite, 'utf8')
+            .then(() => {
+              console.log('Data written to file:', filePath);
+            })
+            .catch(err => {
+              console.log('Error writing to file:', err.message);
+            });
+  
+          // Clear the storeData array after writing to file
+          storeData = [];
+        }
       }, 20000);
+  
+      // Save the interval reference to stop it later if needed
       updateMeasurementSettings({
         intervalRawMeasurement: interval,
       });
     }
-      */
   };
 
   // Use useEffect to start and stop the timer
