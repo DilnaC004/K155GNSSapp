@@ -74,7 +74,7 @@ export default function App(): JSX.Element {
 
   const getNmeaRead = (parsed: any) => {
     if (parsed.lon !== checkParsedLon) { // Update only if lon change
-      console.log(parsed);
+      //console.log(parsed);
       setNmeaParsed(prevState => ({
         ...prevState,             // Keep other properties the same
         lon: parsed.lon,          // Update lon

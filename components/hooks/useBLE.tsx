@@ -222,15 +222,14 @@ function useBLE(getNmeaRead: (parsed: any) => void, getLastGGA: (lastGGA: string
   };
 
   const startSendingNtripData = async (device: Device) => {
-    console.log("Starting sending rtcm")
-    
+    console.log("Sending rtcm")
+    const base64Data = base64.encode(rtcmNtrip);
     try {
       if (device) {
-        console.log("write rtcm")
         await device?.writeCharacteristicWithoutResponseForService(
           monitoredBleCharacteristic,
           writeChar,
-          rtcmNtrip
+          base64Data
         );
       } else {
         console.log('No Device Connected');
@@ -240,6 +239,14 @@ function useBLE(getNmeaRead: (parsed: any) => void, getLastGGA: (lastGGA: string
     }
       
   };
+
+    // Watch for changes to rtcmNtrip and send data when it changes
+    useEffect(() => {
+      if (connectedDevice && rtcmNtrip) {
+        //console.log(rtcmNtrip);
+        startSendingNtripData(connectedDevice);
+      }
+    }, [rtcmNtrip]);
 
   return {
     scanForPeripherals,

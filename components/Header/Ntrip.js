@@ -137,8 +137,6 @@ const Ntrip = ({ getRtcmNtrip, lastGGA, startSendingNtripData, connectedDevice, 
 
       client.write(connectionString);
 
-      startSendingNtripData(connectedDevice); //Start sending rtcm to BLE to Ublox
-
       // Send the GGA message immediately after connecting
       if (lastGGA != null && selectedMntp.isVirtual) {
         console.log('Sending initial GGA', lastGGA);       // Debugging log
@@ -167,8 +165,11 @@ const Ntrip = ({ getRtcmNtrip, lastGGA, startSendingNtripData, connectedDevice, 
     });
 
     client.on('data', function (data) {
-      const byteArray = Array.from(data);
-      getRtcmNtrip(byteArray);
+      //console.log(data);
+      //const byteArray = Array.from(data);
+      const asciiData = data.toString('ascii');
+      //console.log(asciiData);
+      getRtcmNtrip(asciiData);
     });
 
     client.on('error', function (error) {
