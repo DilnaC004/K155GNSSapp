@@ -238,7 +238,7 @@ export default Measurement = ({nmeaParsed, rawMeasurement}) => {
     updateMeasurementSettings({
       etrs: etrs,
       jtsk: jtsk,
-      coordPDOP: nmeaParsed.hdop,
+      coordPDOP: nmeaParsed.pdop,
     });
 
     if (measurementSettings.startTime && !measurementSettings.endTime) {
