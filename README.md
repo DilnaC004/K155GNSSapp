@@ -24,17 +24,17 @@ packages:
 # TODO
 - separate ubx and nmea from bluetooth datastream
 - connect rtcm data from ntrip to bluetooth
-- connect bluetooth datastream to GPS.js object, not just GGA
+- connect bluetooth datastream to GPS.js object, not just GGA - DONE
 - write raw data
-- rewrite newPoint - updateCoordinates - Measurement.js
-- loading data from AsyncStorage
-- view Points in JTSK coordinates
+- rewrite newPoint - updateCoordinates - Measurement.js - DONE
+- loading data from AsyncStorage - DONE
+- view Points in JTSK coordinates - DONE
 - skyplot
 - continuous measurement on satellite
 - placing
 - import points
 - firebase upload
-- add unpaired bluetooth devices
+- add unpaired bluetooth devices - DONE ON BLE
 - i18n
 - force light mode?
 - dodelat preposilani RTK korekci do GNSS - moznost vypnuti, restartu, ukladani mnozstvi stazenych dat

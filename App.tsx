@@ -102,6 +102,7 @@ export default function App(): JSX.Element {
     allDevices,
     connectedDevice,
     disconnectFromDevice,
+    rtcmNtrip,
     setRtcmNtrip,
     startSendingNtripData,
   } = useBLE(getNmeaRead, getLastGGA, getRawMeasurement);
@@ -166,6 +167,7 @@ export default function App(): JSX.Element {
             allDevices={allDevices} 
             connectedDevice={connectedDevice} 
             disconnectFromDevice={disconnectFromDevice}
+            rtcmNtrip={rtcmNtrip}
           />}
           {modalType.ntrip && <Ntrip getRtcmNtrip={getRtcmNtrip} lastGGA={lastGGA} startSendingNtripData={startSendingNtripData} connectedDevice={connectedDevice}/>}
           {modalType.project && <Project clearStorage={clearDataStorage} />}
@@ -178,7 +180,7 @@ export default function App(): JSX.Element {
           )}
           {modalType.placing && <Placing nmeaParsed={nmeaParsed} />}
           {modalType.map && <Map />}
-          {modalType.skyplot && <Skyplot />}
+          {modalType.skyplot && <Skyplot satsVisible={nmeaParsed.satsVisible}/>}
         </View>
       </DataContext.Provider>
     </SafeAreaView>
