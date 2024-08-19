@@ -44,8 +44,15 @@ export default Bluetooth = ({ getNmeaRead, requestPermissions, scanForPeripheral
       <Button
         title={bluetoothSettings.isEnabled ? 'Stop' : 'Scan'}
         onPress={() => {
-          scanForDevices();
-          updateBluetoothSettings({ isEnabled: !bluetoothSettings.isEnabled, });
+          if (!bluetoothSettings.isEnabled) {
+            scanForDevices();
+            updateBluetoothSettings({ isEnabled: !bluetoothSettings.isEnabled, });
+          } else {
+            console.log("cleaning devices")
+            updateBluetoothSettings({ isEnabled: !bluetoothSettings.isEnabled, devices: [] });
+            console.log(bluetoothSettings.devices)
+          }
+          
         }}
       />
       {bluetoothSettings.isEnabled && allDevices.map(device => (

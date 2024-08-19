@@ -14,7 +14,7 @@ import base64 from 'react-native-base64';
 import GPS from 'gps';
 
 
-const monitoredBleCharacteristic = '0000ffe0-0000-1000-8000-00805f9b34fb'; 
+const monitoredBleCharacteristic = '0000ffe0-0000-1000-8000-00805f9b34fb';
 const monitoredBleService = '0000ffe1-0000-1000-8000-00805f9b34fb';
 const writeChar = '0000ffe1-0000-1000-8000-00805f9b34fb';
 
@@ -140,7 +140,7 @@ function useBLE(getNmeaRead: (parsed: any) => void, getLastGGA: (lastGGA: string
         console.error('Failed to disconnect', e);
       }
     }
-  };  
+  };
 
   const onNmeaUpdate = (
     error: BleError | null,
@@ -153,56 +153,65 @@ function useBLE(getNmeaRead: (parsed: any) => void, getLastGGA: (lastGGA: string
       console.log('No Data was received');
       return;
     }
-  
+    
     // Decode the base64-encoded BLE characteristic value
     const rawData = base64.decode(characteristic.value);
     buffer += rawData;
-  
+    let startIdx;
+
     // Process the buffer for RTCM and NMEA sentences
     while (buffer.length > 0) {
+      startIdx = buffer.indexOf('$');
+
       if (buffer[0] === '$') {
         // This is an NMEA sentence
         const endIdx = buffer.indexOf('\r\n');
+
         if (endIdx === -1) break; // Wait for more data if no end found
-        
-        const nmeaSentence = buffer.slice(0, endIdx + 2);
+        let nmeaSentence = buffer.slice(startIdx, endIdx + 2);
+
+        // Remove any trailing commas and white spaces
+        nmeaSentence = nmeaSentence.trim();
+        nmeaSentence = nmeaSentence.replace(/,+$/, '');
+
         buffer = buffer.slice(endIdx + 2);
-  
+
         // Process NMEA sentence
         gps.updatePartial(nmeaSentence);
         if (nmeaSentence.includes('GNGGA')) {
           getLastGGA(nmeaSentence);
         }
-  
+
         gps.on('data', parsed => {
           getNmeaRead(gps.state);
         });
-  
+
       } else if (buffer.charCodeAt(0) === 0xD3) {
         // This is an RTCM message (starts with 0xD3)
         if (buffer.length < 3) break; // Wait for more data
-  
+
         // Extract the length of the RTCM message
         const length = ((buffer.charCodeAt(1) & 0x03) << 8) | buffer.charCodeAt(2);
-  
+
         // Total message length = preamble (1 byte) + length (2 bytes) + message + CRC (3 bytes)
         const totalLength = length + 6;
-  
+
         if (buffer.length < totalLength) break; // Wait for more data
-  
+
         const rtcmMessage = buffer.slice(0, totalLength);
         buffer = buffer.slice(totalLength);
-  
+
         // Process the RTCM message
         getRawMeasurement(rtcmMessage);
-  
+
       } else {
         // Unknown data, possibly corruption or noise. Skip or log it.
         console.log("Unknown data in buffer, skipping.");
-        buffer = buffer.slice(1);
+        buffer = buffer.slice(1); // Move by one.
       }
     }
   };
+
 
   const startStreamingData = async (device: Device) => {
     console.log("Starting the data stream")
@@ -224,12 +233,14 @@ function useBLE(getNmeaRead: (parsed: any) => void, getLastGGA: (lastGGA: string
   const startSendingNtripData = async (device: Device) => {
     console.log("Sending rtcm")
     const base64Data = base64.encode(rtcmNtrip);
+    console.log(base64Data);
     try {
       if (device) {
         await device?.writeCharacteristicWithoutResponseForService(
           monitoredBleCharacteristic,
           writeChar,
           base64Data
+
         );
       } else {
         console.log('No Device Connected');
@@ -237,16 +248,16 @@ function useBLE(getNmeaRead: (parsed: any) => void, getLastGGA: (lastGGA: string
     } catch (e) {
       console.error('Failed to send data', e);
     }
-      
+
   };
 
-    // Watch for changes to rtcmNtrip and send data when it changes
-    useEffect(() => {
-      if (connectedDevice && rtcmNtrip) {
-        //console.log(rtcmNtrip);
-        startSendingNtripData(connectedDevice);
-      }
-    }, [rtcmNtrip]);
+  // Watch for changes to rtcmNtrip and send data when it changes
+  useEffect(() => {
+    if (connectedDevice && rtcmNtrip) {
+      //console.log(rtcmNtrip);
+      startSendingNtripData(connectedDevice);
+    }
+  }, [rtcmNtrip]);
 
   return {
     scanForPeripherals,
