@@ -254,13 +254,15 @@ export default Bluetooth = ({ getNmeaRead, requestPermissions, scanForPeripheral
     <Button
         title={bluetoothSettings.isEnabled ? 'Connect' : 'Disconnect'}
         onPress={() => {
-          if (bluetoothSettings.isEnabled) {
-            startBluetoothConnectionClassic();
-            updateBluetoothSettings({ isConnected: true });
+          if (!bluetoothSettings.isEnabled) {
+            scanForDevices();
+            updateBluetoothSettings({ isEnabled: !bluetoothSettings.isEnabled, });
           } else {
-            stopBluetoothConnectionClassic();
-            updateBluetoothSettings({ isConnected: false, isEnabled: !bluetoothSettings.isEnabled });
+            console.log("cleaning devices")
+            updateBluetoothSettings({ isEnabled: !bluetoothSettings.isEnabled, devices: [] });
+            console.log(bluetoothSettings.devices)
           }
+          
         }}
       />
   }

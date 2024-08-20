@@ -165,12 +165,10 @@ const Ntrip = ({ getRtcmNtrip, lastGGA, startSendingNtripData, connectedDevice, 
     });
 
     client.on('data', function (data) {
-      //console.log(data);
-      //const byteArray = Array.from(data);
-      //const asciiData = data.toString('ascii');
-      //console.log(asciiData);
+      // Pass the raw Buffer data directly to the getRtcmNtrip function
+      // console.log(data);   // logs the raw binary data
       getRtcmNtrip(data);
-    });
+  });
 
     client.on('error', function (error) {
       console.log(error);
