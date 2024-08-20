@@ -82,6 +82,7 @@ export default function App(): JSX.Element {
         alt: parsed.alt,           // Update alt
         pdop: parsed.pdop,
         quality: parsed.quality,
+        satsVisible: parsed.satsVisible,
       }));
       checkParsedLon = parsed.lon;
     }
@@ -168,6 +169,7 @@ export default function App(): JSX.Element {
             connectedDevice={connectedDevice} 
             disconnectFromDevice={disconnectFromDevice}
             rtcmNtrip={rtcmNtrip}
+            getLastGGA={getLastGGA}
           />}
           {modalType.ntrip && <Ntrip getRtcmNtrip={getRtcmNtrip} lastGGA={lastGGA} startSendingNtripData={startSendingNtripData} connectedDevice={connectedDevice}/>}
           {modalType.project && <Project clearStorage={clearDataStorage} />}

@@ -12,7 +12,7 @@ import GPS from 'gps';
 
 export const manager = new BleManager()
 
-export default Bluetooth = ({ getNmeaRead, requestPermissions, scanForPeripherals, connectToDevice, allDevices, connectedDevice, disconnectFromDevice, rtcmNtrip}) => {
+export default Bluetooth = ({ getNmeaRead, requestPermissions, scanForPeripherals, connectToDevice, allDevices, connectedDevice, disconnectFromDevice, rtcmNtrip, getLastGGA}) => {
   const { data, updateData } = useContext(DataContext);
   const [intervalId, setIntervalId] = useState(0);
   const [bluetoothSettings, setBluetoothSettings] = useState(
@@ -47,9 +47,7 @@ export default Bluetooth = ({ getNmeaRead, requestPermissions, scanForPeripheral
   const scanForDevicesClassic = async () => {
     try {
       let paired = await RNBluetoothClassic.getBondedDevices();
-      const pairedDeviced = paired;
-      updateBluetoothSettings({devices: pairedDeviced});
-      updateBluetoothSettings({isEnabled: !bluetoothSettings.isEnabled});
+      updateBluetoothSettings({devices: paired});
     } catch (err) {
       Snackbar.show({
         text: err,
@@ -118,20 +116,28 @@ export default Bluetooth = ({ getNmeaRead, requestPermissions, scanForPeripheral
           let readData = await RNBluetoothClassic.readFromDevice(
             bluetoothSettings.connectedDeviceClassic.address,
           );
-          if(readData.includes('$')){
+
+          if (readData?.startsWith('$')) {
+            storeData.push(readData);
             gps.updatePartial(readData);
-            if (readData.includes('GNGGA')) {
-              getLastGGA(readData);
+          } else {
+            if (readData.includes('$GNGGA')) {
+            const nmeaSentences = readData.split('$GNGG');
+            if(nmeaSentences[1]?.startsWith('A')){
+              const formattedSentence = `$GNGG${nmeaSentences[1]}`;
+              storeData.push(formattedSentence);
+              gps.updatePartial(formattedSentence);
+              getLastGGA(formattedSentence);
+              }
             }
           }
-          storeData.push(readData);
         }
-        // Process NMEA sentence
-        gps.on('data', parsed => {
-          getNmeaRead(gps.state);
-        });
-        getNmeaRead(storeData);
-        updateData({nmeaRead: storeData});
+      // Process NMEA sentence
+      gps.on('data', parsed => {
+        getNmeaRead(gps.state);
+        console.log(parsed);
+      });
+      updateData({nmeaRead: storeData});
       }
     } catch (err) {
       console.log(err);
@@ -147,7 +153,7 @@ export default Bluetooth = ({ getNmeaRead, requestPermissions, scanForPeripheral
       newintervalId = setInterval(() => {
         readBluetoothConnectionClassic();
         sendRtcmClassic();
-      }, 1000);
+      }, 900);
       setIntervalId(newintervalId);
     } else {
       console.log('clear interval');
@@ -156,6 +162,7 @@ export default Bluetooth = ({ getNmeaRead, requestPermissions, scanForPeripheral
   };
 
   const sendRtcmClassic = async () => {
+    console.log('rtcm ' + rtcmNtrip);
     if (rtcmNtrip && rtcmNtrip != null && rtcmNtrip != "") {
       try {
         await RNBluetoothClassic.writeToDevice(
@@ -171,7 +178,6 @@ export default Bluetooth = ({ getNmeaRead, requestPermissions, scanForPeripheral
   };
 
   useEffect(() => {
-    console.log(isEnabled, bluetoothSettings.isEnabled, bluetoothSettings.devices);
     if(!isEnabled)  {
       setReadBluetoothConnectionClassic();
     } 
@@ -182,7 +188,7 @@ export default Bluetooth = ({ getNmeaRead, requestPermissions, scanForPeripheral
         });
       } 
     };
-  }, [bluetoothSettings.isEnabled, bluetoothSettings.devices]);
+  }, [bluetoothSettings.isEnabled]);
 
   return (
 <View>
@@ -201,10 +207,11 @@ export default Bluetooth = ({ getNmeaRead, requestPermissions, scanForPeripheral
     onPress={() => {
       if (isEnabled) {
         scanForDevices();
+        updateBluetoothSettings({ isEnabled: !bluetoothSettings.isEnabled });
       } else {
         scanForDevicesClassic();
+        updateBluetoothSettings({ isEnabled: !bluetoothSettings.isEnabled });
       }
-      updateBluetoothSettings({ isEnabled: !bluetoothSettings.isEnabled });
     }}
   />
 
@@ -225,13 +232,13 @@ export default Bluetooth = ({ getNmeaRead, requestPermissions, scanForPeripheral
     />
   ))}
 
-  {!isEnabled && bluetoothSettings.isEnabled && bluetoothSettings.devices.map(device => (
+  {!isEnabled && bluetoothSettings.devices.map(device => (
     <Button
       key={device.id}
       title={device.name ? device.name : device.id}
       color={connectedDevice?.id === device.id ? 'red' : 'blue'}
       onPress={() => {
-          updateBluetoothSettings({ connectedDeviceClassic: device });
+          updateBluetoothSettings({ connectedDeviceClassic: device, isEnabled: !bluetoothSettings.isEnabled });
           Snackbar.show({
           text: 'Vybráno Bluetooth zařízení',
           duration: Snackbar.LENGTH_SHORT,
@@ -252,7 +259,7 @@ export default Bluetooth = ({ getNmeaRead, requestPermissions, scanForPeripheral
             updateBluetoothSettings({ isConnected: true });
           } else {
             stopBluetoothConnectionClassic();
-            updateBluetoothSettings({ isConnected: false });
+            updateBluetoothSettings({ isConnected: false, isEnabled: !bluetoothSettings.isEnabled });
           }
         }}
       />

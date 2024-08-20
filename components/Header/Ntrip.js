@@ -167,9 +167,9 @@ const Ntrip = ({ getRtcmNtrip, lastGGA, startSendingNtripData, connectedDevice, 
     client.on('data', function (data) {
       //console.log(data);
       //const byteArray = Array.from(data);
-      const asciiData = data.toString('ascii');
+      //const asciiData = data.toString('ascii');
       //console.log(asciiData);
-      getRtcmNtrip(asciiData);
+      getRtcmNtrip(data);
     });
 
     client.on('error', function (error) {
