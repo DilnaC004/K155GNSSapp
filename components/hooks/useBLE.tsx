@@ -153,7 +153,7 @@ function useBLE(getNmeaRead: (parsed: any) => void, getLastGGA: (lastGGA: string
       console.log('No Data was received');
       return;
     }
-    
+
     // Decode the base64-encoded BLE characteristic value
     const rawData = base64.decode(characteristic.value);
     buffer += rawData;
@@ -231,16 +231,15 @@ function useBLE(getNmeaRead: (parsed: any) => void, getLastGGA: (lastGGA: string
   };
 
   const startSendingNtripData = async (device: Device) => {
-    console.log("Sending rtcm")
-    const base64Data = base64.encode(rtcmNtrip);
-    console.log(base64Data);
+    console.log("Sending rtcm");
+    //console.log(rtcmNtrip);  // Already Base64 encoded
+
     try {
       if (device) {
-        await device?.writeCharacteristicWithoutResponseForService(
+        await device.writeCharacteristicWithoutResponseForService(
           monitoredBleCharacteristic,
           writeChar,
-          base64Data
-
+          rtcmNtrip
         );
       } else {
         console.log('No Device Connected');
@@ -248,7 +247,6 @@ function useBLE(getNmeaRead: (parsed: any) => void, getLastGGA: (lastGGA: string
     } catch (e) {
       console.error('Failed to send data', e);
     }
-
   };
 
   // Watch for changes to rtcmNtrip and send data when it changes

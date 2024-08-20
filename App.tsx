@@ -107,11 +107,14 @@ export default function App(): JSX.Element {
   } = useBLE(getNmeaRead, getLastGGA, getRawMeasurement);
 
   const valueContext = { data, updateData };
-  const getRtcmNtrip = (rtcmNtrip: any) => {
-    const encodedData = base64.encodeFromByteArray(rtcmNtrip);
+  const getRtcmNtrip = (rtcmNtrip: Buffer) => {
+    // Directly encode the received byte array to Base64
+    const encodedData = rtcmNtrip.toString('base64');
     setRtcmNtrip(encodedData);
     //console.log("Ntrip - rtcm -", rtcmNtrip);
-  };
+    console.log(encodedData);
+};
+
 
   const [modalType, setmodalType] = useState({
     point: false,
