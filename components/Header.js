@@ -1,12 +1,11 @@
-import React, {useEffect, useState,useContext} from 'react';
-import {View, Text, TouchableOpacity, Image} from 'react-native';
-import IconFontAwesome from 'react-native-vector-icons/FontAwesome';
-import IconFontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import React, { useEffect, useState, useContext } from 'react';
+import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { DataContext } from './Functions/DataContext';
-import {styles} from './Styles/styles';
+import { styles } from './Styles/styles';
 
-export default Header = ({nmeaParsed, modalType, updateModalType}) => {
-  const { data, updateData} = useContext(DataContext);
+
+export default Header = ({ nmeaParsed, modalType, updateModalType }) => {
+  const { data, updateData } = useContext(DataContext);
   const [coordStatus, setCoordStatus] = useState('black');
   const [bluetoothStatus, setBluetoothStatus] = useState('black');
   const [ntripStatus, setNtripStatus] = useState('black');
@@ -44,18 +43,18 @@ export default Header = ({nmeaParsed, modalType, updateModalType}) => {
         setCoordStatus('black');
         break;
     }
-    if(!data.bluetoothSettings.isConnected){
+    if (!data.bluetoothSettings.isConnected) {
       setBluetoothStatus("black")
     } else {
       setBluetoothStatus("orange")
     }
-    if(!data.ntripSettings.ntripConnect){
+    if (!data.ntripSettings.ntripConnect) {
       setNtripStatus("black")
     } else {
       setNtripStatus("orange")
     }
-    
-  }, [nmeaParsed, data.bluetoothSettings.isConnected ,data.ntripSettings.ntripConnect]);
+
+  }, [nmeaParsed, data.bluetoothSettings.isConnected, data.ntripSettings.ntripConnect]);
 
   return (
     <View style={styles.headerContainer}>
@@ -86,11 +85,12 @@ export default Header = ({nmeaParsed, modalType, updateModalType}) => {
           }
         }}>
         <Image
-            source={require('./Images/bluetooth.png')}
-            style={[styles.icon,
-              { borderColor: bluetoothStatus}
+          source={require('./Images/bluetooth.png')}
+          style={[styles.icon,
+            { borderColor: bluetoothStatus }
             ]}
-          />
+        />
+
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => {
@@ -119,11 +119,11 @@ export default Header = ({nmeaParsed, modalType, updateModalType}) => {
           }
         }}>
         <Image
-            source={require('./Images/server.png')}
-            style={[styles.icon,
-              { borderColor: ntripStatus}
-            ]}
-          />
+          source={require('./Images/server.png')}
+          style={[styles.icon,
+          { borderColor: ntripStatus }
+          ]}
+        />
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => {
@@ -152,9 +152,9 @@ export default Header = ({nmeaParsed, modalType, updateModalType}) => {
           }
         }}>
         <Image
-            source={require('./Images/folder.png')}
-            style={[styles.icon]}
-          />
+          source={require('./Images/folder.png')}
+          style={[styles.icon]}
+        />
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => {
@@ -183,11 +183,11 @@ export default Header = ({nmeaParsed, modalType, updateModalType}) => {
           }
         }}>
         <Image
-            source={require('./Images/signal.png')}
-            style={[styles.icon,
-              { borderColor: coordStatus}
-            ]}
-          />
+          source={require('./Images/signal.png')}
+          style={[styles.icon,
+          { borderColor: coordStatus }
+          ]}
+        />
         <Text style={styles.headerInfoText}>{nmeaParsed.quality}</Text>
       </TouchableOpacity>
       <TouchableOpacity
@@ -217,9 +217,9 @@ export default Header = ({nmeaParsed, modalType, updateModalType}) => {
           }
         }}>
         <Image
-            source={require('./Images/location_mark_pinned.png')}
-            style={[styles.icon]}
-          />
+          source={require('./Images/location_mark_pinned.png')}
+          style={[styles.icon]}
+        />
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => {
@@ -248,9 +248,9 @@ export default Header = ({nmeaParsed, modalType, updateModalType}) => {
           }
         }}>
         <Image
-            source={require('./Images/map_location_mark.png')}
-            style={[styles.icon]}
-          />
+          source={require('./Images/map_location_mark.png')}
+          style={[styles.icon]}
+        />
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => {
@@ -279,9 +279,9 @@ export default Header = ({nmeaParsed, modalType, updateModalType}) => {
           }
         }}>
         <Image
-            source={require('./Images/graph.png')}
-            style={[styles.icon]}
-          />
+          source={require('./Images/graph.png')}
+          style={[styles.icon]}
+        />
       </TouchableOpacity>
     </View>
   );
