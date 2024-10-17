@@ -58,7 +58,10 @@ export default function App(): JSX.Element {
     "speed": 0.112972, 
     "time": "2024-08-17T09:21:29.000Z", 
     "track": null, 
-    "vdop": 1.18});
+    "vdop": 1.18,
+    "quality": "float",     // comment out before testing bluetooth
+    },
+  );
   const [rawMeasurement, setRawMeasurement] = useState('');
   const [lastGGA, setLastGGA] = useState('');
   const [data, setData] = useState(configurationData);
