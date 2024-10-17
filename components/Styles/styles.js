@@ -281,5 +281,22 @@ export const styles = {
     width: 30,
     height: 30,
     borderWidth: 2,
-  }
+  },
+  skyplotContainer: {
+    height: 500,
+    padding: 10,
+    backgroundColor: '#F5FCFF',
+  },
+  scrollViewContent: {
+    paddingVertical: 8,
+  },
+  satelliteContainer: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+    paddingVertical: 8,
+  },
+  satelliteText: {
+    fontSize: 16,
+    color: 'black',
+  },
 };

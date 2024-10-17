@@ -442,3 +442,9 @@ export function jtsk2etrs(Y, X, H_bpv) {
   }
 }
 
+export function polarToCartesian2D(center, radius, azimuth, elevation) {
+  const r = ((90 - elevation) / 90) * radius;
+  const x = center + r * MATH.cosd(azimuth-90);
+  const y = center + r * MATH.sind(azimuth-90);
+  return { x, y };
+}
