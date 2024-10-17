@@ -56,21 +56,27 @@ export default Header = ({ nmeaParsed, modalType, updateModalType }) => {
 
   }, [nmeaParsed, data.bluetoothSettings.isConnected, data.ntripSettings.ntripConnect]);
 
+  const closeAll = () => {
+    updateModalType({
+      point: false,
+      placing: false,
+      skyplot: false,
+      bluetooth: false,
+      ntrip: false,
+      project: false,
+      map: false,
+      learn: false,
+      calculate: false,
+      measurement: true,
+    });
+  };
+
   return (
     <View style={styles.headerContainer}>
       <TouchableOpacity
         onPress={() => {
           if (modalType.bluetooth) {
-            updateModalType({
-              point: false,
-              placing: false,
-              skyplot: false,
-              bluetooth: false,
-              ntrip: false,
-              project: false,
-              map: false,
-              measurement: true,
-            });
+            closeAll();
           } else {
             updateModalType({
               point: false,
@@ -80,6 +86,8 @@ export default Header = ({ nmeaParsed, modalType, updateModalType }) => {
               ntrip: false,
               project: false,
               map: false,
+              learn: false,
+              calculate: false,
               measurement: false,
             });
           }
@@ -95,16 +103,7 @@ export default Header = ({ nmeaParsed, modalType, updateModalType }) => {
       <TouchableOpacity
         onPress={() => {
           if (modalType.ntrip) {
-            updateModalType({
-              point: false,
-              placing: false,
-              skyplot: false,
-              bluetooth: false,
-              ntrip: false,
-              project: false,
-              map: false,
-              measurement: true,
-            });
+            closeAll();
           } else {
             updateModalType({
               point: false,
@@ -114,6 +113,8 @@ export default Header = ({ nmeaParsed, modalType, updateModalType }) => {
               ntrip: true,
               project: false,
               map: false,
+              learn: false,
+              calculate: false,
               measurement: false,
             });
           }
@@ -128,16 +129,7 @@ export default Header = ({ nmeaParsed, modalType, updateModalType }) => {
       <TouchableOpacity
         onPress={() => {
           if (modalType.project) {
-            updateModalType({
-              point: false,
-              placing: false,
-              skyplot: false,
-              bluetooth: false,
-              ntrip: false,
-              project: false,
-              map: false,
-              measurement: true,
-            });
+            closeAll();
           } else {
             updateModalType({
               point: false,
@@ -147,6 +139,8 @@ export default Header = ({ nmeaParsed, modalType, updateModalType }) => {
               ntrip: false,
               project: true,
               map: false,
+              learn: false,
+              calculate: false,
               measurement: false,
             });
           }
@@ -159,16 +153,7 @@ export default Header = ({ nmeaParsed, modalType, updateModalType }) => {
       <TouchableOpacity
         onPress={() => {
           if (modalType.point) {
-            updateModalType({
-              point: false,
-              placing: false,
-              skyplot: false,
-              bluetooth: false,
-              ntrip: false,
-              project: false,
-              map: false,
-              measurement: true,
-            });
+            closeAll();
           } else {
             updateModalType({
               point: true,
@@ -178,6 +163,8 @@ export default Header = ({ nmeaParsed, modalType, updateModalType }) => {
               ntrip: false,
               project: false,
               map: false,
+              learn: false,
+              calculate: false,
               measurement: false,
             });
           }
@@ -193,16 +180,7 @@ export default Header = ({ nmeaParsed, modalType, updateModalType }) => {
       <TouchableOpacity
         onPress={() => {
           if (modalType.placing) {
-            updateModalType({
-              point: false,
-              placing: false,
-              skyplot: false,
-              bluetooth: false,
-              ntrip: false,
-              project: false,
-              map: false,
-              measurement: true,
-            });
+            closeAll();
           } else {
             updateModalType({
               point: false,
@@ -212,6 +190,8 @@ export default Header = ({ nmeaParsed, modalType, updateModalType }) => {
               ntrip: false,
               project: false,
               map: false,
+              learn: false,
+              calculate: false,
               measurement: false,
             });
           }
@@ -224,16 +204,7 @@ export default Header = ({ nmeaParsed, modalType, updateModalType }) => {
       <TouchableOpacity
         onPress={() => {
           if (modalType.map) {
-            updateModalType({
-              point: false,
-              placing: false,
-              skyplot: false,
-              bluetooth: false,
-              ntrip: false,
-              project: false,
-              map: false,
-              measurement: true,
-            });
+            closeAll();
           } else {
             updateModalType({
               point: false,
@@ -243,6 +214,8 @@ export default Header = ({ nmeaParsed, modalType, updateModalType }) => {
               ntrip: false,
               project: false,
               map: true,
+              learn: false,
+              calculate: false,
               measurement: false,
             });
           }
@@ -255,16 +228,7 @@ export default Header = ({ nmeaParsed, modalType, updateModalType }) => {
       <TouchableOpacity
         onPress={() => {
           if (modalType.skyplot) {
-            updateModalType({
-              point: false,
-              placing: false,
-              skyplot: false,
-              bluetooth: false,
-              ntrip: false,
-              project: false,
-              map: false,
-              measurement: true,
-            });
+            closeAll();
           } else {
             updateModalType({
               point: false,
@@ -274,12 +238,62 @@ export default Header = ({ nmeaParsed, modalType, updateModalType }) => {
               ntrip: false,
               project: false,
               map: false,
+              learn: false,
+              calculate: false,
               measurement: false,
             });
           }
         }}>
         <Image
           source={require('./Images/graph.png')}
+          style={[styles.icon]}
+        />
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => {
+          if (modalType.learn) {
+            closeAll();
+          } else {
+            updateModalType({
+              point: false,
+              placing: false,
+              skyplot: false,
+              bluetooth: false,
+              ntrip: false,
+              project: false,
+              map: false,
+              learn: true,
+              calculate: false,
+              measurement: false,
+            });
+          }
+        }}>
+        <Image
+          source={require('./Images/book.png')}
+          style={[styles.icon]}
+        />
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => {
+          if (modalType.calculate) {
+            closeAll();
+          } else {
+            updateModalType({
+              point: false,
+              placing: false,
+              skyplot: false,
+              bluetooth: false,
+              ntrip: false,
+              project: false,
+              map: false,
+              learn: false,
+              calculate: true,
+              measurement: false,
+            });
+          }
+        }}>
+        <Image
+          source={require('./Images/calculate.png')}
           style={[styles.icon]}
         />
       </TouchableOpacity>

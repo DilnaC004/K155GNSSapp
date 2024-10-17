@@ -10,6 +10,8 @@ import Skyplot from './components/Header/Skyplot';
 import Point from './components/Header/Point';
 import Map from './components/Header/Map';
 import Placing from './components/Header/Placing';
+import Learn from './components/Header/Learn';
+import Calculate from './components/Header/Calculate';
 import { DataContext } from './components/Functions/DataContext';
 import configurationData from './components/configurationData';
 import useBLE from './components/hooks/useBLE';
@@ -126,6 +128,8 @@ export default function App(): JSX.Element {
     ntrip: false,
     project: false,
     map: false,
+    learn: false,
+    calculate: false,
     measurement: true,
   });
 
@@ -186,6 +190,8 @@ export default function App(): JSX.Element {
           {modalType.placing && <Placing nmeaParsed={nmeaParsed} />}
           {modalType.map && <Map />}
           {modalType.skyplot && <Skyplot satsVisible={nmeaParsed.satsVisible}/>}
+          {modalType.learn && <Learn />}
+          {modalType.calculate && <Calculate />}
         </View>
       </DataContext.Provider>
     </SafeAreaView>
