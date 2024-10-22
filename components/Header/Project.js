@@ -1,6 +1,5 @@
 import React, {useState, useEffect, useContext} from 'react';
 import {View, Button} from 'react-native';
-import RNFS, {DocumentDirectoryPath, writeFile} from 'react-native-fs';
 import {DataContext} from '../Functions/DataContext';
 import {styles} from '../Styles/styles';
 import Snackbar from 'react-native-snackbar';
@@ -9,10 +8,12 @@ import CreateProject from './ProjectComponents/CreateProject';
 import FlatListProject from './ProjectComponents/FlatListProject';
 import FlatListPoint from './ProjectComponents/FlatListPoint';
 import ProjectDescription from './ProjectComponents/ProjectDescription';
+import {ExportPoints, exportRawData} from '../Functions/ImportExport';
 
 export default Project = ({clearStorage}) => {
   const {data, updateData} = useContext(DataContext);
   const [pointSettings, setPointSettings] = useState(data.pointSettings);
+  const { handleExport } = ExportPoints({ DataContext });
   const updatePointSettings = newSettings => {
     setPointSettings(prevSettings => ({
       ...prevSettings,
@@ -25,23 +26,6 @@ export default Project = ({clearStorage}) => {
       ...prevSettings,
       ...newSettings,
     }));
-  };
-
-  // Function to export points into txt
-  const exportPoints = async () => {
-    const filePath = RNFS.DownloadDirectoryPath + '/GNSSappDATA.txt';
-    try {
-      await RNFS.writeFile(filePath, JSON.stringify(data), 'utf8');
-      console.log('File saved successfully');
-      Snackbar.show({
-        text: `Soubor uložen do \r\n${filePath}`,
-        duration: Snackbar.LENGTH_SHORT,
-        textColor: 'red',
-        marginBottom: 5,
-      });
-    } catch (error) {
-      console.log('Error saving file: ', error);
-    }
   };
 
   const closeAll = () => {
@@ -137,7 +121,7 @@ export default Project = ({clearStorage}) => {
         <Button
           title="Exportuj body"
           onPress={() => {
-            exportPoints();
+            handleExport();
           }}
         />
         <Button

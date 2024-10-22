@@ -4,7 +4,6 @@ import Snackbar from 'react-native-snackbar';
 import RNFS from 'react-native-fs';
 import {etrs2jtsk} from './Calculations/transformation';
 import {DataContext} from './Functions/DataContext';
-import {PERMISSIONS, request} from 'react-native-permissions';
 import {styles} from './Styles/styles';
 
 export default Measurement = ({nmeaParsed, rawMeasurement}) => {
@@ -149,46 +148,6 @@ export default Measurement = ({nmeaParsed, rawMeasurement}) => {
         nazev: measurementSettings.nazev + 1,
       });
       clearInterval(measurementSettings.intervalRawMeasurement);
-    }
-  };
-
-  // Function to export points into txt
-  const exportRawData = async filePath => {
-    try {
-      const permision_result = await request(
-        PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE,
-      );
-
-      if (permision_result !== 'granted') {
-        Snackbar.show({
-          text: 'Nemáte oprávnění k zápisu do souboru',
-          duration: Snackbar.LENGTH_SHORT,
-          textColor: 'red',
-          marginBottom: 5,
-        });
-
-        console.log('Permission to access storage was denied');
-
-        return;
-      }
-
-      await RNFS.appendFile(filePath, rawMeasurement.toString(), 'utf8'); //rewrite to streamdata
-
-      console.log('File saved successfully to ' + filePath);
-      Snackbar.show({
-        text: `Soubor uložen do \r\n${filePath}`,
-        duration: Snackbar.LENGTH_SHORT,
-        textColor: 'green',
-        marginBottom: 5,
-      });
-    } catch (error) {
-      console.log('Error saving file: ', error);
-      Snackbar.show({
-        text: `Chyba \r\n${error}`,
-        duration: Snackbar.LENGTH_SHORT,
-        textColor: 'red',
-        marginBottom: 5,
-      });
     }
   };
 
