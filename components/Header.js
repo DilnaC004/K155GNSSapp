@@ -76,7 +76,7 @@ export default Header = ({ nmeaParsed, modalType, updateModalType }) => {
       <TouchableOpacity
         onPress={() => {
           closeAll();
-          if (modalType.bluetooth) {
+          if (!modalType.bluetooth) {
             updateModalType({
               bluetooth: true,
               measurement: false,
@@ -94,7 +94,7 @@ export default Header = ({ nmeaParsed, modalType, updateModalType }) => {
       <TouchableOpacity
         onPress={() => {
           closeAll();
-          if (modalType.ntrip) {
+          if (!modalType.ntrip) {
             updateModalType({
               ntrip: true,
               measurement: false,
@@ -111,7 +111,7 @@ export default Header = ({ nmeaParsed, modalType, updateModalType }) => {
       <TouchableOpacity
         onPress={() => {
           closeAll();
-          if (modalType.project) {
+          if (!modalType.project) {
             updateModalType({
               project: true,
               measurement: false,
@@ -126,7 +126,7 @@ export default Header = ({ nmeaParsed, modalType, updateModalType }) => {
       <TouchableOpacity
         onPress={() => {
           closeAll();
-          if (modalType.point) {
+          if (!modalType.point) {
             updateModalType({
               point: true,
               measurement: false,
@@ -144,7 +144,7 @@ export default Header = ({ nmeaParsed, modalType, updateModalType }) => {
       <TouchableOpacity
         onPress={() => {
           closeAll();
-          if (modalType.placing) {
+          if (!modalType.placing) {
             updateModalType({
               placing: true,
               measurement: false,
@@ -159,7 +159,7 @@ export default Header = ({ nmeaParsed, modalType, updateModalType }) => {
       <TouchableOpacity
         onPress={() => {
           closeAll();
-          if (modalType.map) {
+          if (!modalType.map) {
             updateModalType({
               map: true,
               measurement: false,
