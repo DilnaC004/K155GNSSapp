@@ -45,17 +45,20 @@ export default Measurement = ({nmeaParsed, rawMeasurement}) => {
     : measurementSettings.jtsk.Hbpv;
 
   const updateCoordinates = () => {
+    const newPointB = measurementSettings.sumCoordB / (measurementSettings.coordMeasuredTime + 1);
+    const newPointL = measurementSettings.sumCoordL / (measurementSettings.coordMeasuredTime + 1);
+    const newPointH = measurementSettings.sumCoordH / (measurementSettings.coordMeasuredTime + 1);
+    
+    const newPointJTSK = etrs2jtsk(newPointB, newPointL, newPointH);
+
     const newPoint = {
       title: measurementSettings.nazev,
-      b:
-        measurementSettings.sumCoordX /
-        (measurementSettings.coordMeasuredTime + 1),
-      l:
-        measurementSettings.sumCoordY /
-        (measurementSettings.coordMeasuredTime + 1),
-      h:
-        measurementSettings.sumCoordZ /
-        (measurementSettings.coordMeasuredTime + 1),
+      b: newPointB,
+      l: newPointL,
+      h: newPointH,
+      x: newPointJTSK.X,
+      y: newPointJTSK.Y,
+      z: newPointJTSK.Hbpv,
       accuB: measurementSettings.coordAccuX,
       accuL: measurementSettings.coordAccuY,
       accuH: measurementSettings.coordAccuZ,
@@ -113,9 +116,9 @@ export default Measurement = ({nmeaParsed, rawMeasurement}) => {
         coordAccuX: 0,
         coordAccuY: 0,
         coordAccuZ: 0,
-        sumCoordX: 0,
-        sumCoordY: 0,
-        sumCoordZ: 0,
+        sumCoordB: 0,
+        sumCoordL: 0,
+        sumCoordH: 0,
         nazev: measurementSettings.nazev + 1,
       });
 
@@ -142,9 +145,9 @@ export default Measurement = ({nmeaParsed, rawMeasurement}) => {
         coordAccuX: 0,
         coordAccuY: 0,
         coordAccuZ: 0,
-        sumCoordX: 0,
-        sumCoordY: 0,
-        sumCoordZ: 0,
+        sumCoordB: 0,
+        sumCoordL: 0,
+        sumCoordH: 0,
         nazev: measurementSettings.nazev + 1,
       });
       clearInterval(measurementSettings.intervalRawMeasurement);
@@ -215,9 +218,9 @@ export default Measurement = ({nmeaParsed, rawMeasurement}) => {
       //Measure RTK point
       updateMeasurementSettings({
         coordMeasuredTime: measuredTime,
-        sumCoordX: measurementSettings.sumCoordX + parseFloat(etrs.b),
-        sumCoordY: measurementSettings.sumCoordY + parseFloat(etrs.l),
-        sumCoordZ: measurementSettings.sumCoordZ + parseFloat(etrs.h),
+        sumCoordB: measurementSettings.sumCoordB + parseFloat(etrs.b),
+        sumCoordL: measurementSettings.sumCoordL + parseFloat(etrs.l),
+        sumCoordH: measurementSettings.sumCoordH + parseFloat(etrs.h),
         formattedTime: `${hours}:${minutes}:${seconds}`,
       });
     }

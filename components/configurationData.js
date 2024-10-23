@@ -7,9 +7,12 @@ export default configurationData = {
       points: [
         {
           title: 'Test1',
-          b: 50,
-          l: 14,
-          h: 100,
+          b: 50.000000000,      // store 9 decimals to keep mm precision
+          l: 14.000000000,
+          h: 100.000,           // 3 is enough for heights
+          x: 1048448.751,
+          y: 774041.352,
+          z: 54.368,
           accuB: 0,
           accuL: 0,
           accuH: 0,
@@ -21,9 +24,12 @@ export default configurationData = {
           code: 'test',
         }, {
           title: 'Test2',
-          b: 51,
-          l: 15,
-          h: 101,
+          b: 51.000000000,
+          l: 15.000000000,
+          h: 101.000,
+          x: 947833.858,
+          y: 688702.591,
+          z: 58.421,
           accuB: 0,
           accuL: 0,
           accuH: 0,
@@ -35,9 +41,12 @@ export default configurationData = {
           code: 'test',
         }, {
           title: 'Test3',
-          b: 49,
-          l: 15,
-          h: 101,
+          b: 49.000000000,
+          l: 15.000000000,
+          h: 101.000,
+          x: 1168433.345,
+          y: 717321.474,
+          z: 58.874,
           accuB: 0,
           accuL: 0,
           accuH: 0,
