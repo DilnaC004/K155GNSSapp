@@ -1,19 +1,18 @@
-import React, {useState, useEffect, useContext} from 'react';
-import {View, Button} from 'react-native';
-import {DataContext} from '../Functions/DataContext';
-import {styles} from '../Styles/styles';
+import React, { useState, useEffect, useContext } from 'react';
+import { View, Button } from 'react-native';
+import { DataContext } from '../Functions/DataContext';
+import { styles } from '../Styles/styles';
 import Snackbar from 'react-native-snackbar';
 import CreatePoint from './ProjectComponents/CreatePoint';
 import CreateProject from './ProjectComponents/CreateProject';
 import FlatListProject from './ProjectComponents/FlatListProject';
 import FlatListPoint from './ProjectComponents/FlatListPoint';
 import ProjectDescription from './ProjectComponents/ProjectDescription';
-import {ExportPoints, exportRawData} from '../Functions/ImportExport';
+import ExportModal from './ProjectComponents/ExportModal';
 
-export default Project = ({clearStorage}) => {
-  const {data, updateData} = useContext(DataContext);
+export default Project = ({ clearStorage }) => {
+  const { data, updateData } = useContext(DataContext);
   const [pointSettings, setPointSettings] = useState(data.pointSettings);
-  const { handleExport } = ExportPoints({ DataContext });
   const updatePointSettings = newSettings => {
     setPointSettings(prevSettings => ({
       ...prevSettings,
@@ -107,7 +106,7 @@ export default Project = ({clearStorage}) => {
           <FlatListPoint
             projectSettings={projectSettings}
             updateProjectSettings={updateProjectSettings}
-            placing = {false}
+            placing={false}
           />
         )}
       {projectSettings.showCreatePoint && ( // conditional rendering based on the new piece of state
@@ -119,9 +118,21 @@ export default Project = ({clearStorage}) => {
       )}
       <View style={styles.buttonContainer}>
         <Button
-          title="Exportuj body"
+          title="Export"
           onPress={() => {
-            handleExport();
+            closeAll();
+            if (projectSettings.projectId != 'null') {
+              updateProjectSettings({
+                showExportModal: !projectSettings.showExportModal,
+              });
+            } else {
+              Snackbar.show({
+                text: 'Zvol zakázku!',
+                duration: Snackbar.LENGTH_SHORT,
+                textColor: 'red',
+                marginBottom: 5,
+              });
+            }
           }}
         />
         <Button
@@ -134,9 +145,24 @@ export default Project = ({clearStorage}) => {
               marginBottom: 5,
             });
             if (projectSettings.projectId != 'null') {
+
+            } else {
+              Snackbar.show({
+                text: 'Zvol zakázku!',
+                duration: Snackbar.LENGTH_SHORT,
+                textColor: 'red',
+                marginBottom: 5,
+              });
             }
           }}
         />
+        {projectSettings.showExportModal &&
+          data.projects != null && ( // conditional rendering based on the new piece of state
+            <ExportModal
+              projectSettings={projectSettings}
+              updateProjectSettings={updateProjectSettings}
+            />
+          )}
       </View>
     </View>
   );

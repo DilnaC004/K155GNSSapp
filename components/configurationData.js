@@ -97,6 +97,7 @@ export default configurationData = {
     showPointFlatList: false,
     showCreateProject: false,
     showCreatePoint: false,
+    showExportModal: false,
   },
   bluetoothSettings: {
     isEnabled: false,

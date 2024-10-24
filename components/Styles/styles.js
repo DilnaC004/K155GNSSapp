@@ -299,4 +299,16 @@ export const styles = {
     fontSize: 16,
     color: 'black',
   },
+  exportButtonContainer: {
+    flexDirection: 'column',
+    justifyContent: 'space-evenly',
+    alignItems: 'center',
+    height: Dimensions.get("window").height/4,
+  },
+  
+  exportButton: {
+    fontSize: 15,
+    padding: 20,
+    marginBottom: 16
+  },
 };
