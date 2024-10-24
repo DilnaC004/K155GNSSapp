@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { SafeAreaView, View, Text, Button, PermissionsAndroid, Platform } from 'react-native';
-import Snackbar from 'react-native-snackbar';
 import { styles } from '../Styles/styles';
 import MapView, { Marker, PROVIDER_GOOGLE, Callout } from 'react-native-maps';
 import { DataContext } from '../Functions/DataContext';
-import { etrs2jtsk } from '../Calculations/transformation';
 
 export const Map = ({}) => {
   const { data } = useContext(DataContext);
@@ -57,8 +55,7 @@ export const Map = ({}) => {
         style={styles.map}
         region={region}>
         {point.map((point, index) => {
-          const jtskCoordinates = etrs2jtsk(point.b, point.l, point.h);
-          const pointDescription = 'Y = ' + jtskCoordinates.Y.toFixed(3) + 'm\nX = ' + jtskCoordinates.X.toFixed(3)+ 'm\nH = ' + jtskCoordinates.Hbpv.toFixed(3) + 'm';
+          const pointDescription = 'Y = ' + point.y.toFixed(3) + 'm\nX = ' + point.x.toFixed(3)+ 'm\nH = ' + point.z.toFixed(3) + 'm';
           return (
             <Marker
               key={index}

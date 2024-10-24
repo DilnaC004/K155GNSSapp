@@ -7,7 +7,8 @@ import {
   Button,
   PermissionsAndroid,
   Platform,
-  Image
+  Image,
+  Dimensions
 } from 'react-native';
 import IconMaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { DataContext } from '../../Functions/DataContext';
@@ -71,7 +72,7 @@ export default FlatListProject = ({
   };
 
   return (
-    <View style={{height: 120}}>
+    <View style={{ height: Dimensions.get("window").height/3 }}>
       <FlatList
         data={data.projects}
         renderItem={renderItemProject}

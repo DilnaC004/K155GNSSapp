@@ -69,7 +69,7 @@ export const Placing = ({ nmeaParsed }) => {
   const calculate = (nmeaParsed) => {
     var point = placingSettings.points[placingSettings.selectedPoint]
     positionJtsk = etrs2jtsk(nmeaParsed.lat, nmeaParsed.lon, nmeaParsed.alt)
-    placingJtsk = etrs2jtsk(point.b, point.l, point.h)
+    placingJtsk = [point.x, point.y, point.z];
 
     updatePlacingSettings({
       dist: GPS.Distance(nmeaParsed.lat, nmeaParsed.lon, point.b, point.l) * 1000,
@@ -92,7 +92,6 @@ export const Placing = ({ nmeaParsed }) => {
         projectSettings={data.projectSettings}
         updateProjectSettings={click}
         placing={true}
-
       />
       <View style={styles.container}>
         <Text style={styles.title}>Vzdálenost: {placingSettings.dist.toFixed(3)} m</Text>
