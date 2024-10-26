@@ -4,8 +4,9 @@ import { DataContext } from '../Functions/DataContext';
 
 export const useExport = () => {
     const { data } = useContext(DataContext);
-    const handleImport = async () => {
 
+    const handleImport = async (filePath) => {
+        
     };
     return { handleImport }
 }  
