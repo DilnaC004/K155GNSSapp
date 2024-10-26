@@ -3,7 +3,6 @@ import { View, Button, Modal, Text } from 'react-native';
 import { styles } from '../../Styles/styles';
 import { useImport } from '../../hooks/useImport';
 import { DataContext } from '../../Functions/DataContext';
-import RNFS from 'react-native-fs';
 import Snackbar from 'react-native-snackbar';
 import DocumentPicker, {
   DirectoryPickerResponse,
@@ -21,37 +20,36 @@ export default ImportModal = ({
     updateProjectSettings,
 }) => {
     const { data } = useContext(DataContext);
-    //const { handleImport } = useImport();
-    const [ filePath, setFilePath ] = useState(null);
+    const { handleImport } = useImport();
+    const [ pickedFile, setPickedFile ] = useState(null);
 
     const pickDocument = async () => {
         try {
           const result = await DocumentPicker.pick({
             type: [types.plainText, types.csv],
-            copyTo: 'cachesDirectory', // This ensures you get a proper file path
+            copyTo: 'cachesDirectory', // proper path
             allowMultiSelection: false,
           });
-    
-          const pickedFile = result[0]; // Since we're picking a single file
-          setFilePath(pickedFile.fileCopyUri || pickedFile.uri);
+
+          setPickedFile(result[0]);
           
           Snackbar.show({
-            text: `Soubor nalezen: ${pickedFile.name}`,
+            text: `Soubor nalezen: ${result[0].name}`,         // using result here because set is async
             duration: Snackbar.LENGTH_SHORT,
             textColor: 'green',
             marginBottom: 5,
           });
     
-          console.log('Selected file:', {
-            uri: pickedFile.fileCopyUri || pickedFile.uri,
-            type: pickedFile.type,
-            name: pickedFile.name,
-            size: pickedFile.size
+          console.log('Zvolený soubor:', {
+            uri: result[0].fileCopyUri || result[0].uri,
+            type: result[0].type,
+            name: result[0].name,
+            size: result[0].size
           });
     
         } catch (error) {
           if (DocumentPicker.isCancel(error)) {
-            console.log('User cancelled the picker');
+            console.log('Picker zrušen uživatelem');
             return;
           }
           
@@ -86,19 +84,15 @@ export default ImportModal = ({
                     <Button
                         style={styles.exportButton}
                         title="Proveď import"
-                        disabled={filePath == null ? true : false}
+                        disabled={pickedFile == null ? true : false}
                         onPress={async () => {
                             console.log('Current projectId:', data.projectSettings.projectId);
                             console.log('All project settings:', data.projectSettings);
-                            try {
-                                if (path != null) {
-                                    //await handleImport();
-                                    updateProjectSettings({
-                                        showImportModal: false,
-                                    })
-                                } else {
-
-                                }
+                            try {            
+                                await handleImport(pickedFile);
+                                updateProjectSettings({
+                                    showImportModal: false,
+                                })
                             } catch (error) {
                                 console.error(`Import button error: ${error}`);
                             }
