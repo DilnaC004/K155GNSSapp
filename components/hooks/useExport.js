@@ -57,13 +57,13 @@ export const useExport = () => {
   };
 
   const formatCoordinatesExport = (project) => {
-    const header = "Bod         Y         X         Hbpv    Kód";
+    const header = "Bod         Y             X           Hbpv    Kód";
     
     const points = project.points.map((point) => {
       return [
         point.title,
-        point.x.toFixed(3),
         point.y.toFixed(3),
+        point.x.toFixed(3),
         point.z.toFixed(3),
         point.code
       ].join('    ');
