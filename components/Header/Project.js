@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { View, Button } from 'react-native';
+import { View, Button, Dimensions } from 'react-native';
 import { DataContext } from '../Functions/DataContext';
 import { styles } from '../Styles/styles';
 import Snackbar from 'react-native-snackbar';
@@ -9,6 +9,7 @@ import FlatListProject from './ProjectComponents/FlatListProject';
 import FlatListPoint from './ProjectComponents/FlatListPoint';
 import ProjectDescription from './ProjectComponents/ProjectDescription';
 import ExportModal from './ProjectComponents/ExportModal';
+import ImportModal from './ProjectComponents/ImportModal';
 
 export default Project = ({ clearStorage }) => {
   const { data, updateData } = useContext(DataContext);
@@ -136,16 +137,15 @@ export default Project = ({ clearStorage }) => {
           }}
         />
         <Button
-          title="Importuj body"
+          title="Import"
+          width={2*Dimensions.get("window").width/5}
           onPress={() => {
-            Snackbar.show({
-              text: 'Tato funkce není dostupná',
-              duration: Snackbar.LENGTH_SHORT,
-              textColor: 'red',
-              marginBottom: 5,
-            });
+            closeAll();
             if (projectSettings.projectId != 'null') {
-
+              updateProjectSettings({
+                showImportModal: !projectSettings.showImportModal,
+              });
+              console.log("Hodnota Import Modal: " , projectSettings.showImportModal);
             } else {
               Snackbar.show({
                 text: 'Zvol zakázku!',
@@ -157,8 +157,15 @@ export default Project = ({ clearStorage }) => {
           }}
         />
         {projectSettings.showExportModal &&
-          data.projects != null && ( // conditional rendering based on the new piece of state
+          data.projects != null && (
             <ExportModal
+              projectSettings={projectSettings}
+              updateProjectSettings={updateProjectSettings}
+            />
+          )}
+        {projectSettings.showImportModal &&
+          data.projects != null && (
+            <ImportModal
               projectSettings={projectSettings}
               updateProjectSettings={updateProjectSettings}
             />
