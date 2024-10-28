@@ -2,7 +2,7 @@ export default configurationData = {
   projects: [
     {
       title: 'Test',
-      date: '14.2.2014',
+      date: '14. 2. 2014',
       description: 'Toto je pouze test, autodestrukce mobilu za 3, 2, 1 .',
       points: [
         {
@@ -58,6 +58,7 @@ export default configurationData = {
           code: 'test',
         },
       ],
+      pointCount: 3,
     },
   ],
   codes: null,

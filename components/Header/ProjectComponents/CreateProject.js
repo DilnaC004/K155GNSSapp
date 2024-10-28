@@ -11,10 +11,8 @@ import Snackbar from 'react-native-snackbar';
 import { DataContext } from '../../Functions/DataContext';
 import {styles} from '../../Styles/styles';
 
-export default CreateProject = ({
-}) => {
+export default CreateProject = ({updateProjectSettings}) => {
   const { data, updateData} = useContext(DataContext);
-
 
   const [newProject, setProject] = useState({
     title: '',
@@ -22,6 +20,7 @@ export default CreateProject = ({
     description: '',
     path: '',
     points: [],
+    pointCount: 0,
   });
 
   const updateProject = newSettings => {
@@ -33,7 +32,7 @@ export default CreateProject = ({
 
   // function to add the new project to the array
   const addProject = () => {
-    if(newProject.title == ''){
+    if(newProject.title === ''){
       Snackbar.show({
         text: 'Vlož název zakázky',
         duration: Snackbar.LENGTH_SHORT,
@@ -41,11 +40,28 @@ export default CreateProject = ({
         marginBottom: 5,
       });
     } else {
-      updateProject({date: new Date().toLocaleString()});
-      const updatedData = [...data.projects, newProject];
+      const projectToAdd = {
+        ...newProject,
+        date: new Date().toLocaleDateString('cs-CZ', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        }),
+      };
+
+      const updatedData = [...data.projects, projectToAdd];
       updateData({projects: updatedData});
-      updateProject({title: '', date: '', description: ''});
-      console.log('Save new project' + newProject);
+      
+      setProject({
+        title: '',
+        date: '',
+        description: '',
+        path: '',
+        points: [],
+        pointCount: 0,
+      });
+
+      console.log('Save new project:', projectToAdd);
     }
   };
 
@@ -73,7 +89,7 @@ export default CreateProject = ({
         onPress={() => {
           DocumentPicker.pickDirectory()
             .then(value => {
-              updateProject({patch: value});
+              updateProject({path: value});
             })
             .catch(e => {
               console.log(e);
@@ -84,6 +100,9 @@ export default CreateProject = ({
         title="Založ zakázku"
         onPress={() => {
           addProject();
+          updateProjectSettings({
+            showCreateProject: false
+          });
         }}
       />
       <View style={styles.hrLine}/>

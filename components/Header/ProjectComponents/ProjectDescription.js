@@ -1,26 +1,29 @@
-import React from 'react';
+import { React, useContext } from 'react';
 import {View} from 'react-native';
 import {styles} from '../../Styles/styles';
 import RowWithLabelAndValue from '../RowWithLabelAndValue';
+import { DataContext } from '../../Functions/DataContext';
 
 export default ProjectDescription = ({projectSettings}) => {
+  const { data } = useContext(DataContext);
+
   return (
     <View style={styles.zakazkaInfo}>
         <RowWithLabelAndValue
           label="Název zakázky"
-          value={projectSettings.title}
+          value={data.projects[projectSettings.projectId]?.title || ""}
         />
         <RowWithLabelAndValue
           label="Datum vytvoření"
-          value={projectSettings.date}
+          value={data.projects[projectSettings.projectId]?.date || ""}
         />
         <RowWithLabelAndValue
           label="Počet změřených bodů"
-          value={projectSettings.projectPointCount}
+          value={data.projects[projectSettings.projectId]?.pointCount?.toString() || ""}
         />
         <RowWithLabelAndValue
           label="Popis"
-          value={projectSettings.description}
+          value={data.projects[projectSettings.projectId]?.description || ""}
         />
     </View>
   );

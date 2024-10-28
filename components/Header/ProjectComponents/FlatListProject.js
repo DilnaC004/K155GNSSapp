@@ -14,11 +14,13 @@ import IconMaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { DataContext } from '../../Functions/DataContext';
 import {styles} from '../../Styles/styles';
 
-const ItemProject = ({item, onPress, backgroundColor, textColor}) => (
+const ItemProject = ({item, onPress, backgroundColor, textColor, textWeight}) => (
   <TouchableOpacity
     onPress={onPress}
     style={[styles.boldText, {backgroundColor}]}>
-    <Text style={[styles.title, {color: textColor}]}>{item.title} </Text>
+    <Text style={[styles.title, {color: textColor, fontWeight: textWeight}]}>
+      {item.title}
+    </Text>
   </TouchableOpacity>
 );
 
@@ -28,10 +30,8 @@ export default FlatListProject = ({
 }) => {
   const { data, updateData} = useContext(DataContext);
   const renderItemProject = ({item}) => {
-    const backgroundColor =
-      item.title === projectSettings.title ? '#ccc' : '#ccc1';
-    const color =
-      item.title === projectSettings.title ? 'white' : 'black';
+    const weight = item.title === projectSettings.title ? 'bold' : 'normal';
+    const color = item.title === projectSettings.title ? 'green' : 'black';
 
     return (
       <View style={styles.buttonContainer}>
@@ -39,7 +39,7 @@ export default FlatListProject = ({
           item={item}
           onPress={() => {
             updateProjectSettings({
-              projectPointCount: item.points.length,
+              projectPointCount: item.pointCount,
               date: item.date,
               title: item.title,
               description: item.description,
@@ -47,8 +47,8 @@ export default FlatListProject = ({
               projectId: data.projects.indexOf(item),
             });
           }}
-          backgroundColor={backgroundColor}
           textColor={color}
+          textWeight={weight}
         />
         <TouchableOpacity
           onPress={() => {

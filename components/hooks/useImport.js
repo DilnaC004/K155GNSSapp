@@ -84,17 +84,26 @@ export const useImport = () => {
                 });
             }
 
-            console.log(`Nahráno ${newPoints.length} bodů`);
+            const newPointCount = newPoints.length;
+
+            console.log(`Nahráno ${newPointCount} bodů`);
 
             const updatedData = data.projects.map((project, index) => {
                 if (index === currentProject) {
-                    const updatedPoints = [...project.points, ...newPoints];  // Fixed spread operator
-                    return { ...project, points: updatedPoints };
+                    const currentPointCount = project.pointCount;
+                    const updatedPoints = [...project.points, ...newPoints];
+                    return { ...project, points: updatedPoints, pointCount: currentPointCount + newPointCount };
                 }
                 return project;
             });
 
-            updateData({ projects: updatedData });
+            updateData({
+                projects: updatedData,
+                projectSettings: {
+                    ...data.projectSettings,
+                    projectPointCount: data.projects[currentProject].points.length + newPoints.length
+                }
+            });
 
             Snackbar.show({
                 text: `Úspěšně nahráno ${newPoints.length} bodů`,

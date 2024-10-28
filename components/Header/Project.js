@@ -76,7 +76,7 @@ export default Project = ({ clearStorage }) => {
         />
       )}
       {projectSettings.showCreateProject && ( // conditional rendering based on the new piece of state
-        <CreateProject />
+        <CreateProject updateProjectSettings={updateProjectSettings}/>
       )}
       <View style={styles.buttonContainer}>
         <Button
