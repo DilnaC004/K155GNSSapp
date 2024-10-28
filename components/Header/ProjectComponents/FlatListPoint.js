@@ -32,7 +32,7 @@ const ItemInfo = ({ item, textColor }) => (
 
 export default FlatListPoint = ({
   projectSettings,
-  updateProjectSettings,
+  updatePlacingSettings,
   placing,
 }) => {
   const { data, updateData } = useContext(DataContext);
@@ -56,7 +56,7 @@ export default FlatListPoint = ({
         </TouchableOpacity>
         {placing && <TouchableOpacity
           onPress={() => {
-            updateProjectSettings(index);
+            updatePlacingSettings(index);
           }}>
           <Image
             source={require('../../Images/flag.png')}
@@ -78,8 +78,7 @@ export default FlatListPoint = ({
           point => point.title !== pointTitleToDelete,
         );
         console.log(updatedPoints);
-        updateProjectSettings({ projectPointCount: updatedPoints.length });
-        return { ...project, points: updatedPoints };
+        return { ...project, points: updatedPoints, pointCount: updatedPoints.length };
       }
       return project;
     });

@@ -49,10 +49,6 @@ export const Placing = ({ nmeaParsed }) => {
   useEffect(() => {
     updatePlacingSettings({
       points: data.projects[data.projectSettings.projectId].points,
-      dist: 0,
-      selectedPoint: 0,
-      heading: 0,
-      heightDelta: 0,
     });
   }, []);
 
@@ -61,10 +57,10 @@ export const Placing = ({ nmeaParsed }) => {
   var placingJtsk;
 
   useEffect(() => {
-    if (placingSettings.points) {
-      calculate(nmeaParsed)
+    if (placingSettings.points && nmeaParsed) {
+      calculate(nmeaParsed);
     }
-  }, [placingSettings.selectedPoint]);
+  }, [placingSettings.selectedPoint, nmeaParsed]);
 
   const calculate = (nmeaParsed) => {
     var point = placingSettings.points[placingSettings.selectedPoint]
@@ -90,7 +86,7 @@ export const Placing = ({ nmeaParsed }) => {
       <Text style={styles.text}>Zvol bod z aktivní zakazky:</Text>
       <FlatListPoint
         projectSettings={data.projectSettings}
-        updateProjectSettings={click}
+        updatePlacingSettings={click}
         placing={true}
       />
       <View style={styles.container}>

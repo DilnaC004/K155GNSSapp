@@ -26,7 +26,7 @@ export default Measurement = ({nmeaParsed, rawMeasurement}) => {
   };
   const [projectSettings, setProjectSettings] = useState(data.projectSettings);
 
-  const [isEnabled, setIsEnabled] = useState(true);
+  const [isEnabled, setIsEnabled] = useState(false);
   const toggleSwitch = () => setIsEnabled(previousState => !previousState);
   const switchCoordinates = isEnabled ? 'ETRS89' : 'S-JTSK';
   const switchRtk = measurementSettings.boolRtk ? 'ulož' : 'měř RTK';
