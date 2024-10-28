@@ -74,7 +74,7 @@ export default ImportModal = ({
                 });
             }}>
             <View style={styles.modalView}>
-                <Text style={styles.modalTitle}>Vyber druh exportu:</Text>
+                <Text style={styles.modalTitle}>Import:</Text>
                 <View style={styles.importButtonContainer}>
                     <Button
                         style={styles.exportButton}         // Style on default buttons has no effect, kept if it would be useful in the future
