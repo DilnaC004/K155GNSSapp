@@ -65,14 +65,20 @@ export const Placing = ({ nmeaParsed }) => {
   const calculate = (nmeaParsed) => {
     var point = placingSettings.points[placingSettings.selectedPoint]
     positionJtsk = etrs2jtsk(nmeaParsed.lat, nmeaParsed.lon, nmeaParsed.alt)
-    placingJtsk = [point.x, point.y, point.z];
+    placingJtsk = {
+      X: point.x,
+      Y: point.y,
+      Z: point.z
+    };
+    var deltaY = placingJtsk.Y - positionJtsk.Y;
+    var deltaX = placingJtsk.X - positionJtsk.X;
 
     updatePlacingSettings({
-      dist: GPS.Distance(nmeaParsed.lat, nmeaParsed.lon, point.b, point.l) * 1000,
+      dist: Math.sqrt(Math.pow(deltaY, 2) + Math.pow(deltaX, 2)),   // GPS.Distance(nmeaParsed.lat, nmeaParsed.lon, point.b, point.l) * 1000,
       heading: GPS.Heading(nmeaParsed.lat, nmeaParsed.lon, point.b, point.l),
-      heightDelta: (point.h - nmeaParsed.alt),
-      deltaY: placingJtsk.Y - positionJtsk.Y,
-      deltaX: placingJtsk.X - positionJtsk.X,
+      heightDelta: (point.z - positionJtsk.Hbpv),
+      deltaY: deltaY,
+      deltaX: deltaX,
     });
   };
 
@@ -81,7 +87,7 @@ export const Placing = ({ nmeaParsed }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={styles.placingContainer}>
       <Text style={styles.title}>Vytyčení</Text>
       <Text style={styles.text}>Zvol bod z aktivní zakazky:</Text>
       <FlatListPoint

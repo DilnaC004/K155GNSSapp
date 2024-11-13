@@ -59,6 +59,48 @@ export default configurationData = {
         },
       ],
       pointCount: 3,
+    }, {
+      title: 'Placing Test',
+      date: '13.11.2024',
+      description: 'Obsahuje bod na testovani blizsiho vytyceni.',
+      points: [
+        {
+          title: 'Test',
+          b: 50.000000000,      // untransformed
+          l: 14.000000000,      // untransformed
+          h: 100.000,           // untransformed
+          x: 1128950.000,
+          y: 590010.000,
+          z: 345.000,
+          accuB: 0,
+          accuL: 0,
+          accuH: 0,
+          pdop: 0,
+          time: 0,
+          date: 0,
+          height: 0,
+          offset: 0,
+          code: 'test',
+        }, {
+          title: 'Test2',
+          b: 50.000000000,      // untransformed
+          l: 14.000000000,      // untransformed
+          h: 100.000,           // untransformed
+          x: 1128952.000,
+          y: 590009.000,
+          z: 346.346,
+          accuB: 0,
+          accuL: 0,
+          accuH: 0,
+          pdop: 0,
+          time: 0,
+          date: 0,
+          height: 0,
+          offset: 0,
+          code: 'test',
+        },
+      ],
+      pointCount: 2,
     },
   ],
   codes: null,

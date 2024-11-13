@@ -234,6 +234,11 @@ export const styles = {
     paddingBottom: 25,
   },
   // Placing
+  placingContainer: {
+    ...StyleSheet.absoluteFillObject,
+    height: Dimensions.get('window').height-100,
+    width: Dimensions.get('window').width,
+  },
   arrow: {
     position: 'absolute',
     width: 80,
