@@ -239,6 +239,12 @@ export const styles = {
     height: Dimensions.get('window').height-100,
     width: Dimensions.get('window').width,
   },
+  precisePlacingContainer: {
+    height: 360,
+    padding: 20,
+    backgroundColor: '#F5FCFF',
+    justifyContent: 'center'
+  },
   arrow: {
     position: 'absolute',
     width: 80,

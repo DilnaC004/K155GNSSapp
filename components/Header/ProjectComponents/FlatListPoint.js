@@ -87,7 +87,7 @@ export default FlatListPoint = ({
   };
 
   return (
-    <View style={{ height: Dimensions.get("window").height/3 }}>
+    <View style={{ height: Dimensions.get("window").height/4 }}>
       <FlatList
         data={data.projects[projectSettings.projectId].points}
         renderItem={renderItemID}

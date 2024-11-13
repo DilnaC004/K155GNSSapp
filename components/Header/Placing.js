@@ -13,7 +13,8 @@ import {
   TextInput,
   Alert,
   Switch,
-  Animated
+  Animated,
+  Dimensions
 } from 'react-native';
 import Snackbar from 'react-native-snackbar';
 import { styles } from '../Styles/styles';
@@ -22,6 +23,7 @@ import GPS from 'gps';
 import { DataContext } from '../Functions/DataContext';
 import FlatListPoint from './ProjectComponents/FlatListPoint';
 import CompassHeading from 'react-native-compass-heading';
+import Svg, { Circle, Line } from 'react-native-svg';
 
 export const Placing = ({ nmeaParsed }) => {
   const { data, updateData } = useContext(DataContext);
@@ -86,6 +88,48 @@ export const Placing = ({ nmeaParsed }) => {
     updatePlacingSettings({ selectedPoint: index });
   };
 
+  const precisePlacingPlot = (distance) => {
+    const plotSize = 360;
+    const center = plotSize/2;
+
+    var M, circleCount = 0;
+
+    if (distance > 5) {
+      M = 18;
+      circleCount = 10;
+    } else {
+      M = 36;
+      circleCount = 5;
+    }
+
+    const positionX = center + (-placingSettings.deltaY * M);
+    const positionY = center + (placingSettings.deltaX * M);
+
+    return (
+      <View style={styles.precisePlacingContainer}>
+        <Svg width={plotSize} height={plotSize}>
+          {/* Plot X => JTSK -Y; Plot Y => JTSK +X */}
+          <Circle cx={center} cy={center} r={5} fill="blue" />
+
+          {/* Selected point */}
+          <Circle cx={positionX} cy={positionY} r={5} fill="green" />
+
+          {/* Equidistant circles */}
+          {[...Array(circleCount+1)].map((_, i) => (
+            <React.Fragment key={i}>
+              <Circle cx={center} cy={center} r={i * M} stroke="#ccc" strokeWidth={1} fill="none" />
+            </React.Fragment>
+          ))}
+
+          {/* Lines for directions */}
+          <Line x1={center} y1={0} x2={center} y2={plotSize} stroke="#ccc" strokeWidth={1} />
+          <Line x1={0} y1={center} x2={plotSize} y2={center} stroke="#ccc" strokeWidth={1} />
+          <Line x1={positionX} y1={positionY} x2={center} y2={center} stroke="#ccc" strokeWidth={1} />
+          </Svg>
+      </View>
+    );
+  };
+
   return (
     <View style={styles.placingContainer}>
       <Text style={styles.title}>Vytyčení</Text>
@@ -101,12 +145,15 @@ export const Placing = ({ nmeaParsed }) => {
         <Text style={styles.title}>Směr: {placingSettings.heading.toFixed(0)}˚</Text>
         <Text style={styles.title}>delta Y: {placingSettings.deltaY.toFixed(3)} m</Text>
         <Text style={styles.title}>delta X: {placingSettings.deltaX.toFixed(3)} m</Text>
-        <View style={styles.compassWrapper}>
-          <Image
-            source={require('../Images/arrow.png')}
-            style={[styles.arrow, { transform: [{ rotate: (placingSettings.heading == null ? 0 : placingSettings.heading - heading) + 'deg' }] }]}
-          />
-        </View>
+
+        {placingSettings.dist < 10 ? precisePlacingPlot(placingSettings.dist) : (
+          <View style={styles.compassWrapper}>
+            <Image
+              source={require('../Images/arrow.png')}
+              style={[styles.arrow, { transform: [{ rotate: (placingSettings.heading == null ? 0 : placingSettings.heading - heading) + 'deg' }] }]}
+            />
+          </View>
+        )}
       </View>
     </View>
   );
