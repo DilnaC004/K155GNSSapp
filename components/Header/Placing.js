@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import {
   SafeAreaView,
   View,
@@ -28,19 +28,22 @@ import Svg, { Circle, Line } from 'react-native-svg';
 export const Placing = ({ nmeaParsed }) => {
   const { data, updateData } = useContext(DataContext);
   const [placingSettings, setPlacingSettings] = useState(data.placingSettings);
-  const updatePlacingSettings = newSettings => {
-    setPlacingSettings(prevSettings => ({
-      ...prevSettings,
-      ...newSettings,
-    }));
-  };
+  const updatePlacingSettings = useCallback(
+    (newSettings) => {
+      setPlacingSettings((prevSettings) => ({
+        ...prevSettings,
+        ...newSettings,
+      }));
+    },
+    [setPlacingSettings]
+  );
 
   // Compass
   const [heading, setHeading] = useState(0);
+
   useEffect(() => {
     const degreeUpdateRate = 2;
     CompassHeading.start(degreeUpdateRate, ({ heading, accuracy }) => {
-      console.log("CompassHeading: ", heading, accuracy);
       setHeading(heading);
     });
     return () => {
@@ -52,28 +55,24 @@ export const Placing = ({ nmeaParsed }) => {
     updatePlacingSettings({
       points: data.projects[data.projectSettings.projectId].points,
     });
-  }, []);
-
-  const points = data.projects[data.projectSettings.projectId].points;
-  var positionJtsk;
-  var placingJtsk;
+  }, [data.projects, data.projectSettings.projectId]);
 
   useEffect(() => {
     if (placingSettings.points && nmeaParsed) {
-      calculate(nmeaParsed);
+      calculate();
     }
-  }, [placingSettings.selectedPoint, nmeaParsed]);
+  }, [placingSettings.selectedPoint, nmeaParsed, placingSettings.points, updatePlacingSettings]);
 
-  const calculate = (nmeaParsed) => {
-    var point = placingSettings.points[placingSettings.selectedPoint]
-    positionJtsk = etrs2jtsk(nmeaParsed.lat, nmeaParsed.lon, nmeaParsed.alt)
-    placingJtsk = {
+  const calculate = useCallback(() => {
+    const point = placingSettings.points[placingSettings.selectedPoint];
+    const positionJtsk = etrs2jtsk(nmeaParsed.lat, nmeaParsed.lon, nmeaParsed.alt);
+    const placingJtsk = {
       X: point.x,
       Y: point.y,
-      Z: point.z
+      Z: point.z,
     };
-    var deltaY = placingJtsk.Y - positionJtsk.Y;
-    var deltaX = placingJtsk.X - positionJtsk.X;
+    const deltaY = placingJtsk.Y - positionJtsk.Y;
+    const deltaX = placingJtsk.X - positionJtsk.X;
 
     updatePlacingSettings({
       dist: Math.sqrt(Math.pow(deltaY, 2) + Math.pow(deltaX, 2)),   // GPS.Distance(nmeaParsed.lat, nmeaParsed.lon, point.b, point.l) * 1000,
@@ -82,7 +81,7 @@ export const Placing = ({ nmeaParsed }) => {
       deltaY: deltaY,
       deltaX: deltaX,
     });
-  };
+  }, [placingSettings, nmeaParsed, updatePlacingSettings]);
 
   const click = (index) => {
     updatePlacingSettings({ selectedPoint: index });
