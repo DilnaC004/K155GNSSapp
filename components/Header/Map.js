@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { SafeAreaView, View, Text, Button, PermissionsAndroid, Platform } from 'react-native';
 import { styles } from '../Styles/styles';
-import MapView, { Marker, PROVIDER_GOOGLE, Callout } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE, Callout, UrlTile  } from 'react-native-maps';
 import { DataContext } from '../Functions/DataContext';
+// import WebView from 'react-native-webview';
+// import MapScript from './MapScript';
 
 export const Map = ({}) => {
   const { data } = useContext(DataContext);
@@ -43,7 +45,6 @@ export const Map = ({}) => {
     }
   };
 
-  
   useEffect(() => {
     fitMapbyPoints();
   }, [point]);
@@ -55,12 +56,12 @@ export const Map = ({}) => {
         style={styles.map}
         region={region}>
         {point.map((point, index) => {
-          const pointDescription = 'Y = ' + point.y.toFixed(3) + 'm\nX = ' + point.x.toFixed(3)+ 'm\nH = ' + point.z.toFixed(3) + 'm';
+          const pointDescription = 'Y = ' + point.y.toFixed(3) + 'm\nX = ' + point.x.toFixed(3) + 'm\nH = ' + point.z.toFixed(3) + 'm';
           return (
             <Marker
               key={index}
               coordinate={{ latitude: point.b, longitude: point.l }}>
-                <Callout>
+              <Callout>
                 <CustomCallout
                   title={point.title}
                   description={pointDescription}
@@ -69,9 +70,36 @@ export const Map = ({}) => {
             </Marker>
           );
         })}
-      </MapView>
+        </MapView>
     </SafeAreaView>
   );
 };
 
 export default Map;
+
+{/* Not functioning map with tiles, will retry */}
+{/* <MapView
+style={styles.map}
+region={region}
+mapType={Platform.OS == 'android' ? 'none' : 'standard'}>
+<UrlTile
+  urlTemplate='http://tile.openstreetmap.org/{z}/{x}/{y}.png'
+  maximumZ={19}
+  tileSize={256}
+/>
+{point.map((point, index) => {
+  const pointDescription = 'Y = ' + point.y.toFixed(3) + 'm\nX = ' + point.x.toFixed(3) + 'm\nH = ' + point.z.toFixed(3) + 'm';
+  return (
+    <Marker
+      key={index}
+      coordinate={{ latitude: point.b, longitude: point.l }}>
+      <Callout>
+        <CustomCallout
+          title={point.title}
+          description={pointDescription}
+        />
+      </Callout>
+    </Marker>
+  );
+})}
+</MapView> */}

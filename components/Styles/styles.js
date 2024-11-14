@@ -282,6 +282,11 @@ export const styles = {
   map: {
     ...StyleSheet.absoluteFillObject,
   },
+  webView: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
   mapCustomCallout: {
     width: 120, 
     height: 80, 
