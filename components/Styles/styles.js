@@ -240,10 +240,11 @@ export const styles = {
     width: Dimensions.get('window').width,
   },
   precisePlacingContainer: {
-    height: 360,
+    height: Dimensions.get('window').width*2/3,
     padding: 20,
     backgroundColor: '#F5FCFF',
-    justifyContent: 'center'
+    justifyContent: 'center',
+    alignSelf: 'center'
   },
   arrow: {
     position: 'absolute',

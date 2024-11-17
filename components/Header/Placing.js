@@ -88,16 +88,16 @@ export const Placing = ({ nmeaParsed }) => {
   };
 
   const precisePlacingPlot = (distance) => {
-    const plotSize = 360;
+    const plotSize = Dimensions.get("window").width*2/3;
     const center = plotSize/2;
 
     var M, circleCount = 0;
 
     if (distance > 5) {
-      M = 18;
+      M = plotSize/20;
       circleCount = 10;
     } else {
-      M = 36;
+      M = plotSize/10;
       circleCount = 5;
     }
 
