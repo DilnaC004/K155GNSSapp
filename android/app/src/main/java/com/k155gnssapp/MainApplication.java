@@ -1,4 +1,4 @@
-package com.awesomeproject;
+package com.k155gnssapp;
 
 import android.app.Application;
 import com.facebook.react.PackageList;
