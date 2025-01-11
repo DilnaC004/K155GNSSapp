@@ -333,4 +333,10 @@ export const styles = {
     alignItems: 'center',
     height: Dimensions.get("window").height/5,
   },
+  headline: {
+    textAlign: 'center',
+    fontWeight: 'bold',
+    fontSize: 18,
+    marginBottom: 20,
+  },
 };
