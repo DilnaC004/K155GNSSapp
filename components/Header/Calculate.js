@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Button, Text, StyleSheet, Dimensions, Animated, ScrollView } from 'react-native';
 import Snackbar from 'react-native-snackbar';
 import { styles } from '../Styles/styles';
+import Trigonometry from './CalculationComponents/Trigonometry';
 
 const Calculate = ({ }) => {
   const [shownCalculation, setShownCalculation] = useState(0);
@@ -27,7 +28,7 @@ const Calculate = ({ }) => {
         <Button
           title="Výška trigonometrie"
           onPress={() => {
-            if (shownCalculation == 0) {
+            if (shownCalculation != 1) {
               setShownCalculation(1);
             } else {
               closeAll();
@@ -37,7 +38,7 @@ const Calculate = ({ }) => {
         <Button
           title="Uzávěr trojúhelníku"
           onPress={() => {
-            if (shownCalculation == 0) {
+            if (shownCalculation != 2) {
               setShownCalculation(2);
             } else {
               closeAll();
@@ -45,9 +46,7 @@ const Calculate = ({ }) => {
           }}
         />
       </View>
-      {(shownCalculation == 1) && (
-          // Create trig component
-        )}
+      {(shownCalculation == 1) && ( <Trigonometry/> )}
       {(shownCalculation == 2) && (
           // Create triangle component
         )}
@@ -55,7 +54,7 @@ const Calculate = ({ }) => {
           <Button
             title="Kontrola nivelace"
             onPress={() => {
-              if (shownCalculation == 0) {
+              if (shownCalculation != 3) {
                 setShownCalculation(3);
               } else {
                 closeAll();
