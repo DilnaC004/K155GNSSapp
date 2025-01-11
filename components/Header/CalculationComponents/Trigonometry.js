@@ -1,7 +1,8 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { TextInput, View, Text, Switch, Button } from 'react-native';
 import Snackbar from 'react-native-snackbar';
 import { styles } from '../../Styles/styles';
+import fieldCalculations from '../../Calculations/fieldCalculations';
 
 export default Trigonometry = ({ }) => {
   // state inputs
@@ -44,7 +45,10 @@ export default Trigonometry = ({ }) => {
     }
   }
 
-  const calculate = () => { }
+  const calculate = () => {
+    const calculatedHeight = fieldCalculations.trig(trigData.zenith, trigData.distance, switchEnabled? 1 : 2 );
+    updateTrigData({ height: calculatedHeight.toFixed(3) });
+  }
 
   const clearFields = () => {
     updateTrigData({
@@ -89,7 +93,7 @@ export default Trigonometry = ({ }) => {
         style={styles.textInput}
         placeholder={"Výsledek"}
         editable={false}
-        value={trigData.height}
+        value={trigData.height.toString()}
         onChangeText={(value) => {
           updateTrigData({ distance: value });
         }}
