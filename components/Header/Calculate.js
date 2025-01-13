@@ -14,15 +14,6 @@ const Calculate = ({ }) => {
     setShownCalculation(0);
   };
 
-  useEffect(() => {
-    Snackbar.show({
-      text: "Funkce je ve vyvoji.",
-      duration: Snackbar.LENGTH_SHORT,
-      textColor: 'red',
-      marginBottom: 5,
-    });
-  }, []);
-
   return (
     <View style={styles.nastContainer}>
       <Text style={styles.headline}>Ověřovací výpočty do terénu</Text>
