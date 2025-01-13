@@ -3,6 +3,7 @@ import { View, Button, Text, StyleSheet, Dimensions, Animated, ScrollView } from
 import Snackbar from 'react-native-snackbar';
 import { styles } from '../Styles/styles';
 import Trigonometry from './CalculationComponents/Trigonometry';
+import Triangle from './CalculationComponents/Triangle';
 
 const Calculate = ({ }) => {
   const [shownCalculation, setShownCalculation] = useState(0);
@@ -47,9 +48,7 @@ const Calculate = ({ }) => {
         />
       </View>
       {(shownCalculation == 1) && ( <Trigonometry/> )}
-      {(shownCalculation == 2) && (
-          // Create triangle component
-        )}
+      {(shownCalculation == 2) && ( <Triangle/> )}
         <View style={styles.buttonContainer}>
           <Button
             title="Kontrola nivelace"

@@ -17,4 +17,10 @@ fieldCalculations.trig = (zenith, distance, distanceType) => {
     }
 };
 
+fieldCalculations.triangle = (alpha, beta, gamma, permitedMisclosure) => {
+    const calculatedMisclosure = (alpha + beta + gamma - 200) * 10000;
+    const isWithin = Math.abs(calculatedMisclosure) <= (typeof permitedMisclosure === 'number' ? permitedMisclosure : 200);
+    return [calculatedMisclosure, isWithin];
+};
+
 export default fieldCalculations;
