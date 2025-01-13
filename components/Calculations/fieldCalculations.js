@@ -23,4 +23,11 @@ fieldCalculations.triangle = (alpha, beta, gamma, permitedMisclosure) => {
     return [calculatedMisclosure, isWithin];
 };
 
+fieldCalculations.leveling = (forward, back, k, L) => {
+    const deviation = (forward + back) * 1000;
+    const permitedDeviation = (typeof k === 'number'? k : 40) * Math.sqrt(L);
+    const isWithin = Math.abs(deviation) <= permitedDeviation;
+    return [deviation, permitedDeviation, isWithin];
+};
+
 export default fieldCalculations;

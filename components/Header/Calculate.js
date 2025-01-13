@@ -4,6 +4,7 @@ import Snackbar from 'react-native-snackbar';
 import { styles } from '../Styles/styles';
 import Trigonometry from './CalculationComponents/Trigonometry';
 import Triangle from './CalculationComponents/Triangle';
+import Leveling from './CalculationComponents/Leveling';
 
 const Calculate = ({ }) => {
   const [shownCalculation, setShownCalculation] = useState(0);
@@ -61,9 +62,7 @@ const Calculate = ({ }) => {
             }}
           />
         </View>
-        {(shownCalculation == 3) && (
-          // Create leveling component
-        )}
+        {(shownCalculation == 3) && ( <Leveling/> )}
     </View>
   );
 };
