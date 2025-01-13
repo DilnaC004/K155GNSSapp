@@ -8,7 +8,7 @@ export default Trigonometry = ({ }) => {
   // state inputs
   const [switchEnabled, setSwitchEnabled] = useState(false);
   const toggleSwitch = () => setSwitchEnabled(previousState => !previousState);
-  const switchDistances = switchEnabled ? 'Vodorovná vzdálenost' : 'Šikmá vzdálenost';
+  const switchDistances = switchEnabled ? 'Vodorovná vzdálenost [m]' : 'Šikmá vzdálenost [m]';
 
   const trigTemplate = {
     zenith: "",
@@ -46,7 +46,7 @@ export default Trigonometry = ({ }) => {
   }
 
   const calculate = () => {
-    const calculatedHeight = fieldCalculations.trig(trigData.zenith, trigData.distance, switchEnabled? 1 : 2 );
+    const calculatedHeight = fieldCalculations.trig(parseFloat(trigData.zenith), parseFloat(trigData.distance), switchEnabled? 1 : 2 );
     updateTrigData({ height: calculatedHeight.toFixed(3) });
   }
 
@@ -62,7 +62,7 @@ export default Trigonometry = ({ }) => {
     <View>
       <TextInput
         style={styles.textInput}
-        placeholder="Zenitový úhel"
+        placeholder="Zenitový úhel  [gon]"
         keyboardType="numeric"
         value={trigData.zenith}
         onChangeText={(value) => {
@@ -91,12 +91,9 @@ export default Trigonometry = ({ }) => {
       />
       <TextInput
         style={styles.textInput}
-        placeholder={"Výsledek"}
+        placeholder={"Výsledek [m]"}
         editable={false}
         value={trigData.height.toString()}
-        onChangeText={(value) => {
-          updateTrigData({ distance: value });
-        }}
       />
       <Button title="Proveď výpočet" onPress={checkBeforeCalculating} />
       <Button title="Vymaž vše" onPress={clearFields} />
