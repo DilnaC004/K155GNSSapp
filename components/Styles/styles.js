@@ -61,6 +61,13 @@ export const styles = {
   scrollViewContent: {
     flexDirection: 'row', // Added for horizontal scrolling
   },
+  scrollView: {
+    marginHorizontal: 10,
+  },
+  scrollViewContainer: {
+    height: 4*Dimensions.get('window').height/7,
+    paddingTop: 10,
+  },
   messageContainer: {
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
@@ -303,9 +310,6 @@ export const styles = {
     height: 500,
     padding: 10,
     backgroundColor: '#F5FCFF',
-  },
-  scrollViewContent: {
-    paddingVertical: 8,
   },
   satelliteContainer: {
     borderBottomWidth: 1,
