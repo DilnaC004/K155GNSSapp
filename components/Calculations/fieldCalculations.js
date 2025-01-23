@@ -6,14 +6,16 @@ fieldCalculations.trig = (zenith, distance, distanceType) => {
     }
     switch (distanceType) {
         case 1:
-            var height = distance * Math.cos(zenith * Math.PI / 200);
+            var height = distance / Math.tan(zenith * Math.PI / 200);
             return height;
         case 2:
-            var height = distance * Math.sin(zenith * Math.PI / 200);
             if (zenith > 100) {
+                var height = distance * Math.sin((zenith-100) * Math.PI / 200);
                 return -height;
-            }
-            return height;
+            } else {
+                var height = distance * Math.sin(zenith * Math.PI / 200);
+                return height;
+            }            
     }
 };
 

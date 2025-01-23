@@ -46,8 +46,15 @@ export default Trigonometry = ({ }) => {
   }
 
   const calculate = () => {
+    trigData.zenith = replaceComma(trigData.zenith);
+    trigData.distance = replaceComma(trigData.distance);
+    
     const calculatedHeight = fieldCalculations.trig(parseFloat(trigData.zenith), parseFloat(trigData.distance), switchEnabled? 1 : 2 );
     updateTrigData({ height: calculatedHeight.toFixed(3) });
+  }
+
+  const replaceComma = (value) => {
+    return value.replace(",", ".");
   }
 
   const clearFields = () => {

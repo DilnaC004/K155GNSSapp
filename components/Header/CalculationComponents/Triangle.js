@@ -45,8 +45,18 @@ export default Triangle = ({ }) => {
   }
 
   const calculate = () => {
+    triangleData.alpha = replaceComma(triangleData.alpha);
+    triangleData.beta = replaceComma(triangleData.beta);
+    triangleData.gamma = replaceComma(triangleData.gamma);
+    triangleData.permitedMisclosure = replaceComma(triangleData.permitedMisclosure);
+    
     const [calculatedMisclosure, isWithin] = fieldCalculations.triangle(parseFloat(triangleData.alpha), parseFloat(triangleData.beta), parseFloat(triangleData.gamma), parseFloat(triangleData.permitedMisclosure));
     updateTriangleData({ angularMisclosure: calculatedMisclosure.toFixed(0), isWithinPermited: isWithin? "Ano" : "Ne" });
+  }
+
+  
+  const replaceComma = (value) => {
+    return value.replace(",", ".");
   }
 
   const clearFields = () => {

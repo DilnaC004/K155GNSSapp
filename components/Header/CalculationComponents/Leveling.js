@@ -26,16 +26,16 @@ export default Leveling = ({ }) => {
 
   // check the fields before running the calculation
   const checkBeforeCalculating = () => {
-    if (levelingData.alpha == "" || levelingData.beta == "" || levelingData.gamma == "") {
+    if (levelingData.heightDiffForward == "" || levelingData.heightDiffBack == "" || levelingData.distance == "") {
       Snackbar.show({
-        text: 'Zadej všechny úhly',
+        text: 'Zadej nutné hodnoty',
         duration: Snackbar.LENGTH_SHORT,
         textColor: 'red',
         marginBottom: 5,
       });
-    } else if (levelingData.alpha < 0 || levelingData.beta < 0 || levelingData.gamma < 0) {
+    } else if ((levelingData.heightDiffForward < 0 && levelingData.heightDiffForward > 0) || (levelingData.heightDiffForward > 0 && levelingData.heightDiffForward < 0)) {
       Snackbar.show({
-        text: 'Zadej platné úhly',
+        text: 'Převýšení tam a zpět mají opačné znaménko',
         duration: Snackbar.LENGTH_SHORT,
         textColor: 'red',
         marginBottom: 5,
@@ -46,8 +46,17 @@ export default Leveling = ({ }) => {
   }
 
   const calculate = () => {
+    levelingData.heightDiffForward = replaceComma(levelingData.heightDiffForward);
+    levelingData.heightDiffBack = replaceComma(levelingData.heightDiffBack);
+    levelingData.coefficientK = replaceComma(levelingData.coefficientK);
+    levelingData.distance = replaceComma(levelingData.distance);
+
     const [deviation, permitedDeviation, isWithin] = fieldCalculations.leveling(parseFloat(levelingData.heightDiffForward), parseFloat(levelingData.heightDiffBack), parseFloat(levelingData.coefficientK), parseFloat(levelingData.distance));
     updateLevelingData({ deviation: deviation.toFixed(0), permitedDeviation: permitedDeviation.toFixed(0), isWithinPermited: isWithin? "Ano" : "Ne" });
+  }
+
+  const replaceComma = (value) => {
+    return value.replace(",", ".");
   }
 
   const clearFields = () => {
