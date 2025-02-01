@@ -8,20 +8,19 @@ import { DataContext } from '../Functions/DataContext';
 // import MapScript from './MapScript';
 import { etrs2jtsk } from '../Calculations/transformation';
 
-const Map = ({ updateModalType }) => {
+const Map = ({ updateModalType, placingSettings, setPlacingSettings }) => {
   const { data, updateData } = useContext(DataContext);
   const point = data.projects[data.projectSettings.projectId].points
-  const [placingSettings, setPlacingSettings] = useState(data.placingSettings);
   const updatePlacingSettings = useCallback(
-      (newSettings) => {
-        setPlacingSettings((prevSettings) => ({
-          ...prevSettings,
-          ...newSettings,
-        }));
-      },
-      [setPlacingSettings]
-    );
-    
+    (newSettings) => {
+      setPlacingSettings((prevSettings) => ({
+        ...prevSettings,
+        ...newSettings,
+      }));
+    },
+    [setPlacingSettings]
+  );
+
   const [region, setRegion] = useState({
     latitude: 50.1042375,
     longitude: 14.3883522,
@@ -40,12 +39,11 @@ const Map = ({ updateModalType }) => {
       map: false,
       learn: false,
       calculate: false,
-      measurement: true,
+      measurement: false,
     });
   };
 
   const handlePlacingButton = (pointID) => {
-    console.log('Placing button pressed');
     changeToPlacing();
     updatePlacingSettings({ selectedPoint: pointID });
   };
@@ -80,7 +78,7 @@ const Map = ({ updateModalType }) => {
     }
   };
 
-  
+
   useEffect(() => {
     fitMapbyPoints();
   }, [point]);
@@ -93,16 +91,16 @@ const Map = ({ updateModalType }) => {
         region={region}>
         {point.map((point, index) => {
           const jtskCoordinates = etrs2jtsk(point.b, point.l, point.h);
-          const pointDescription = 'Y = ' + jtskCoordinates.Y.toFixed(3) + 'm\nX = ' + jtskCoordinates.X.toFixed(3)+ 'm\nH = ' + jtskCoordinates.Hbpv.toFixed(3) + 'm';
+          const pointDescription = 'Y = ' + jtskCoordinates.Y.toFixed(3) + 'm\nX = ' + jtskCoordinates.X.toFixed(3) + 'm\nH = ' + jtskCoordinates.Hbpv.toFixed(3) + 'm';
           return (
             <Marker
               key={index}
               coordinate={{ latitude: point.b, longitude: point.l }}>
-                <Callout>
+              <Callout onPress={() => handlePlacingButton(index)}>
                 <CustomCallout
                   title={point.title}
                   description={pointDescription}
-                  pointIndex={index}           
+                  pointIndex={index}
                 />
               </Callout>
             </Marker>
@@ -115,7 +113,7 @@ const Map = ({ updateModalType }) => {
 
 export default Map;
 
-{/* Not functioning map with tiles, will retry */}
+{/* Not functioning map with tiles, will retry */ }
 {/* <MapView
 style={styles.map}
 region={region}

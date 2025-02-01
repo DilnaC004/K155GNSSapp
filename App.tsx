@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { SafeAreaView, View, AppState } from 'react-native';
 import useAsyncStorage from './components/hooks/useAsyncStorage';
 import Header from './components/Header';
@@ -143,6 +143,8 @@ export default function App(): JSX.Element {
     }));
   };
 
+  const [placingSettings, setPlacingSettings] = useState(data.placingSettings);
+
   const handleAppStateChange = (nextAppState: any) => {
     if (nextAppState === 'background') {
       console.log('the app is closed');
@@ -190,8 +192,8 @@ export default function App(): JSX.Element {
               rawMeasurement={rawMeasurement}
             />
           )}
-          {modalType.placing && <Placing nmeaParsed={nmeaParsed} />}
-          {modalType.map && <Map updateModalType={updateModalType}/>}
+          {modalType.placing && <Placing nmeaParsed={nmeaParsed} placingSettings={placingSettings} setPlacingSettings={setPlacingSettings} />}
+          {modalType.map && <Map updateModalType={updateModalType} placingSettings={placingSettings} setPlacingSettings={setPlacingSettings}/>}
           {modalType.skyplot && <Skyplot satsVisible={nmeaParsed.satsVisible}/>}
           {modalType.learn && <Learn />}
           {modalType.calculate && <Calculate />}

@@ -25,18 +25,17 @@ import FlatListPoint from './ProjectComponents/FlatListPoint';
 import CompassHeading from 'react-native-compass-heading';
 import Svg, { Circle, Line } from 'react-native-svg';
 
-export const Placing = ({ nmeaParsed }) => {
+export const Placing = ({ nmeaParsed, placingSettings, setPlacingSettings }) => {
   const { data, updateData } = useContext(DataContext);
-  const [placingSettings, setPlacingSettings] = useState(data.placingSettings);
   const updatePlacingSettings = useCallback(
-    (newSettings) => {
-      setPlacingSettings((prevSettings) => ({
-        ...prevSettings,
-        ...newSettings,
-      }));
-    },
-    [setPlacingSettings]
-  );
+      (newSettings) => {
+        setPlacingSettings((prevSettings) => ({
+          ...prevSettings,
+          ...newSettings,
+        }));
+      },
+      [setPlacingSettings]
+    );
 
   // Compass
   const [heading, setHeading] = useState(0);
