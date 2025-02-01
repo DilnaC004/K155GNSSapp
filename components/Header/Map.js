@@ -1,14 +1,27 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { SafeAreaView, View, Text, Button, PermissionsAndroid, Platform } from 'react-native';
+import Snackbar from 'react-native-snackbar';
 import { styles } from '../Styles/styles';
-import MapView, { Marker, PROVIDER_GOOGLE, Callout, UrlTile  } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE, Callout } from 'react-native-maps';
 import { DataContext } from '../Functions/DataContext';
 // import WebView from 'react-native-webview';
 // import MapScript from './MapScript';
+import { etrs2jtsk } from '../Calculations/transformation';
 
-export const Map = ({}) => {
-  const { data } = useContext(DataContext);
+const Map = ({ updateModalType }) => {
+  const { data, updateData } = useContext(DataContext);
   const point = data.projects[data.projectSettings.projectId].points
+  const [placingSettings, setPlacingSettings] = useState(data.placingSettings);
+  const updatePlacingSettings = useCallback(
+      (newSettings) => {
+        setPlacingSettings((prevSettings) => ({
+          ...prevSettings,
+          ...newSettings,
+        }));
+      },
+      [setPlacingSettings]
+    );
+    
   const [region, setRegion] = useState({
     latitude: 50.1042375,
     longitude: 14.3883522,
@@ -16,11 +29,33 @@ export const Map = ({}) => {
     longitudeDelta: 1,
   });
 
-  const CustomCallout = ({ title, description }) => {
+  const changeToPlacing = () => {
+    updateModalType({
+      point: false,
+      placing: true,
+      skyplot: false,
+      bluetooth: false,
+      ntrip: false,
+      project: false,
+      map: false,
+      learn: false,
+      calculate: false,
+      measurement: true,
+    });
+  };
+
+  const handlePlacingButton = (pointID) => {
+    console.log('Placing button pressed');
+    changeToPlacing();
+    updatePlacingSettings({ selectedPoint: pointID });
+  };
+
+  const CustomCallout = ({ title, description, pointIndex }) => {
     return (
       <View style={styles.mapCustomCallout}>
-        <Text style={styles.title}>{title}</Text>
+        <Text style={[styles.title, { fontWeight: 'bold' }]}>{title}</Text>
         <Text style={styles.title}>{description}</Text>
+        <Button title='Vytyc bod' onPress={() => handlePlacingButton(pointIndex)}></Button>
       </View>
     );
   };
@@ -45,6 +80,7 @@ export const Map = ({}) => {
     }
   };
 
+  
   useEffect(() => {
     fitMapbyPoints();
   }, [point]);
@@ -56,21 +92,23 @@ export const Map = ({}) => {
         style={styles.map}
         region={region}>
         {point.map((point, index) => {
-          const pointDescription = 'Y = ' + point.y.toFixed(3) + 'm\nX = ' + point.x.toFixed(3) + 'm\nH = ' + point.z.toFixed(3) + 'm';
+          const jtskCoordinates = etrs2jtsk(point.b, point.l, point.h);
+          const pointDescription = 'Y = ' + jtskCoordinates.Y.toFixed(3) + 'm\nX = ' + jtskCoordinates.X.toFixed(3)+ 'm\nH = ' + jtskCoordinates.Hbpv.toFixed(3) + 'm';
           return (
             <Marker
               key={index}
               coordinate={{ latitude: point.b, longitude: point.l }}>
-              <Callout>
+                <Callout>
                 <CustomCallout
                   title={point.title}
                   description={pointDescription}
+                  pointIndex={index}           
                 />
               </Callout>
             </Marker>
           );
         })}
-        </MapView>
+      </MapView>
     </SafeAreaView>
   );
 };

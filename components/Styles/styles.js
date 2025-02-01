@@ -296,10 +296,11 @@ export const styles = {
     height: '100%',
   },
   mapCustomCallout: {
-    width: 120, 
-    height: 80, 
+    width: 150, 
+    height: 125, 
     backgroundColor: 'white', 
-    borderRadius: 10
+    borderRadius: 10,
+    alignItems: 'center',
   },
   icon: {
     width: 30,

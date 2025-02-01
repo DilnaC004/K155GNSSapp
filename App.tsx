@@ -191,7 +191,7 @@ export default function App(): JSX.Element {
             />
           )}
           {modalType.placing && <Placing nmeaParsed={nmeaParsed} />}
-          {modalType.map && <Map />}
+          {modalType.map && <Map updateModalType={updateModalType}/>}
           {modalType.skyplot && <Skyplot satsVisible={nmeaParsed.satsVisible}/>}
           {modalType.learn && <Learn />}
           {modalType.calculate && <Calculate />}
