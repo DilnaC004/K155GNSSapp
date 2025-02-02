@@ -129,8 +129,8 @@ export const Placing = ({ nmeaParsed, placingSettings, setPlacingSettings }) => 
   };
 
   return (
-    <View style={styles.placingContainer}>
-      <Text style={styles.title}>Vytyčení</Text>
+    <View style={styles.nastContainer}>
+      <Text style={styles.headline}>Vytyčení</Text>
       <Text style={styles.text}>Zvol bod z aktivní zakazky:</Text>
       <FlatListPoint
         projectSettings={data.projectSettings}

@@ -26,7 +26,8 @@ export default Point = () => {
   }, [pointSettings]);
 
   return (
-    <View>
+    <View style={styles.nastContainer}>
+      <Text style={styles.headline}>Nastavení přijímače</Text>
       <Text style={styles.title}>Fázové centrum [m]</Text>
       <TextInput
         style={styles.input}

@@ -191,8 +191,8 @@ export default Bluetooth = ({ getNmeaRead, requestPermissions, scanForPeripheral
   }, [bluetoothSettings.isEnabled]);
 
   return (
-<View>
-  <Text style={styles.title}>Nastavení Bluetooth připojení:</Text>
+<View style={styles.nastContainer}>
+  <Text style={styles.headline}>Nastavení Bluetooth připojení</Text>
   <Text style={styles.tableData}>{switchConnect}</Text>
   <Switch
     trackColor={{ false: '#767577', true: '#81b0ff' }}

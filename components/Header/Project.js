@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { View, Button, Dimensions } from 'react-native';
+import { View, Button, Dimensions, Text } from 'react-native';
 import { DataContext } from '../Functions/DataContext';
 import { styles } from '../Styles/styles';
 import Snackbar from 'react-native-snackbar';
@@ -48,6 +48,7 @@ export default Project = ({ clearStorage }) => {
 
   return (
     <View style={styles.nastContainer}>
+      <Text style={styles.headline}>Zakázky</Text>
       <ProjectDescription projectSettings={projectSettings} />
       <View style={styles.buttonContainer}>
         <Button

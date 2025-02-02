@@ -11,15 +11,6 @@ const Learn = ({ }) => {
     setShownTask(0);
   };
 
-  useEffect(() => {
-    Snackbar.show({
-      text: "Funkce je ve vyvoji.",
-      duration: Snackbar.LENGTH_SHORT,
-      textColor: 'red',
-      marginBottom: 5,
-    });
-  }, []);
-
   return (
     <View style={styles.nastContainer}>
       <Text style={styles.headline}>Zadání úloh předmětu 155VGP</Text>

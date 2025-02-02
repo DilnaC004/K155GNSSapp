@@ -13,7 +13,7 @@ const Skyplot = ({ satsVisible }) => {
 
   return (
     <View style={styles.skyplotContainer}>
-      <Text style={styles.title}>Skyplot:</Text>
+      <Text style={styles.headline}>Skyplot</Text>
       <Svg width={plotSize} height={plotSize}>
         {/* outer circle */}
         <Circle

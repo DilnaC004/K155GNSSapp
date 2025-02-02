@@ -213,7 +213,7 @@ const Ntrip = ({ getRtcmNtrip, lastGGA, startSendingNtripData, connectedDevice, 
 
   return (
     <View style={styles.nastContainer}>
-      <Text style={styles.title}>Nastavení NTRIP připojení</Text>
+      <Text style={styles.headline}>Nastavení NTRIP připojení</Text>
       <Text>IP adresa NTRIP serveru:</Text>
       <TextInput
         style={styles.input}
