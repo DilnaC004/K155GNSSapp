@@ -53,7 +53,7 @@ const Map = ({ updateModalType, placingSettings, setPlacingSettings }) => {
       <View style={styles.mapCustomCallout}>
         <Text style={[styles.title, { fontWeight: 'bold' }]}>{title}</Text>
         <Text style={styles.title}>{description}</Text>
-        <Button title='Vytyc bod' onPress={() => handlePlacingButton(pointIndex)}></Button>
+        <Button title='Vytyč bod' onPress={() => handlePlacingButton(pointIndex)}></Button>
       </View>
     );
   };
