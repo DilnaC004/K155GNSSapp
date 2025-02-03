@@ -1,4 +1,4 @@
-import React, {useContext, useEffect} from 'react';
+import React, { useContext, useEffect, useCallback } from 'react';
 import {
   FlatList,
   View,
@@ -12,13 +12,13 @@ import {
 } from 'react-native';
 import IconMaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { DataContext } from '../../Functions/DataContext';
-import {styles} from '../../Styles/styles';
+import { styles } from '../../Styles/styles';
 
-const ItemProject = ({item, onPress, backgroundColor, textColor, textWeight}) => (
+const ItemProject = ({ item, onPress, backgroundColor, textColor, textWeight }) => (
   <TouchableOpacity
     onPress={onPress}
-    style={[styles.boldText, {backgroundColor}]}>
-    <Text style={[styles.title, {color: textColor, fontWeight: textWeight}]}>
+    style={[styles.boldText, { backgroundColor }]}>
+    <Text style={[styles.title, { color: textColor, fontWeight: textWeight }]}>
       {item.title}
     </Text>
   </TouchableOpacity>
@@ -27,9 +27,21 @@ const ItemProject = ({item, onPress, backgroundColor, textColor, textWeight}) =>
 export default FlatListProject = ({
   projectSettings,
   updateProjectSettings,
+  setPlacingSettings
 }) => {
-  const { data, updateData} = useContext(DataContext);
-  const renderItemProject = ({item}) => {
+  const { data, updateData } = useContext(DataContext);
+
+  const updatePlacingSettings = useCallback(
+    (newSettings) => {
+      setPlacingSettings((prevSettings) => ({
+        ...prevSettings,
+        ...newSettings,
+      }));
+    },
+    [setPlacingSettings]
+  );
+
+  const renderItemProject = ({ item }) => {
     const weight = item.title === projectSettings.title ? 'bold' : 'normal';
     const color = item.title === projectSettings.title ? 'green' : 'black';
 
@@ -38,6 +50,9 @@ export default FlatListProject = ({
         <ItemProject
           item={item}
           onPress={() => {
+            updatePlacingSettings({
+              selectedPoint: -1
+            });
             updateProjectSettings({
               projectPointCount: item.pointCount,
               date: item.date,
@@ -68,11 +83,11 @@ export default FlatListProject = ({
     const updatedData = data.projects.filter(
       project => project.title !== projectTitleToDelete,
     );
-    updateData({projects: updatedData});
+    updateData({ projects: updatedData });
   };
 
   return (
-    <View style={{ height: Dimensions.get("window").height/3 }}>
+    <View style={{ height: Dimensions.get("window").height / 3 }}>
       <FlatList
         data={data.projects}
         renderItem={renderItemProject}

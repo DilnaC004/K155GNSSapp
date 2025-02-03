@@ -184,7 +184,7 @@ export default function App(): JSX.Element {
             getLastGGA={getLastGGA}
           />}
           {modalType.ntrip && <Ntrip getRtcmNtrip={getRtcmNtrip} lastGGA={lastGGA} startSendingNtripData={startSendingNtripData} connectedDevice={connectedDevice}/>}
-          {modalType.project && <Project clearStorage={clearDataStorage} />}
+          {modalType.project && <Project clearStorage={clearDataStorage} setPlacingSettings={setPlacingSettings} />}
           {modalType.point && <Point />}
           {modalType.measurement && (
             <Measurement

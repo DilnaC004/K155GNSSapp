@@ -28,14 +28,14 @@ import Svg, { Circle, Line } from 'react-native-svg';
 export const Placing = ({ nmeaParsed, placingSettings, setPlacingSettings }) => {
   const { data, updateData } = useContext(DataContext);
   const updatePlacingSettings = useCallback(
-      (newSettings) => {
-        setPlacingSettings((prevSettings) => ({
-          ...prevSettings,
-          ...newSettings,
-        }));
-      },
-      [setPlacingSettings]
-    );
+    (newSettings) => {
+      setPlacingSettings((prevSettings) => ({
+        ...prevSettings,
+        ...newSettings,
+      }));
+    },
+    [setPlacingSettings]
+  );
 
   // Compass
   const [heading, setHeading] = useState(0);
@@ -57,13 +57,14 @@ export const Placing = ({ nmeaParsed, placingSettings, setPlacingSettings }) => 
   }, [data.projects, data.projectSettings.projectId]);
 
   useEffect(() => {
-    if (placingSettings.points && nmeaParsed) {
+    if (placingSettings.points && nmeaParsed && placingSettings.selectedPoint != -1) {
       calculate();
     }
   }, [placingSettings.selectedPoint, nmeaParsed, placingSettings.points, updatePlacingSettings]);
 
   const calculate = useCallback(() => {
-    const point = placingSettings.points[placingSettings.selectedPoint];
+    // Have to use the data directly because useEffect triggers late
+    const point = data.projects[data.projectSettings.projectId].points[placingSettings.selectedPoint];
     const positionJtsk = etrs2jtsk(nmeaParsed.lat, nmeaParsed.lon, nmeaParsed.alt);
     const placingJtsk = {
       X: point.x,
@@ -87,16 +88,16 @@ export const Placing = ({ nmeaParsed, placingSettings, setPlacingSettings }) => 
   };
 
   const precisePlacingPlot = (distance) => {
-    const plotSize = Dimensions.get("window").width*2/3;
-    const center = plotSize/2;
+    const plotSize = Dimensions.get("window").width * 2 / 3;
+    const center = plotSize / 2;
 
     var M, circleCount = 0;
 
     if (distance > 5) {
-      M = plotSize/20;
+      M = plotSize / 20;
       circleCount = 10;
     } else {
-      M = plotSize/10;
+      M = plotSize / 10;
       circleCount = 5;
     }
 
@@ -113,7 +114,7 @@ export const Placing = ({ nmeaParsed, placingSettings, setPlacingSettings }) => 
           <Circle cx={positionX} cy={positionY} r={5} fill="green" />
 
           {/* Equidistant circles */}
-          {[...Array(circleCount+1)].map((_, i) => (
+          {[...Array(circleCount + 1)].map((_, i) => (
             <React.Fragment key={i}>
               <Circle cx={center} cy={center} r={i * M} stroke="#ccc" strokeWidth={1} fill="none" />
             </React.Fragment>
@@ -123,7 +124,7 @@ export const Placing = ({ nmeaParsed, placingSettings, setPlacingSettings }) => 
           <Line x1={center} y1={0} x2={center} y2={plotSize} stroke="#ccc" strokeWidth={1} />
           <Line x1={0} y1={center} x2={plotSize} y2={center} stroke="#ccc" strokeWidth={1} />
           <Line x1={positionX} y1={positionY} x2={center} y2={center} stroke="#ccc" strokeWidth={1} />
-          </Svg>
+        </Svg>
       </View>
     );
   };
@@ -137,22 +138,29 @@ export const Placing = ({ nmeaParsed, placingSettings, setPlacingSettings }) => 
         updatePlacingSettings={click}
         placing={true}
       />
-      <View style={styles.container}>
-        <Text style={styles.title}>Vzdálenost: {placingSettings.dist.toFixed(3)} m</Text>
-        <Text style={styles.title}>Prevýšení: {placingSettings.heightDelta.toFixed(3)} m</Text>
-        <Text style={styles.title}>Směr: {placingSettings.heading.toFixed(0)}˚</Text>
-        <Text style={styles.title}>delta Y: {placingSettings.deltaY.toFixed(3)} m</Text>
-        <Text style={styles.title}>delta X: {placingSettings.deltaX.toFixed(3)} m</Text>
+      {(placingSettings.selectedPoint != -1) && ( // If no point is selected, do not render the calculation
+        <View style={styles.container}>
+          <Text style={styles.title}>Vzdálenost: {placingSettings.dist.toFixed(3)} m</Text>
+          <Text style={styles.title}>Prevýšení: {placingSettings.heightDelta.toFixed(3)} m</Text>
+          <Text style={styles.title}>Směr: {placingSettings.heading.toFixed(0)}˚</Text>
+          <Text style={styles.title}>delta Y: {placingSettings.deltaY.toFixed(3)} m</Text>
+          <Text style={styles.title}>delta X: {placingSettings.deltaX.toFixed(3)} m</Text>
 
-        {placingSettings.dist < 10 ? precisePlacingPlot(placingSettings.dist) : (
-          <View style={styles.compassWrapper}>
-            <Image
-              source={require('../Images/arrow.png')}
-              style={[styles.arrow, { transform: [{ rotate: (placingSettings.heading == null ? 0 : placingSettings.heading - heading) + 'deg' }] }]}
-            />
-          </View>
-        )}
-      </View>
+          {placingSettings.dist < 10 ? precisePlacingPlot(placingSettings.dist) : (
+            <View style={styles.compassWrapper}>
+              <Image
+                source={require('../Images/arrow.png')}
+                style={[styles.arrow, { transform: [{ rotate: (placingSettings.heading == null ? 0 : placingSettings.heading - heading) + 'deg' }] }]}
+              />
+            </View>
+          )}
+        </View>
+      )}
+      {(placingSettings.selectedPoint == -1) && (
+        <View style={styles.container}>
+          <Text style={styles.headline}>Zvol bod k vytyčení.</Text>
+        </View>
+      )}
     </View>
   );
 };

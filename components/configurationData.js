@@ -182,7 +182,7 @@ export default configurationData = {
   },
   placingSettings: {
     points: null,
-    selectedPoint: 0,
+    selectedPoint: -1,
     dist: 0,
     heading: 0,
     heightDelta: 0,

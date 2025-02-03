@@ -11,7 +11,7 @@ import ProjectDescription from './ProjectComponents/ProjectDescription';
 import ExportModal from './ProjectComponents/ExportModal';
 import ImportModal from './ProjectComponents/ImportModal';
 
-export default Project = ({ clearStorage }) => {
+export default Project = ({ clearStorage, setPlacingSettings }) => {
   const { data, updateData } = useContext(DataContext);
   const [pointSettings, setPointSettings] = useState(data.pointSettings);
   const updatePointSettings = newSettings => {
@@ -74,6 +74,7 @@ export default Project = ({ clearStorage }) => {
         <FlatListProject
           projectSettings={projectSettings}
           updateProjectSettings={updateProjectSettings}
+          setPlacingSettings={setPlacingSettings}
         />
       )}
       {projectSettings.showCreateProject && ( // conditional rendering based on the new piece of state
@@ -145,7 +146,6 @@ export default Project = ({ clearStorage }) => {
               updateProjectSettings({
                 showImportModal: !projectSettings.showImportModal,
               });
-              console.log("Hodnota Import Modal: " , projectSettings.showImportModal);
             } else {
               Snackbar.show({
                 text: 'Zvol zakázku!',
