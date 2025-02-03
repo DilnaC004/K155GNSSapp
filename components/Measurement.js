@@ -233,6 +233,7 @@ export default Measurement = ({nmeaParsed, rawMeasurement}) => {
 
   return (
     <View style={styles.mereniContainer}>
+      <Text style={styles.headline}>Měření</Text>
       <TextInput
         style={styles.input}
         value={measurementSettings.nazev.toString()}

@@ -48,7 +48,7 @@ export default Project = ({ clearStorage }) => {
 
   return (
     <View style={styles.nastContainer}>
-      <Text style={styles.headline}>Zakázky</Text>
+      <Text style={styles.headline}>Správa dat</Text>
       <ProjectDescription projectSettings={projectSettings} />
       <View style={styles.buttonContainer}>
         <Button
