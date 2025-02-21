@@ -16,51 +16,52 @@ import { DataContext } from './components/Functions/DataContext';
 import configurationData from './components/configurationData';
 import useBLE from './components/hooks/useBLE';
 import base64 from 'react-native-base64';
+import useWebSockets from './components/hooks/useWebSockets';
 
 export default function App(): JSX.Element {
   const [nmeaParsed, setNmeaParsed] = useState({
-    "alt": 390.506, 
-    "errors": 4, 
-    "fix": "3D", 
-    "hdop": 0.93, 
-    "lat": 49.48724413833333, 
-    "lon": 16.672643175, 
-    "pdop": 1.5, 
-    "processed": 228, 
-    "satsActive": [28, 16, 11, 14, 33], 
+    "alt": 390.506,
+    "errors": 4,
+    "fix": "3D",
+    "hdop": 0.93,
+    "lat": 49.48724413833333,
+    "lon": 16.672643175,
+    "pdop": 1.5,
+    "processed": 228,
+    "satsActive": [28, 16, 11, 14, 33],
     "satsVisible": [
-      {"azimuth": 260, "elevation": 87, "prn": 2, "snr": 41, "status": "tracking"}, 
-      {"azimuth": 257, "elevation": 46, "prn": 3, "snr": 39, "status": "tracking"}, 
-      {"azimuth": 59, "elevation": 42, "prn": 4, "snr": 24, "status": "tracking"}, 
-      {"azimuth": 192, "elevation": 18, "prn": 5, "snr": 42, "status": "tracking"}, 
-      {"azimuth": 94, "elevation": 57, "prn": 6, "snr": null, "status": "in view"}, 
-      {"azimuth": 183, "elevation": 19, "prn": 8, "snr": 32, "status": "tracking"}, 
-      {"azimuth": 142, "elevation": 58, "prn": 9, "snr": 42, "status": "tracking"}, 
-      {"azimuth": 69, "elevation": 6, "prn": 10, "snr": null, "status": "in view"}, 
-      {"azimuth": 115, "elevation": 39, "prn": 11, "snr": 19, "status": "tracking"}, 
-      {"azimuth": 276, "elevation": 7, "prn": 14, "snr": 22, "status": "tracking"}, 
-      {"azimuth": 314, "elevation": 26, "prn": 17, "snr": 22, "status": "tracking"}, 
-      {"azimuth": 327, "elevation": 4, "prn": 19, "snr": null, "status": "in view"}, 
-      {"azimuth": 132, "elevation": 72, "prn": 21, "snr": 45, "status": "tracking"}, 
-      {"azimuth": 298, "elevation": 12, "prn": 22, "snr": 24, "status": "tracking"}, 
-      {"azimuth": 341, "elevation": 6, "prn": 27, "snr": null, "status": "in view"}, 
-      {"azimuth": 96, "elevation": 17, "prn": 28, "snr": null, "status": "in view"}, 
-      {"azimuth": 127, "elevation": 5, "prn": 31, "snr": 20, "status": "tracking"}, 
-      {"azimuth": 52, "elevation": 33, "prn": 32, "snr": 22, "status": "tracking"}, 
-      {"azimuth": 171, "elevation": 33, "prn": 36, "snr": 42, "status": "tracking"}, 
-      {"azimuth": 134, "elevation": 23, "prn": 40, "snr": 32, "status": "tracking"}, 
-      {"azimuth": 108, "elevation": 6, "prn": 41, "snr": null, "status": "in view"}, 
-      {"azimuth": 195, "elevation": 32, "prn": 49, "snr": 44, "status": "tracking"}, 
-      {"azimuth": 37, "elevation": 0, "prn": 66, "snr": 5, "status": "tracking"}, 
-      {"azimuth": 41, "elevation": 49, "prn": 67, "snr": 28, "status": "tracking"}, 
-      {"azimuth": 201, "elevation": 75, "prn": 68, "snr": 47, "status": "tracking"}, 
-      {"azimuth": 213, "elevation": 23, "prn": 69, "snr": 34, "status": "tracking"}], 
-    "speed": 0.112972, 
-    "time": "2024-08-17T09:21:29.000Z", 
-    "track": null, 
+      { "azimuth": 260, "elevation": 87, "prn": 2, "snr": 41, "status": "tracking" },
+      { "azimuth": 257, "elevation": 46, "prn": 3, "snr": 39, "status": "tracking" },
+      { "azimuth": 59, "elevation": 42, "prn": 4, "snr": 24, "status": "tracking" },
+      { "azimuth": 192, "elevation": 18, "prn": 5, "snr": 42, "status": "tracking" },
+      { "azimuth": 94, "elevation": 57, "prn": 6, "snr": null, "status": "in view" },
+      { "azimuth": 183, "elevation": 19, "prn": 8, "snr": 32, "status": "tracking" },
+      { "azimuth": 142, "elevation": 58, "prn": 9, "snr": 42, "status": "tracking" },
+      { "azimuth": 69, "elevation": 6, "prn": 10, "snr": null, "status": "in view" },
+      { "azimuth": 115, "elevation": 39, "prn": 11, "snr": 19, "status": "tracking" },
+      { "azimuth": 276, "elevation": 7, "prn": 14, "snr": 22, "status": "tracking" },
+      { "azimuth": 314, "elevation": 26, "prn": 17, "snr": 22, "status": "tracking" },
+      { "azimuth": 327, "elevation": 4, "prn": 19, "snr": null, "status": "in view" },
+      { "azimuth": 132, "elevation": 72, "prn": 21, "snr": 45, "status": "tracking" },
+      { "azimuth": 298, "elevation": 12, "prn": 22, "snr": 24, "status": "tracking" },
+      { "azimuth": 341, "elevation": 6, "prn": 27, "snr": null, "status": "in view" },
+      { "azimuth": 96, "elevation": 17, "prn": 28, "snr": null, "status": "in view" },
+      { "azimuth": 127, "elevation": 5, "prn": 31, "snr": 20, "status": "tracking" },
+      { "azimuth": 52, "elevation": 33, "prn": 32, "snr": 22, "status": "tracking" },
+      { "azimuth": 171, "elevation": 33, "prn": 36, "snr": 42, "status": "tracking" },
+      { "azimuth": 134, "elevation": 23, "prn": 40, "snr": 32, "status": "tracking" },
+      { "azimuth": 108, "elevation": 6, "prn": 41, "snr": null, "status": "in view" },
+      { "azimuth": 195, "elevation": 32, "prn": 49, "snr": 44, "status": "tracking" },
+      { "azimuth": 37, "elevation": 0, "prn": 66, "snr": 5, "status": "tracking" },
+      { "azimuth": 41, "elevation": 49, "prn": 67, "snr": 28, "status": "tracking" },
+      { "azimuth": 201, "elevation": 75, "prn": 68, "snr": 47, "status": "tracking" },
+      { "azimuth": 213, "elevation": 23, "prn": 69, "snr": 34, "status": "tracking" }],
+    "speed": 0.112972,
+    "time": "2024-08-17T09:21:29.000Z",
+    "track": null,
     "vdop": 1.18,
     "quality": "float",     // comment out before testing bluetooth
-    },
+  },
   );
   const [rawMeasurement, setRawMeasurement] = useState('');
   const [lastGGA, setLastGGA] = useState('');
@@ -92,23 +93,24 @@ export default function App(): JSX.Element {
       checkParsedLon = parsed.lon;
     }
   };
-  
-  const getLastGGA= (lastGGA: string) => {
+
+  const getLastGGA = (lastGGA: string) => {
     setLastGGA(lastGGA);
   };
 
-  const getRawMeasurement= (data: string) => {
+  const getRawMeasurement = (data: string) => {
     setRawMeasurement(data);
   };
 
   const {
-    requestPermissions,
-    scanForPeripherals,
+    createConnection,
+    messages,
+    sendMessage,
     connectedDevice,
     rtcmNtrip,
     setRtcmNtrip,
     startSendingNtripData,
-  } = useBLE(getNmeaRead, getLastGGA, getRawMeasurement);
+  } = useWebSockets(getNmeaRead, getLastGGA, getRawMeasurement);
 
   const valueContext = { data, updateData };
   const getRtcmNtrip = (rtcmNtrip: Buffer) => {
@@ -117,7 +119,7 @@ export default function App(): JSX.Element {
     setRtcmNtrip(encodedData);
     //console.log("Ntrip - rtcm -", rtcmNtrip);
     console.log(encodedData);
-};
+  };
 
 
   const [modalType, setmodalType] = useState({
@@ -169,14 +171,15 @@ export default function App(): JSX.Element {
           updateModalType={updateModalType}
         />
         <View>
-          {modalType.communication && <Communication 
-            getNmeaRead={getNmeaRead} 
-            requestPermissions={requestPermissions}
-            scanForPeripherals={scanForPeripherals}
+          {modalType.communication && <Communication
+            getNmeaRead={getNmeaRead}
             rtcmNtrip={rtcmNtrip}
             getLastGGA={getLastGGA}
+            createConnection={createConnection}
+            messages={messages}
+            sendMessage={sendMessage}
           />}
-          {modalType.ntrip && <Ntrip getRtcmNtrip={getRtcmNtrip} lastGGA={lastGGA} startSendingNtripData={startSendingNtripData} connectedDevice={connectedDevice}/>}
+          {modalType.ntrip && <Ntrip getRtcmNtrip={getRtcmNtrip} lastGGA={lastGGA} startSendingNtripData={startSendingNtripData} connectedDevice={connectedDevice} />}
           {modalType.project && <Project clearStorage={clearDataStorage} setPlacingSettings={setPlacingSettings} />}
           {modalType.point && <Point />}
           {modalType.measurement && (
@@ -186,8 +189,8 @@ export default function App(): JSX.Element {
             />
           )}
           {modalType.placing && <Placing nmeaParsed={nmeaParsed} placingSettings={placingSettings} setPlacingSettings={setPlacingSettings} />}
-          {modalType.map && <Map updateModalType={updateModalType} placingSettings={placingSettings} setPlacingSettings={setPlacingSettings}/>}
-          {modalType.skyplot && <Skyplot satsVisible={nmeaParsed.satsVisible}/>}
+          {modalType.map && <Map updateModalType={updateModalType} placingSettings={placingSettings} setPlacingSettings={setPlacingSettings} />}
+          {modalType.skyplot && <Skyplot satsVisible={nmeaParsed.satsVisible} />}
           {modalType.learn && <Learn />}
           {modalType.calculate && <Calculate />}
         </View>

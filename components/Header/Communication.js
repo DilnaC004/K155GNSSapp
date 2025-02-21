@@ -7,13 +7,14 @@ import { styles } from '../Styles/styles';
 import NmeaViewer from './NmeaViewer';
 import GPS from 'gps';
 
-export default Communication = ({ getNmeaRead, requestPermissions, scanForPeripherals, rtcmNtrip, getLastGGA }) => {
+export default Communication = ({ getNmeaRead, createConnection, messages, sendMessage, rtcmNtrip, getLastGGA }) => {
   const { data, updateData } = useContext(DataContext);
   const [intervalId, setIntervalId] = useState(0);
   const [connectionSettings, setConnectionSettings] = useState(
     data.connectionSettings,
   );
   const gps = new GPS();
+  const defaultUrl = 'ws://localhost:8080';
 
   const updateConnectionSettings = newSettings => {
     const updatedSettings = { ...connectionSettings, ...newSettings };
@@ -28,7 +29,7 @@ export default Communication = ({ getNmeaRead, requestPermissions, scanForPeriph
         title={connectionSettings.isEnabled ? 'Stop' : 'Start'}
         onPress={() => {
           if (!connectionSettings.isEnabled) {
-            // setupConnection();
+            createConnection(defaultUrl);
             console.log("Setting up connection.");
             updateConnectionSettings({ isEnabled: !connectionSettings.isEnabled });
           } else {
