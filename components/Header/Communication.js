@@ -7,7 +7,7 @@ import { styles } from '../Styles/styles';
 import NmeaViewer from './NmeaViewer';
 import GPS from 'gps';
 
-export default Bluetooth = ({ getNmeaRead, requestPermissions, scanForPeripherals, rtcmNtrip, getLastGGA }) => {
+export default Communication = ({ getNmeaRead, requestPermissions, scanForPeripherals, rtcmNtrip, getLastGGA }) => {
   const { data, updateData } = useContext(DataContext);
   const [intervalId, setIntervalId] = useState(0);
   const [connectionSettings, setConnectionSettings] = useState(

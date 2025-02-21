@@ -61,7 +61,7 @@ export default Header = ({ nmeaParsed, modalType, updateModalType }) => {
       point: false,
       placing: false,
       skyplot: false,
-      bluetooth: false,
+      communication: false,
       ntrip: false,
       project: false,
       map: false,
@@ -76,15 +76,15 @@ export default Header = ({ nmeaParsed, modalType, updateModalType }) => {
       <TouchableOpacity
         onPress={() => {
           closeAll();
-          if (!modalType.bluetooth) {
+          if (!modalType.communication) {
             updateModalType({
-              bluetooth: true,
+              communication: true,
               measurement: false,
             });
           }
         }}>
         <Image
-          source={require('./Images/bluetooth.png')}
+          source={require('./Images/communication.png')}
           style={[styles.icon,
             { borderColor: connectionStatus }
             ]}

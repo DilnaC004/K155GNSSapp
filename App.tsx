@@ -4,7 +4,7 @@ import useAsyncStorage from './components/hooks/useAsyncStorage';
 import Header from './components/Header';
 import Measurement from './components/Measurement';
 import Ntrip from './components/Header/Ntrip';
-import Bluetooth from './components/Header/Bluetooth';
+import Communication from './components/Header/Communication';
 import Project from './components/Header/Project';
 import Skyplot from './components/Header/Skyplot';
 import Point from './components/Header/Point';
@@ -104,10 +104,7 @@ export default function App(): JSX.Element {
   const {
     requestPermissions,
     scanForPeripherals,
-    connectToDevice,
-    allDevices,
     connectedDevice,
-    disconnectFromDevice,
     rtcmNtrip,
     setRtcmNtrip,
     startSendingNtripData,
@@ -127,7 +124,7 @@ export default function App(): JSX.Element {
     point: false,
     placing: false,
     skyplot: false,
-    bluetooth: false,
+    communication: false,
     ntrip: false,
     project: false,
     map: false,
@@ -172,14 +169,10 @@ export default function App(): JSX.Element {
           updateModalType={updateModalType}
         />
         <View>
-          {modalType.bluetooth && <Bluetooth 
+          {modalType.communication && <Communication 
             getNmeaRead={getNmeaRead} 
             requestPermissions={requestPermissions}
-            scanForPeripherals={scanForPeripherals} 
-            connectToDevice={connectToDevice} 
-            allDevices={allDevices} 
-            connectedDevice={connectedDevice} 
-            disconnectFromDevice={disconnectFromDevice}
+            scanForPeripherals={scanForPeripherals}
             rtcmNtrip={rtcmNtrip}
             getLastGGA={getLastGGA}
           />}
