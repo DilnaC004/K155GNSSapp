@@ -146,10 +146,9 @@ export default configurationData = {
     showExportModal: false,
     showImportModal: false,
   },
-  bluetoothSettings: {
+  connectionSettings: {
     isEnabled: false,
     isConnected: false,
-    devices: [],
     connectedDeviceClassic: null,
   },
   measurementSettings: {

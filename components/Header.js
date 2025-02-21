@@ -7,7 +7,7 @@ import { styles } from './Styles/styles';
 export default Header = ({ nmeaParsed, modalType, updateModalType }) => {
   const { data, updateData } = useContext(DataContext);
   const [coordStatus, setCoordStatus] = useState('black');
-  const [bluetoothStatus, setBluetoothStatus] = useState('black');
+  const [connectionStatus, setConnectionStatus] = useState('black');
   const [ntripStatus, setNtripStatus] = useState('black');
 
   useEffect(() => {
@@ -43,10 +43,10 @@ export default Header = ({ nmeaParsed, modalType, updateModalType }) => {
         setCoordStatus('black');
         break;
     }
-    if (!data.bluetoothSettings.isConnected) {
-      setBluetoothStatus("black")
+    if (!data.connectionSettings.isConnected) {
+      setConnectionStatus("black")
     } else {
-      setBluetoothStatus("orange")
+      setConnectionStatus("orange")
     }
     if (!data.ntripSettings.ntripConnect) {
       setNtripStatus("black")
@@ -54,7 +54,7 @@ export default Header = ({ nmeaParsed, modalType, updateModalType }) => {
       setNtripStatus("orange")
     }
 
-  }, [nmeaParsed, data.bluetoothSettings.isConnected, data.ntripSettings.ntripConnect]);
+  }, [nmeaParsed, data.connectionSettings.isConnected, data.ntripSettings.ntripConnect]);
 
   const closeAll = () => {
     updateModalType({
@@ -86,7 +86,7 @@ export default Header = ({ nmeaParsed, modalType, updateModalType }) => {
         <Image
           source={require('./Images/bluetooth.png')}
           style={[styles.icon,
-            { borderColor: bluetoothStatus }
+            { borderColor: connectionStatus }
             ]}
         />
 
