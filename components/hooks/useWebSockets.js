@@ -4,10 +4,9 @@ import { PermissionsAndroid, Platform } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import Snackbar from 'react-native-snackbar';
 import GPS from 'gps';
+import { NetworkInfo } from 'react-native-network-info';
 
-function useCommunication(getNmeaRead, getLastGGA, getRawMeasurement) {
-  const [connectedDevice, setConnectedDevice] = useState(null);
-  const [isConnected, setIsConnected] = useState(false);
+function useCommunication(getNmeaRead, getLastGGA, getRawMeasurement, connectionSettings, setConnectionSettings) {
   const [rtcmNtrip, setRtcmNtrip] = useState('');
   let buffer = '';  // Buffer to store partial data
   const gps = new GPS();
@@ -15,21 +14,49 @@ function useCommunication(getNmeaRead, getLastGGA, getRawMeasurement) {
   const [socket, setSocket] = useState(null);
   const [messages, setMessages] = useState([]);
 
-  const createConnection = (url) => {
-    const ws = new WebSocket(url);
+  const updateConnectionSettings = (newSettings) => {
+    setConnectionSettings((prevSettings) => ({
+      ...prevSettings,
+      ...newSettings,
+    }));
+  };
+
+  const getPublicIP = async () => {
+    try {
+        const response = await fetch('https://api.ipify.org?format=json');
+        const data = await response.json();
+        console.log('Public IP:', data.ip);
+        return data.ip;
+    } catch (error) {
+        console.error('Error fetching public IP:', error);
+    }
+  };
+
+  const createConnection = async () => {
+    const ip = await getPublicIP();
+    if (!ip) {
+        console.error('Failed to get public IP');
+        return;
+    }
+
+    const wsUrl = `ws://${ip}:8080`;
+    
+    const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
-      setIsConnected(true);
+      updateConnectionSettings({ isEnabled: true });
       console.log('WebSocket connected');
     };
 
     ws.onmessage = (event) => {
-      setMessages((prevMessages) => [...prevMessages, event.data]);
+      // Send the message to parsing
+      onNmeaUpdate(event.data);
+      //setMessages((prevMessages) => [...prevMessages, event.data]);
       console.log('Message received:', event.data);
     };
 
     ws.onclose = () => {
-      setIsConnected(false);
+      updateConnectionSettings({ isEnabled: false });
       console.log('WebSocket disconnected');
     };
 
@@ -44,8 +71,17 @@ function useCommunication(getNmeaRead, getLastGGA, getRawMeasurement) {
     };
   };
 
+  const closeConnection = () => {
+    if (socket) {
+      socket.close();
+      setSocket(null);
+      updateConnectionSettings({ isEnabled: false });
+      console.log('WebSocket connection closed');
+    }
+  };
+
   const sendMessage = (message) => {
-    if (socket && isConnected) {
+    if (socket && connectionSettings.isConnected) {
       socket.send(message);
       console.log('Message sent:', message);
     } else {
@@ -126,18 +162,14 @@ function useCommunication(getNmeaRead, getLastGGA, getRawMeasurement) {
   // };
 
   // DIfferent aproach, uses the checksum provided in the sentences to verify the legnth, throws less errors
-  const onNmeaUpdate = (error, characteristic) => {
-    if (error) {
-      console.log('Error:', error);
-      return;
-    } else if (!characteristic?.value) {
+  const onNmeaUpdate = (nmeaString) => {
+    if (!nmeaString) {
       console.log('No Data was received');
       return;
     }
 
-    // Decode the base64-encoded BLE characteristic value
-    const rawData = base64.decode(characteristic.value);
-    buffer += rawData;
+    // Add the new data to the buffer
+    buffer += nmeaString;
     let startIdx;
 
     // Function to calculate the checksum
@@ -234,17 +266,18 @@ function useCommunication(getNmeaRead, getLastGGA, getRawMeasurement) {
 
   // Watch for changes to rtcmNtrip and send data when it changes
   useEffect(() => {
-    if (connectedDevice && rtcmNtrip) {
+    if (socket && rtcmNtrip) {
       //console.log(rtcmNtrip);
-      startSendingNtripData(connectedDevice);
+      startSendingNtripData(socket);
     }
   }, [rtcmNtrip]);
 
   return {
     createConnection,
+    closeConnection,
     messages,
     sendMessage,
-    connectedDevice,
+    socket,
     rtcmNtrip,
     setRtcmNtrip,
     startSendingNtripData,

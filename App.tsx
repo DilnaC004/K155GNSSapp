@@ -102,15 +102,18 @@ export default function App(): JSX.Element {
     setRawMeasurement(data);
   };
 
+  const [connectionSettings, setConnectionSettings] = useState(data.connectionSettings);
+
   const {
     createConnection,
+    closeConnection,
     messages,
     sendMessage,
-    connectedDevice,
+    socket,
     rtcmNtrip,
     setRtcmNtrip,
     startSendingNtripData,
-  } = useWebSockets(getNmeaRead, getLastGGA, getRawMeasurement);
+  } = useWebSockets(getNmeaRead, getLastGGA, getRawMeasurement, connectionSettings, setConnectionSettings);
 
   const valueContext = { data, updateData };
   const getRtcmNtrip = (rtcmNtrip: Buffer) => {
@@ -176,10 +179,12 @@ export default function App(): JSX.Element {
             rtcmNtrip={rtcmNtrip}
             getLastGGA={getLastGGA}
             createConnection={createConnection}
+            closeConnection={closeConnection}
+            connectionSettings={connectionSettings}
             messages={messages}
             sendMessage={sendMessage}
           />}
-          {modalType.ntrip && <Ntrip getRtcmNtrip={getRtcmNtrip} lastGGA={lastGGA} startSendingNtripData={startSendingNtripData} connectedDevice={connectedDevice} />}
+          {modalType.ntrip && <Ntrip getRtcmNtrip={getRtcmNtrip} lastGGA={lastGGA} startSendingNtripData={startSendingNtripData} socket={socket} />}
           {modalType.project && <Project clearStorage={clearDataStorage} setPlacingSettings={setPlacingSettings} />}
           {modalType.point && <Point />}
           {modalType.measurement && (
