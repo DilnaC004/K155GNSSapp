@@ -15,6 +15,14 @@ export default Communication = ({ getNmeaRead, createConnection, closeConnection
 
   useEffect(() => {
     isEnabledRef.current = connectionSettings.isEnabled;
+    if (isEnabledRef.current) {
+      Snackbar.show({
+        text: 'Připojení se zdařilo.',
+        duration: Snackbar.LENGTH_SHORT,
+        textColor: 'green',
+        marginBottom: 5,
+      });
+    }
   }, [connectionSettings.isEnabled]);
 
   return (
@@ -26,24 +34,6 @@ export default Communication = ({ getNmeaRead, createConnection, closeConnection
             if (!connectionSettings.isEnabled) {
             console.log("Setting up connection.");
             createConnection();
-            setTimeout(() => {
-              console.log(isEnabledRef.current);
-              if (!isEnabledRef.current) {
-              Snackbar.show({
-                text: 'Připojení se nezdařilo.',
-                duration: Snackbar.LENGTH_SHORT,
-                textColor: 'red',
-                marginBottom: 5,
-              });
-              } else {
-                Snackbar.show({
-                  text: 'Připojení se zdařilo.',
-                  duration: Snackbar.LENGTH_SHORT,
-                  textColor: 'green',
-                  marginBottom: 5,
-                });
-              }
-            }, 2000); // Wait for 2 seconds before checking the connection status
             } else {
             console.log("Closing connection.");
             closeConnection();

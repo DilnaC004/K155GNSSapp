@@ -52,7 +52,7 @@ function useCommunication(getNmeaRead, getLastGGA, getRawMeasurement, connection
       // Send the message to parsing
       onNmeaUpdate(event.data);
       //setMessages((prevMessages) => [...prevMessages, event.data]);
-      console.log('Message received:', event.data);
+      //console.log('Message received:', event.data);
     };
 
     ws.onclose = () => {
@@ -61,7 +61,21 @@ function useCommunication(getNmeaRead, getLastGGA, getRawMeasurement, connection
     };
 
     ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
+      if (error.message === 'Connection reset') {
+        Snackbar.show({
+          text: 'Server přestal odpovídat, zkontroluj přijímač.',
+          duration: Snackbar.LENGTH_SHORT,
+          textColor: 'red',
+          marginBottom: 5,
+        });
+      } else if (error.message.startsWith('failed to connect to /')) {
+        Snackbar.show({
+          text: 'Nepodařilo se připojit k serveru, zkontroluj připojení.',
+          duration: Snackbar.LENGTH_SHORT,
+          textColor: 'red',
+          marginBottom: 5,
+        });
+      }
     };
 
     setSocket(ws);
