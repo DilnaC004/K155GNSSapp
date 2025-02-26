@@ -5,9 +5,10 @@ import DeviceInfo from 'react-native-device-info';
 import Snackbar from 'react-native-snackbar';
 import GPS from 'gps';
 import { NetworkInfo } from 'react-native-network-info';
+import { Buffer } from 'buffer';
 
 function useCommunication(getNmeaRead, getLastGGA, getRawMeasurement, connectionSettings, setConnectionSettings) {
-  const [rtcmNtrip, setRtcmNtrip] = useState('');
+  const [rtcmNtrip, setRtcmNtrip] = useState(Buffer.alloc(0));
   let buffer = '';  // Buffer to store partial data
   const gps = new GPS();
   let intervalId = null;

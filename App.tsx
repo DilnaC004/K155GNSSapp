@@ -118,10 +118,10 @@ export default function App(): JSX.Element {
   const valueContext = { data, updateData };
   const getRtcmNtrip = (rtcmNtrip: Buffer) => {
     // Directly encode the received byte array to Base64
-    const encodedData = rtcmNtrip.toString('base64');
-    setRtcmNtrip(encodedData);
-    //console.log("Ntrip - rtcm -", rtcmNtrip);
-    console.log(encodedData);
+    //const encodedData = rtcmNtrip.toString('base64');
+    setRtcmNtrip(rtcmNtrip);
+    console.log("Ntrip - rtcm -", rtcmNtrip);
+    //console.log(encodedData);
   };
 
 
