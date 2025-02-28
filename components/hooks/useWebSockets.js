@@ -160,7 +160,10 @@ function useCommunication(getNmeaRead, getLastGGA, getRawMeasurement, connection
   // };
 
   // DIfferent aproach, uses the checksum provided in the sentences to verify the legnth, throws less errors
+  let latestState = null;
+
   const onNmeaUpdate = (nmeaString) => {
+
     if (!nmeaString) {
       console.log('No Data was received');
       return;
@@ -223,10 +226,14 @@ function useCommunication(getNmeaRead, getLastGGA, getRawMeasurement, connection
       }
 
       gps.on('data', parsed => {
-        getNmeaRead(parsed);
-        console.log('GPS State:', parsed);
+        latestState = gps.state;
       });
 
+      if (nmeaSentence.includes('GLL')) {
+        console.log('Complete NMEA data for the second:', latestState);
+        getNmeaRead(latestState);
+        latestState = null;
+      }
     }
   };
 

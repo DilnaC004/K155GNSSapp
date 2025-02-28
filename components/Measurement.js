@@ -34,15 +34,16 @@ export default Measurement = ({nmeaParsed, rawMeasurement}) => {
   const switchX = isEnabled ? 'B [°]' : 'X [m]';
   const switchY = isEnabled ? 'L [°]' : 'Y [m]';
   const switchZ = isEnabled ? 'H [m]' : 'H [m]';
+  // Only for display, we can fix decimals here
   const switchCoordX = isEnabled
-    ? measurementSettings.etrs.b
-    : measurementSettings.jtsk.X;
+    ? measurementSettings.etrs.b.toFixed(9)
+    : measurementSettings.jtsk.X.toFixed(3);
   const switchCoordY = isEnabled
-    ? measurementSettings.etrs.l
-    : measurementSettings.jtsk.Y;
+    ? measurementSettings.etrs.l.toFixed(9)
+    : measurementSettings.jtsk.Y.toFixed(3);
   const switchCoordZ = isEnabled
-    ? measurementSettings.etrs.h
-    : measurementSettings.jtsk.Hbpv;
+    ? measurementSettings.etrs.h.toFixed(9)
+    : measurementSettings.jtsk.Hbpv.toFixed(3);
 
   const updateCoordinates = () => {
     const newPointB = measurementSettings.sumCoordB / (measurementSettings.coordMeasuredTime + 1);
@@ -119,7 +120,7 @@ export default Measurement = ({nmeaParsed, rawMeasurement}) => {
         sumCoordB: 0,
         sumCoordL: 0,
         sumCoordH: 0,
-        nazev: measurementSettings.nazev + 1,
+        nazev: measurementSettings.nazev + 1,     // Appends one instead of adding it
       });
 
       updateCoordinates();
