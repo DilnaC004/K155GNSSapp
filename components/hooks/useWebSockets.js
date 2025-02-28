@@ -22,25 +22,8 @@ function useCommunication(getNmeaRead, getLastGGA, getRawMeasurement, connection
     }));
   };
 
-  const getPublicIP = async () => {
-    try {
-        const response = await fetch('https://api.ipify.org?format=json');
-        const data = await response.json();
-        console.log('Public IP:', data.ip);
-        return data.ip;
-    } catch (error) {
-        console.error('Error fetching public IP:', error);
-    }
-  };
-
-  const createConnection = async () => {
-    const ip = await getPublicIP();
-    if (!ip) {
-        console.error('Failed to get public IP');
-        return;
-    }
-
-    const wsUrl = `ws://${ip}:8080`;
+  const createConnection = (ip) => {
+    const wsUrl = `ws://${ip}:${connectionSettings.hostPort}`;
     
     const ws = new WebSocket(wsUrl);
 

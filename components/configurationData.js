@@ -150,6 +150,8 @@ export default configurationData = {
     isEnabled: false,
     isConnected: false,
     connectedDeviceClassic: null,
+    hostIP: '',
+    hostPort: '8080',
   },
   measurementSettings: {
     nazev: 1,

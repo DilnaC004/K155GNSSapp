@@ -181,6 +181,7 @@ export default function App(): JSX.Element {
             createConnection={createConnection}
             closeConnection={closeConnection}
             connectionSettings={connectionSettings}
+            setConnectionSettings={setConnectionSettings}
             messages={messages}
             sendMessage={sendMessage}
           />}
