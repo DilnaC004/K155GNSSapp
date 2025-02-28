@@ -250,7 +250,7 @@ const Ntrip = ({ getRtcmNtrip, lastGGA, startSendingNtripData, socket }) => {
         placeholder="Heslo"
         value={ntripSettings.ntripPassword}
         onChangeText={text => updateNtripSettings({ ntripPassword: text })}
-        secureTextEntry
+        //secureTextEntry
       />
       <Button
         title={switchConnect}
