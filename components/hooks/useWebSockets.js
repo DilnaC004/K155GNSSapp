@@ -7,7 +7,7 @@ import GPS from 'gps';
 import { NetworkInfo } from 'react-native-network-info';
 import { Buffer } from 'buffer';
 
-function useCommunication(getNmeaRead, getLastGGA, getRawMeasurement, connectionSettings, setConnectionSettings) {
+function useCommunication(getNmeaRead, getLastGGA, getRawMeasurement, connectionSettings, setConnectedState) {
   const [rtcmNtrip, setRtcmNtrip] = useState(Buffer.alloc(0));
   let buffer = '';  // Buffer to store partial data
   const gps = new GPS();
@@ -15,20 +15,13 @@ function useCommunication(getNmeaRead, getLastGGA, getRawMeasurement, connection
   const [socket, setSocket] = useState(null);
   const [messages, setMessages] = useState([]);
 
-  const updateConnectionSettings = (newSettings) => {
-    setConnectionSettings((prevSettings) => ({
-      ...prevSettings,
-      ...newSettings,
-    }));
-  };
-
   const createConnection = (ip) => {
     const wsUrl = `ws://${ip}:${connectionSettings.hostPort}`;
     
     const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
-      updateConnectionSettings({ isEnabled: true });
+      setConnectedState(true);
       console.log('WebSocket connected');
     };
 
@@ -40,7 +33,7 @@ function useCommunication(getNmeaRead, getLastGGA, getRawMeasurement, connection
     };
 
     ws.onclose = () => {
-      updateConnectionSettings({ isEnabled: false });
+      setConnectedState(false);
       console.log('WebSocket disconnected');
       getLastGGA(null);
     };
@@ -74,7 +67,8 @@ function useCommunication(getNmeaRead, getLastGGA, getRawMeasurement, connection
     if (socket) {
       socket.close();
       setSocket(null);
-      updateConnectionSettings({ isEnabled: false });
+      setConnectedState(false);
+      getLastGGA(null);
       console.log('WebSocket connection closed');
     }
   };

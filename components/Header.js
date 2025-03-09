@@ -5,53 +5,53 @@ import { styles } from './Styles/styles';
 import GPS from 'gps';
 
 
-export default Header = ({ nmeaParsed, lastGGA, modalType, updateModalType }) => {
+export default Header = ({ connectedState, lastGGA, modalType, updateModalType }) => {
   const { data, updateData } = useContext(DataContext);
   const [coordStatus, setCoordStatus] = useState('black');
   const [connectionStatus, setConnectionStatus] = useState('black');
   const [ntripStatus, setNtripStatus] = useState('black');
 
   useEffect(() => {
-    if(!lastGGA) {
-      setCoordStatus('black');
-      return;
-    }
-    switch (lastGGA.quality) {
-      case 'fix':
-        setCoordStatus('red');
-        break;
-      case 'float':
-        setCoordStatus('orange');
-        break;
-      case 'dgps-fix':
-        setCoordStatus('purple');
-        break;
-      case 'pps-fix':
-        setCoordStatus('white');
-        break;
-      case 'rtk':
-        setCoordStatus('green');
-        break;
-      case 'rtk-float':
-        setCoordStatus('orange');
-        break;
-      case 'estimated':
-        setCoordStatus('red');
-        break;
-      case 'manual':
-        setCoordStatus('pink');
-        break;
-      case 'simulated':
-        setCoordStatus('yellow');
-        break;
-      default:
-        setCoordStatus('black');
-        break;
-    }
-    if (!data.connectionSettings.isConnected) {
-      setConnectionStatus("black")
+    if(lastGGA) {
+      switch (lastGGA.quality) {
+        case 'fix':
+          setCoordStatus('red');
+          break;
+        case 'float':
+          setCoordStatus('orange');
+          break;
+        case 'dgps-fix':
+          setCoordStatus('purple');
+          break;
+        case 'pps-fix':
+          setCoordStatus('white');
+          break;
+        case 'rtk':
+          setCoordStatus('green');
+          break;
+        case 'rtk-float':
+          setCoordStatus('orange');
+          break;
+        case 'estimated':
+          setCoordStatus('red');
+          break;
+        case 'manual':
+          setCoordStatus('pink');
+          break;
+        case 'simulated':
+          setCoordStatus('yellow');
+          break;
+        default:
+          setCoordStatus('black');
+          break;
+      }
     } else {
-      setConnectionStatus("orange")
+      setCoordStatus('black');
+    }
+    if (connectedState) {
+      setConnectionStatus("green")
+    } else {
+      setConnectionStatus("black")
     }
     if (!data.ntripSettings.ntripConnect) {
       setNtripStatus("black")
@@ -59,7 +59,8 @@ export default Header = ({ nmeaParsed, lastGGA, modalType, updateModalType }) =>
       setNtripStatus("orange")
     }
 
-  }, [lastGGA, data.connectionSettings.isConnected, data.ntripSettings.ntripConnect]);
+    console.log(`Header.js: useEffect() ${connectedState}`);
+  }, [lastGGA, connectedState, data.ntripSettings.ntripConnect]);
 
   const closeAll = () => {
     updateModalType({

@@ -103,6 +103,7 @@ export default function App(): JSX.Element {
   };
 
   const [connectionSettings, setConnectionSettings] = useState(data.connectionSettings);
+  const [connectedState, setConnectedState] = useState(false);
 
   const {
     createConnection,
@@ -113,7 +114,17 @@ export default function App(): JSX.Element {
     rtcmNtrip,
     setRtcmNtrip,
     startSendingNtripData,
-  } = useWebSockets(getNmeaRead, getLastGGA, getRawMeasurement, connectionSettings, setConnectionSettings);
+  } = useWebSockets(getNmeaRead, getLastGGA, getRawMeasurement, connectionSettings, setConnectedState);
+
+  useEffect(() => {
+    setConnectionSettings(prevSettings => ({
+      ...prevSettings,
+      isEnabled: connectedState,
+    }));
+    console.log('Connected state:', connectedState);
+  }, [connectedState]);
+
+
 
   const valueContext = { data, updateData };
   const getRtcmNtrip = (rtcmNtrip: Buffer) => {
@@ -169,7 +180,7 @@ export default function App(): JSX.Element {
     <SafeAreaView>
       <DataContext.Provider value={valueContext}>
         <Header
-          nmeaParsed={nmeaParsed}
+          connectedState={connectedState}
           lastGGA={lastGGA}
           modalType={modalType}
           updateModalType={updateModalType}
