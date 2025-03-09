@@ -2,16 +2,21 @@ import React, { useEffect, useState, useContext } from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { DataContext } from './Functions/DataContext';
 import { styles } from './Styles/styles';
+import GPS from 'gps';
 
 
-export default Header = ({ nmeaParsed, modalType, updateModalType }) => {
+export default Header = ({ nmeaParsed, lastGGA, modalType, updateModalType }) => {
   const { data, updateData } = useContext(DataContext);
   const [coordStatus, setCoordStatus] = useState('black');
   const [connectionStatus, setConnectionStatus] = useState('black');
   const [ntripStatus, setNtripStatus] = useState('black');
 
   useEffect(() => {
-    switch (nmeaParsed.quality) {
+    if(!lastGGA) {
+      setCoordStatus('black');
+      return;
+    }
+    switch (lastGGA.quality) {
       case 'fix':
         setCoordStatus('red');
         break;
@@ -54,7 +59,7 @@ export default Header = ({ nmeaParsed, modalType, updateModalType }) => {
       setNtripStatus("orange")
     }
 
-  }, [nmeaParsed, data.connectionSettings.isConnected, data.ntripSettings.ntripConnect]);
+  }, [lastGGA, data.connectionSettings.isConnected, data.ntripSettings.ntripConnect]);
 
   const closeAll = () => {
     updateModalType({
@@ -139,7 +144,7 @@ export default Header = ({ nmeaParsed, modalType, updateModalType }) => {
           { borderColor: coordStatus }
           ]}
         />
-        <Text style={styles.headerInfoText}>{nmeaParsed.quality}</Text>
+        <Text style={styles.headerInfoText}>{(lastGGA != null) ? lastGGA.quality : ""}</Text>
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => {

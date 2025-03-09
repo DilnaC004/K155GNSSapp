@@ -42,6 +42,7 @@ function useCommunication(getNmeaRead, getLastGGA, getRawMeasurement, connection
     ws.onclose = () => {
       updateConnectionSettings({ isEnabled: false });
       console.log('WebSocket disconnected');
+      getLastGGA(null);
     };
 
     ws.onerror = (error) => {
@@ -219,10 +220,10 @@ function useCommunication(getNmeaRead, getLastGGA, getRawMeasurement, connection
       buffer = buffer.slice(endIdx + 2);
 
       // Process the valid NMEA sentence
-      console.log('Valid NMEA Sentence:', nmeaSentence);
+      //console.log('Valid NMEA Sentence:', nmeaSentence);
       gps.update(nmeaSentence);
       if (nmeaSentence.includes('GNGGA')) {
-        getLastGGA(nmeaSentence);
+        getLastGGA(GPS.Parse(nmeaSentence));
       }
 
       gps.on('data', parsed => {
@@ -230,7 +231,7 @@ function useCommunication(getNmeaRead, getLastGGA, getRawMeasurement, connection
       });
 
       if (nmeaSentence.includes('GLL')) {
-        console.log('Complete NMEA data for the second:', latestState);
+        //console.log('Complete NMEA data for the second:', latestState);
         getNmeaRead(latestState);
         latestState = null;
       }

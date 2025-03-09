@@ -170,6 +170,7 @@ export default function App(): JSX.Element {
       <DataContext.Provider value={valueContext}>
         <Header
           nmeaParsed={nmeaParsed}
+          lastGGA={lastGGA}
           modalType={modalType}
           updateModalType={updateModalType}
         />

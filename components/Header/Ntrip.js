@@ -142,12 +142,12 @@ const Ntrip = ({ getRtcmNtrip, lastGGA, startSendingNtripData, socket }) => {
         console.log('Sending initial GGA', lastGGA);       // Debugging log
 
         // Send the GGA message immediately
-        client.write(lastGGA);
+        client.write(lastGGA.raw);
 
         // Set up a regular interval to send GGA
         let interval = setInterval(() => {
           console.log('Sending GGA on interval', lastGGA); // Debugging log
-          client.write(lastGGA);
+          client.write(lastGGA.raw);
         }, 20000);
 
         setIntervalLastGGA(interval);
