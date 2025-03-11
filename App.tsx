@@ -204,6 +204,7 @@ export default function App(): JSX.Element {
             <Measurement
               nmeaParsed={nmeaParsed}
               rawMeasurement={rawMeasurement}
+              connectedState={connectedState}	
             />
           )}
           {modalType.placing && <Placing nmeaParsed={nmeaParsed} placingSettings={placingSettings} setPlacingSettings={setPlacingSettings} />}

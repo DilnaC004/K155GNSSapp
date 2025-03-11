@@ -6,7 +6,7 @@ import {etrs2jtsk} from './Calculations/transformation';
 import {DataContext} from './Functions/DataContext';
 import {styles} from './Styles/styles';
 
-export default Measurement = ({nmeaParsed, rawMeasurement}) => {
+export default Measurement = ({nmeaParsed, rawMeasurement, connectedState}) => {
   const {data, updateData} = useContext(DataContext);
   const [measurementSettings, setMeasurementSettings] = useState(
     data.measurementSettings,
@@ -87,7 +87,8 @@ export default Measurement = ({nmeaParsed, rawMeasurement}) => {
       const updatedData = data.projects.map((project, index) => {
         if (index === projectSettings.projectId) {
           const updatedPoints = [...project.points, newPoint];
-          return {...project, points: updatedPoints};
+          const updatedPointCount = project.pointCount + 1;
+          return {...project, points: updatedPoints, pointCount: updatedPointCount};
         }
         return project;
       });
@@ -98,6 +99,15 @@ export default Measurement = ({nmeaParsed, rawMeasurement}) => {
   };
 
   const handleRtkPress = () => {
+    if (!connectedState) {
+      Snackbar.show({
+        text: 'Před měřením se připoj k přijímači!',
+        duration: Snackbar.LENGTH_SHORT,
+        textColor: 'red',
+        marginBottom: 5,
+      });
+      return;
+    }
     if (!measurementSettings.startTime) {
       updateMeasurementSettings({
         startTime: new Date(),
@@ -120,7 +130,7 @@ export default Measurement = ({nmeaParsed, rawMeasurement}) => {
         sumCoordB: 0,
         sumCoordL: 0,
         sumCoordH: 0,
-        nazev: measurementSettings.nazev + 1,     // Appends one instead of adding it
+        nazev: Number(measurementSettings.nazev) + 1,
       });
 
       updateCoordinates();
