@@ -2,10 +2,9 @@ import React, { useEffect, useState, useContext } from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { DataContext } from './Functions/DataContext';
 import { styles } from './Styles/styles';
-import GPS from 'gps';
+import Icon from 'react-native-vector-icons/FontAwesome5';
 
-
-export default Header = ({ connectedState, lastGGA, modalType, updateModalType }) => {
+export default Header = ({ connectedState, lastGGA, modalType, updateModalType, nmeaParsed }) => {
   const { data, updateData } = useContext(DataContext);
   const [coordStatus, setCoordStatus] = useState('black');
   const [connectionStatus, setConnectionStatus] = useState('black');
@@ -89,13 +88,11 @@ export default Header = ({ connectedState, lastGGA, modalType, updateModalType }
             });
           }
         }}>
-        <Image
-          source={require('./Images/communication.png')}
-          style={[styles.icon,
-            { borderColor: connectionStatus }
-            ]}
+        <Icon
+          name='wifi'
+          size={30}
+          color={connectionStatus}
         />
-
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => {
@@ -107,11 +104,10 @@ export default Header = ({ connectedState, lastGGA, modalType, updateModalType }
             });
           }
         }}>
-        <Image
-          source={require('./Images/server.png')}
-          style={[styles.icon,
-          { borderColor: ntripStatus }
-          ]}
+        <Icon
+          name='server'
+          size={30}
+          color={ntripStatus}
         />
       </TouchableOpacity>
       <TouchableOpacity
@@ -124,9 +120,10 @@ export default Header = ({ connectedState, lastGGA, modalType, updateModalType }
             });
           }
         }}>
-        <Image
-          source={require('./Images/folder.png')}
-          style={[styles.icon]}
+        <Icon
+          name='folder-open'
+          size={30}
+          color={'black'}
         />
       </TouchableOpacity>
       <TouchableOpacity
@@ -139,11 +136,10 @@ export default Header = ({ connectedState, lastGGA, modalType, updateModalType }
             });
           }
         }}>
-        <Image
-          source={require('./Images/signal.png')}
-          style={[styles.icon,
-          { borderColor: coordStatus }
-          ]}
+        <Icon
+          name='satellite-dish'
+          size={30}
+          color={coordStatus}
         />
         <Text style={styles.headerInfoText}>{(lastGGA != null) ? lastGGA.quality : ""}</Text>
       </TouchableOpacity>
@@ -157,9 +153,10 @@ export default Header = ({ connectedState, lastGGA, modalType, updateModalType }
             });
           }
         }}>
-        <Image
-          source={require('./Images/location_mark_pinned.png')}
-          style={[styles.icon]}
+        <Icon
+          name='flag'
+          size={30}
+          color={'black'}
         />
       </TouchableOpacity>
       <TouchableOpacity
@@ -172,9 +169,10 @@ export default Header = ({ connectedState, lastGGA, modalType, updateModalType }
             });
           }
         }}>
-        <Image
-          source={require('./Images/map_location_mark.png')}
-          style={[styles.icon]}
+        <Icon
+          name='map'
+          size={30}
+          color={'black'}
         />
       </TouchableOpacity>
       <TouchableOpacity
@@ -187,10 +185,13 @@ export default Header = ({ connectedState, lastGGA, modalType, updateModalType }
             });
           }
         }}>
-        <Image
-          source={require('./Images/graph.png')}
-          style={[styles.icon]}
+        <Icon
+          name='satellite'
+          size={30}
+          color={'black'}
         />
+        {/* May show incorrect sat count */}
+        <Text style={styles.headerInfoText}>{(lastGGA != null) ? nmeaParsed.satsVisible.length : ""}</Text>
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => {
@@ -202,9 +203,10 @@ export default Header = ({ connectedState, lastGGA, modalType, updateModalType }
             });
           }
         }}>
-        <Image
-          source={require('./Images/book.png')}
-          style={[styles.icon]}
+        <Icon
+          name='book'
+          size={30}
+          color={'black'}
         />
       </TouchableOpacity>
       <TouchableOpacity
@@ -217,9 +219,10 @@ export default Header = ({ connectedState, lastGGA, modalType, updateModalType }
             });
           }
         }}>
-        <Image
-          source={require('./Images/calculate.png')}
-          style={[styles.icon]}
+        <Icon
+          name='calculator'
+          size={30}
+          color={'black'}
         />
       </TouchableOpacity>
     </View>

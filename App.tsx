@@ -184,6 +184,7 @@ export default function App(): JSX.Element {
           lastGGA={lastGGA}
           modalType={modalType}
           updateModalType={updateModalType}
+          nmeaParsed={nmeaParsed}
         />
         <View>
           {modalType.communication && <Communication

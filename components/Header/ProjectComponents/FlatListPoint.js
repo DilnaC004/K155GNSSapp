@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
 import { FlatList, View, Text, TouchableOpacity, ScrollView, Modal, Button, Image, Dimensions } from 'react-native';
-import IconMaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import Icon from 'react-native-vector-icons/FontAwesome5';
 import { DataContext } from '../../Functions/DataContext';
 import { styles } from '../../Styles/styles';
 
@@ -49,18 +49,22 @@ export default FlatListPoint = ({
             setSelectedPoint(item);
             setModalVisible1(true);
           }}>
-          <Image
-            source={require('../../Images/info.png')}
-            style={[styles.icon]}
+          <Icon
+            name='info'
+            size={30}
+            paddingRight={20}
+            color={'black'}
           />
         </TouchableOpacity>
         {placing && <TouchableOpacity
           onPress={() => {
             updatePlacingSettings(index);
           }}>
-          <Image
-            source={require('../../Images/flag.png')}
-            style={[styles.icon]}
+          <Icon
+            name='flag'
+            size={30}
+            paddingRight={20}
+            color={'black'}
           />
         </TouchableOpacity>}
       </View >
@@ -87,7 +91,7 @@ export default FlatListPoint = ({
   };
 
   return (
-    <View style={{ height: Dimensions.get("window").height/4 }}>
+    <View style={{ height: Dimensions.get("window").height / 4 }}>
       <FlatList
         data={data.projects[projectSettings.projectId].points}
         renderItem={renderItemID}
@@ -116,9 +120,11 @@ export default FlatListPoint = ({
                 onPress={() => {
                   setModalVisible2(true);
                 }}>
-                <Image
-                  source={require('../../Images/trash.png')}
-                  style={[styles.icon]}
+                <Icon
+                  name='trash'
+                  size={30}
+                  paddingTop={20}
+                  color={'black'}
                 />
               </TouchableOpacity>}
           </View>
@@ -149,9 +155,11 @@ export default FlatListPoint = ({
                   setModalVisible1(!modalVisible1);
                   setModalVisible2(!modalVisible2);
                 }}>
-                <Image
-                  source={require('../../Images/trash.png')}
-                  style={[styles.icon]}
+                <Icon
+                  name='trash'
+                  size={30}
+                  paddingTop={20}
+                  color={'black'}
                 />
               </TouchableOpacity>}
           </View>

@@ -10,7 +10,7 @@ import {
   Image,
   Dimensions
 } from 'react-native';
-import IconMaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import Icon from 'react-native-vector-icons/FontAwesome5';
 import { DataContext } from '../../Functions/DataContext';
 import { styles } from '../../Styles/styles';
 
@@ -69,9 +69,11 @@ export default FlatListProject = ({
           onPress={() => {
             deleteProject(item.title);
           }}>
-          <Image
-            source={require('../../Images/trash.png')}
-            style={[styles.icon]}
+          <Icon
+            name='trash'
+            size={30}
+            paddingRight={20}
+            color={'black'}
           />
         </TouchableOpacity>
       </View>
