@@ -59,7 +59,7 @@ export default Header = ({ connectedState, lastGGA, modalType, updateModalType }
       setNtripStatus("orange")
     }
 
-    console.log(`Header.js: useEffect() ${connectedState}`);
+    //console.log(`Header.js: useEffect() ${connectedState}`);
   }, [lastGGA, connectedState, data.ntripSettings.ntripConnect]);
 
   const closeAll = () => {

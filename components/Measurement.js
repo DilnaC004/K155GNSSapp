@@ -46,9 +46,28 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState}) => {
     : measurementSettings.jtsk.Hbpv.toFixed(3);
 
   const updateCoordinates = () => {
-    const newPointB = measurementSettings.sumCoordB / (measurementSettings.coordMeasuredTime + 1);
-    const newPointL = measurementSettings.sumCoordL / (measurementSettings.coordMeasuredTime + 1);
-    const newPointH = measurementSettings.sumCoordH / (measurementSettings.coordMeasuredTime + 1);
+    var newPointB = measurementSettings.sumCoordB / (measurementSettings.coordMeasuredTime + 1);
+    var newPointL = measurementSettings.sumCoordL / (measurementSettings.coordMeasuredTime + 1);
+    var newPointH = measurementSettings.sumCoordH / (measurementSettings.coordMeasuredTime + 1);
+    var i = 0;
+
+    while (Math.abs(newPointB - measurementSettings.etrs.b) > 0.5) {
+      // A dividing error happened, recalculating
+      newPointB = measurementSettings.sumCoordB / (measurementSettings.coordMeasuredTime - i);
+      newPointL = measurementSettings.sumCoordL / (measurementSettings.coordMeasuredTime - i);
+      newPointH = measurementSettings.sumCoordH / (measurementSettings.coordMeasuredTime - i);
+
+      i++;
+      if (i > measurementSettings.coordMeasuredTime) {
+        Snackbar.show({
+          text: 'Příliš krátká doba měření!',
+          duration: Snackbar.LENGTH_SHORT,
+          textColor: 'red',
+          marginBottom: 5,
+        });
+        return false;
+      }
+    }
     
     const newPointJTSK = etrs2jtsk(newPointB, newPointL, newPointH);
 
@@ -114,7 +133,7 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState}) => {
         boolRtk: !measurementSettings.boolRtk,
         endTime: null,
       });
-      console.log('start ');
+      console.log('start');
     } else {
       updateMeasurementSettings({
         startTime: null,
@@ -123,6 +142,19 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState}) => {
         formattedTime: '00:00:00',
       });
 
+      if (updateCoordinates() == false) {
+        updateMeasurementSettings({
+          coordAccuX: 0,
+          coordAccuY: 0,
+          coordAccuZ: 0,
+          sumCoordB: 0,
+          sumCoordL: 0,
+          sumCoordH: 0,
+        });
+        return;
+      };
+
+      // Update after saving the point
       updateMeasurementSettings({
         coordAccuX: 0,
         coordAccuY: 0,
@@ -132,8 +164,6 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState}) => {
         sumCoordH: 0,
         nazev: Number(measurementSettings.nazev) + 1,
       });
-
-      updateCoordinates();
     }
   };
 
