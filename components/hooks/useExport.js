@@ -31,7 +31,7 @@ export const useExport = () => {
   };
 
   const formatProtocolExport = (project) => {
-    const header = "Bod          B           L           H    X           Y           Hbpv    σB           σL           σH    PDOP    Čas           Výška     Offset    Kód";
+    const header = "Bod          B [°]           L [°]           H [m]    X [m]           Y [m]          Hbpv [m]    σB [m]          σL [m]           σH [m]   PDOP    Čas           Výška [m]     Offset [m]    Kód";
     
     const points = project.points.map((point) => {
       return [
@@ -42,8 +42,8 @@ export const useExport = () => {
         point.x.toFixed(3),
         point.y.toFixed(3),
         point.z.toFixed(3),
-        point.accuB.toFixed(9),
-        point.accuL.toFixed(9),
+        point.accuB.toFixed(3),
+        point.accuL.toFixed(3),
         point.accuH.toFixed(3),
         point.pdop.toFixed(1),
         point.time,

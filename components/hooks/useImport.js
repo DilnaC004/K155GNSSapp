@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
 import RNFS from 'react-native-fs';
 import { DataContext } from '../Functions/DataContext';
-import { jtsk2etrs } from '../Calculations/transformation';
+import { etrs2jtsk, jtsk2etrs } from '../Calculations/transformation';
 import Snackbar from 'react-native-snackbar';
 
 export const useImport = () => {
@@ -35,9 +35,23 @@ export const useImport = () => {
                 }
 
                 const pointTitle = parts[0];
-                const pointY = parseFloat(parts[1]);
-                const pointX = parseFloat(parts[2]);
-                const pointHbpv = parts.length > 3 ? parseFloat(parts[3]) : 0;
+                let pointB, pointL, pointH, pointY, pointX, pointHbpv
+
+                // Check the coordinate range and decide, which system is imported
+                if (parseFloat(parts[1]) < 90) {    // If part 1 is < 90, it is the ETRS89 coordinates and the rest will match
+                    pointB = parseFloat(parts[1]);
+                    pointL = parseFloat(parts[2]);
+                    pointH = parts.length > 3 ? parseFloat(parts[3]) : 0;
+                } else {
+                    if (parseFloat(parts[1]) < parseFloat(parts[2])) {
+                        pointY = parseFloat(parts[1]);
+                        pointX = parseFloat(parts[2]);
+                    } else {
+                        pointX = parseFloat(parts[1]);
+                        pointY = parseFloat(parts[2]);
+                    }
+                    pointHbpv = parts.length > 3 ? parseFloat(parts[3]) : 0;
+                }
 
                 if (!pointTitle || isNaN(pointY) || isNaN(pointX)) {
                     console.warn(`Řádek ${index + 1} přeskočen: Neplatná data`);
@@ -54,11 +68,23 @@ export const useImport = () => {
 
                 const currentDate = new Date();
 
+                if (pointB != undefined) {
+                    jtskCoordinates = etrs2jtsk(pointB, pointL, pointH);
+                    pointY = jtskCoordinates.Y;
+                    pointX = jtskCoordinates.X;
+                    pointHbpv = jtskCoordinates.Hbpv;
+                } else {
+                    etrsCoordinates = jtsk2etrs(pointY, pointX, pointHbpv);
+                    pointB = etrsCoordinates.B;
+                    pointL = etrsCoordinates.L;
+                    pointH = etrsCoordinates.H;
+                }
+
                 const point = {
                     title: pointTitle,
-                    b: jtsk2etrs(pointY, pointX, pointHbpv).B,
-                    l: jtsk2etrs(pointY, pointX, pointHbpv).L,
-                    h: jtsk2etrs(pointY, pointX, pointHbpv).H,
+                    b: pointB,
+                    l: pointL,
+                    h: pointH,
                     x: pointX,
                     y: pointY,
                     z: pointHbpv,
