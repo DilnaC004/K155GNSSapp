@@ -191,7 +191,7 @@ export default Header = ({ connectedState, lastGGA, modalType, updateModalType, 
           color={'black'}
         />
         {/* May show incorrect sat count */}
-        <Text style={styles.headerInfoText}>{(lastGGA != null) ? nmeaParsed.satsVisible.length : ""}</Text>
+        <Text style={styles.headerInfoText}>{(lastGGA != null) ? `${nmeaParsed.satsActive.length} / ${nmeaParsed.satsVisible.length}` : "" }</Text>
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => {
