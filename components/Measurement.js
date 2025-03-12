@@ -315,76 +315,90 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastG
   return (
     <View style={styles.mereniContainer}>
       <Text style={styles.headline}>Měření</Text>
-      <TextInput
-        style={styles.input}
-        value={measurementSettings.nazev.toString()}
-        placeholder="Název bodu"
-        onChangeText={value => {
-          updateMeasurementSettings({nazev: value});
-        }}
-        keyboardType="numeric" // Set the keyboard to numeric mode
-      />
-      <View style={styles.buttonContainer}>
-        <Button title={switchRtk} onPress={handleRtkPress} />
-        <Button title={switchRaw} onPress={handleRawPress} />
-      </View>
-      <View style={styles.tableContainer}>
-        <View style={styles.buttonContainer}>
-          <View>
-            <View style={styles.tableRow}>
-              <Text style={styles.tableHeader}>Systém :</Text>
-              <Text style={styles.tableData}>{switchCoordinates}</Text>
-              <Switch
-                trackColor={{false: '#767577', true: '#81b0ff'}}
-                thumbColor={isEnabled ? '#f5dd4b' : '#f4f3f4'}
-                ios_backgroundColor="#3e3e3e"
-                onValueChange={toggleSwitch}
-                value={isEnabled}
-                style={styles.switch}
-              />
-            </View>
-            <View style={styles.tableRow}>
-              <Text style={styles.tableHeader}>Doba měření :</Text>
-              <Text style={styles.tableData}>
-                {measurementSettings.formattedTime}
-              </Text>
-            </View>
-            <View style={styles.tableRow}>
-              <Text style={styles.tableHeader}>{switchY}</Text>
-              <Text style={styles.tableData}>{switchCoordY}</Text>
-              <Text style={styles.tableData}>
-                {measurementSettings.coordAccuY == 0? lastGST.latitudeError : measurementSettings.coordAccuY}
-              </Text>
-            </View>
-            <View style={styles.tableRow}>
-              <Text style={styles.tableHeader}>{switchX}</Text>
-              <Text style={styles.tableData}>{switchCoordX}</Text>
-              <Text style={styles.tableData}>
-              {measurementSettings.coordAccuX == 0? lastGST.longitudeError : measurementSettings.coordAccuX}
-              </Text>
-            </View>
-            <View style={styles.tableRow}>
-              <Text style={styles.tableHeader}>{switchZ}</Text>
-              <Text style={styles.tableData}>{switchCoordZ}</Text>
-              <Text style={styles.tableData}>
-              {measurementSettings.coordAccuZ == 0? lastGST.heightError : measurementSettings.coordAccuZ}
-              </Text>
-            </View>
-            <View style={styles.tableRow}>
-              <Text style={styles.tableHeader}>PDOP :</Text>
-              <Text style={styles.tableData}>
-                {measurementSettings.coordPDOP}
-              </Text>
-            </View>
-            <View style={styles.tableRow}>
-              <Text style={styles.tableHeader}>HDOP :</Text>
-              <Text style={styles.tableData}>
-                {measurementSettings.coordHDOP}
-              </Text>
+      {(lastGST == '' && !connectedState) && (
+        <View>
+          <Text style={styles.headline}>Připoj přijímač, abys mohl měřit.</Text>
+        </View>
+      )}
+      {(lastGST == '' && connectedState) && (
+        <View>
+          <Text style={styles.headline}>Čekám na fixaci...</Text>
+        </View>
+      )}
+      {(lastGST != '' && connectedState) && (
+        <View>
+          <TextInput
+            style={styles.input}
+            value={measurementSettings.nazev.toString()}
+            placeholder="Název bodu"
+            onChangeText={value => {
+              updateMeasurementSettings({nazev: value});
+            }}
+            keyboardType="numeric" // Set the keyboard to numeric mode
+          />
+          <View style={styles.buttonContainer}>
+            <Button title={switchRtk} onPress={handleRtkPress} />
+            <Button title={switchRaw} onPress={handleRawPress} />
+          </View>
+          <View style={styles.tableContainer}>
+            <View style={styles.buttonContainer}>
+              <View>
+                <View style={styles.tableRow}>
+                  <Text style={styles.tableHeader}>Systém :</Text>
+                  <Text style={styles.tableData}>{switchCoordinates}</Text>
+                  <Switch
+                    trackColor={{false: '#767577', true: '#81b0ff'}}
+                    thumbColor={isEnabled ? '#f5dd4b' : '#f4f3f4'}
+                    ios_backgroundColor="#3e3e3e"
+                    onValueChange={toggleSwitch}
+                    value={isEnabled}
+                    style={styles.switch}
+                  />
+                </View>
+                <View style={styles.tableRow}>
+                  <Text style={styles.tableHeader}>Doba měření :</Text>
+                  <Text style={styles.tableData}>
+                    {measurementSettings.formattedTime}
+                  </Text>
+                </View>
+                <View style={styles.tableRow}>
+                  <Text style={styles.tableHeader}>{switchY}</Text>
+                  <Text style={styles.tableData}>{switchCoordY}</Text>
+                  <Text style={styles.tableData}>
+                    {measurementSettings.coordAccuY == 0? lastGST.latitudeError : measurementSettings.coordAccuY}
+                  </Text>
+                </View>
+                <View style={styles.tableRow}>
+                  <Text style={styles.tableHeader}>{switchX}</Text>
+                  <Text style={styles.tableData}>{switchCoordX}</Text>
+                  <Text style={styles.tableData}>
+                    {measurementSettings.coordAccuX == 0? lastGST.longitudeError : measurementSettings.coordAccuX}
+                  </Text>
+                </View>
+                <View style={styles.tableRow}>
+                  <Text style={styles.tableHeader}>{switchZ}</Text>
+                  <Text style={styles.tableData}>{switchCoordZ}</Text>
+                  <Text style={styles.tableData}>
+                    {measurementSettings.coordAccuZ == 0? lastGST.heightError : measurementSettings.coordAccuZ}
+                  </Text>
+                </View>
+                <View style={styles.tableRow}>
+                  <Text style={styles.tableHeader}>PDOP :</Text>
+                  <Text style={styles.tableData}>
+                    {measurementSettings.coordPDOP}
+                  </Text>
+                </View>
+                <View style={styles.tableRow}>
+                  <Text style={styles.tableHeader}>HDOP :</Text>
+                  <Text style={styles.tableData}>
+                    {measurementSettings.coordHDOP}
+                  </Text>
+                </View>
+              </View>
             </View>
           </View>
         </View>
-      </View>
+      )}
     </View>
   );
 };

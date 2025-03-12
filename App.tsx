@@ -88,6 +88,7 @@ export default function App(): JSX.Element {
         lat: parsed.lat,          // Update lat
         alt: parsed.alt,           // Update alt
         pdop: parsed.pdop,
+        hdop: parsed.hdop,
         quality: parsed.quality,
         satsVisible: parsed.satsVisible,
       }));

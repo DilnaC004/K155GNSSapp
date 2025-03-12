@@ -33,8 +33,8 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
     ws.onclose = () => {
       setConnectedState(false);
       console.log('WebSocket disconnected');
-      getLastGGA(null);
-      getLastGST(null);
+      getLastGGA('');
+      getLastGST('');
     };
 
     ws.onerror = (error) => {
@@ -67,8 +67,8 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
       socket.close();
       setSocket(null);
       setConnectedState(false);
-      getLastGGA(null);
-      getLastGST(null);
+      getLastGGA('');
+      getLastGST('');
       console.log('WebSocket connection closed');
     }
   };
