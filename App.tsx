@@ -65,6 +65,7 @@ export default function App(): JSX.Element {
   );
   const [rawMeasurement, setRawMeasurement] = useState('');
   const [lastGGA, setLastGGA] = useState('');
+  const [lastGST, setLastGST] = useState('');
   const [data, setData] = useState(configurationData);
   let checkParsedLon = 0;
 
@@ -98,6 +99,10 @@ export default function App(): JSX.Element {
     setLastGGA(lastGGA);
   };
 
+  const getLastGST = (lastGST: string) => {
+    setLastGST(lastGST);
+  };
+
   const getRawMeasurement = (data: string) => {
     setRawMeasurement(data);
   };
@@ -114,7 +119,7 @@ export default function App(): JSX.Element {
     rtcmNtrip,
     setRtcmNtrip,
     startSendingNtripData,
-  } = useWebSockets(getNmeaRead, getLastGGA, getRawMeasurement, connectionSettings, setConnectedState);
+  } = useWebSockets(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement, connectionSettings, setConnectedState);
 
   useEffect(() => {
     setConnectionSettings(prevSettings => ({
@@ -205,7 +210,8 @@ export default function App(): JSX.Element {
             <Measurement
               nmeaParsed={nmeaParsed}
               rawMeasurement={rawMeasurement}
-              connectedState={connectedState}	
+              connectedState={connectedState}
+              lastGST={lastGST}
             />
           )}
           {modalType.placing && <Placing nmeaParsed={nmeaParsed} placingSettings={placingSettings} setPlacingSettings={setPlacingSettings} />}

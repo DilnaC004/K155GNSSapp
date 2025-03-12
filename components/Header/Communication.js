@@ -67,6 +67,7 @@ export default Communication = ({ getNmeaRead, createConnection, closeConnection
         placeholder="XXX.XXX.XXX.XXX"
         onChangeText={(text) => updateConnectionSettings({ hostIp: text })}
         value={connectionSettings.hostIp}
+        keyboardType='numeric'
       />
       <Button
         title={connectionSettings.isEnabled ? 'Stop' : 'Start'}

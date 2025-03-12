@@ -6,7 +6,7 @@ import {etrs2jtsk} from './Calculations/transformation';
 import {DataContext} from './Functions/DataContext';
 import {styles} from './Styles/styles';
 
-export default Measurement = ({nmeaParsed, rawMeasurement, connectedState}) => {
+export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastGST}) => {
   const {data, updateData} = useContext(DataContext);
   const [measurementSettings, setMeasurementSettings] = useState(
     data.measurementSettings,
@@ -255,6 +255,17 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState}) => {
         '0',
       );
       const seconds = String(measuredTime % 60).padStart(2, '0');
+      
+      // Save the worst precision
+      if (lastGST.latitudeError > measurementSettings.coordAccuY) {
+        updateMeasurementSettings({coordAccuY: lastGST.latitudeError});
+      }
+      if (lastGST.longitudeError > measurementSettings.coordAccuX) {
+        updateMeasurementSettings({coordAccuX: lastGST.longitudeError});
+      }
+      if (lastGST.heightError > measurementSettings.coordAccuZ) {
+        updateMeasurementSettings({coordAccuZ: lastGST.heightError});
+      }
 
       //Measure RTK point
       updateMeasurementSettings({
@@ -313,21 +324,21 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState}) => {
               <Text style={styles.tableHeader}>{switchY}</Text>
               <Text style={styles.tableData}>{switchCoordY}</Text>
               <Text style={styles.tableData}>
-                {measurementSettings.coordAccuY}
+                {measurementSettings.coordAccuY == 0? lastGST.latitudeError : measurementSettings.coordAccuY}
               </Text>
             </View>
             <View style={styles.tableRow}>
               <Text style={styles.tableHeader}>{switchX}</Text>
               <Text style={styles.tableData}>{switchCoordX}</Text>
               <Text style={styles.tableData}>
-                {measurementSettings.coordAccuX}
+              {measurementSettings.coordAccuX == 0? lastGST.longitudeError : measurementSettings.coordAccuX}
               </Text>
             </View>
             <View style={styles.tableRow}>
               <Text style={styles.tableHeader}>{switchZ}</Text>
               <Text style={styles.tableData}>{switchCoordZ}</Text>
               <Text style={styles.tableData}>
-                {measurementSettings.coordAccuZ}
+              {measurementSettings.coordAccuZ == 0? lastGST.heightError : measurementSettings.coordAccuZ}
               </Text>
             </View>
             <View style={styles.tableRow}>

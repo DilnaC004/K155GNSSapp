@@ -7,7 +7,7 @@ import GPS from 'gps';
 import { NetworkInfo } from 'react-native-network-info';
 import { Buffer } from 'buffer';
 
-function useCommunication(getNmeaRead, getLastGGA, getRawMeasurement, connectionSettings, setConnectedState) {
+function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement, connectionSettings, setConnectedState) {
   const [rtcmNtrip, setRtcmNtrip] = useState(Buffer.alloc(0));
   let buffer = '';  // Buffer to store partial data
   const gps = new GPS();
@@ -36,6 +36,7 @@ function useCommunication(getNmeaRead, getLastGGA, getRawMeasurement, connection
       setConnectedState(false);
       console.log('WebSocket disconnected');
       getLastGGA(null);
+      getLastGST(null);
     };
 
     ws.onerror = (error) => {
@@ -69,12 +70,13 @@ function useCommunication(getNmeaRead, getLastGGA, getRawMeasurement, connection
       setSocket(null);
       setConnectedState(false);
       getLastGGA(null);
+      getLastGST(null);
       console.log('WebSocket connection closed');
     }
   };
 
   const sendMessage = (message) => {
-    if (socket && connectionSettings.isConnected) {
+    if (socket && connectionSettings.isEnabled) {
       socket.send(message);
       console.log('Message sent:', message);
     } else {
@@ -218,6 +220,10 @@ function useCommunication(getNmeaRead, getLastGGA, getRawMeasurement, connection
       gps.update(nmeaSentence);
       if (nmeaSentence.includes('GNGGA')) {
         getLastGGA(GPS.Parse(nmeaSentence));
+      }
+
+      if (nmeaSentence.includes('GNGST')) {
+        getLastGST(GPS.Parse(nmeaSentence));
       }
 
       gps.on('data', parsed => {
