@@ -83,6 +83,7 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastG
       accuL: measurementSettings.coordAccuY,
       accuH: measurementSettings.coordAccuZ,
       pdop: measurementSettings.coordPDOP,
+      hdop: measurementSettings.coordHDOP,
       time: measurementSettings.coordMeasuredTime,
       date: new Date().toLocaleString(),
       height: pointSettings.height,
@@ -251,6 +252,7 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastG
       etrs: etrs,
       jtsk: jtsk,
       coordPDOP: nmeaParsed.pdop,
+      coordHDOP: nmeaParsed.hdop,
     });
 
     if (measurementSettings.startTime && !measurementSettings.endTime) {
@@ -372,6 +374,12 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastG
               <Text style={styles.tableHeader}>PDOP :</Text>
               <Text style={styles.tableData}>
                 {measurementSettings.coordPDOP}
+              </Text>
+            </View>
+            <View style={styles.tableRow}>
+              <Text style={styles.tableHeader}>HDOP :</Text>
+              <Text style={styles.tableData}>
+                {measurementSettings.coordHDOP}
               </Text>
             </View>
           </View>
