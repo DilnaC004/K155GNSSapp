@@ -13,7 +13,6 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
   const gps = new GPS();
   let intervalId = null;
   const [socket, setSocket] = useState(null);
-  const [messages, setMessages] = useState([]);
 
   const createConnection = (ip) => {
     const wsUrl = `ws://${ip}:${connectionSettings.hostPort}`;
@@ -28,7 +27,6 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
     ws.onmessage = (event) => {
       // Send the message to parsing
       onNmeaUpdate(event.data);
-      //setMessages((prevMessages) => [...prevMessages, event.data]);
       //console.log('Message received:', event.data);
     };
 
@@ -281,7 +279,6 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
   return {
     createConnection,
     closeConnection,
-    messages,
     sendMessage,
     socket,
     rtcmNtrip,

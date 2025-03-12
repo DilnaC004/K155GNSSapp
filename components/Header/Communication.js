@@ -7,7 +7,7 @@ import { styles } from '../Styles/styles';
 import NmeaViewer from './NmeaViewer';
 import GPS from 'gps';
 
-export default Communication = ({ getNmeaRead, createConnection, closeConnection, connectionSettings, setConnectionSettings, messages, sendMessage, rtcmNtrip, getLastGGA }) => {
+export default Communication = ({ getNmeaRead, createConnection, closeConnection, connectionSettings, setConnectionSettings, sendMessage, rtcmNtrip, getLastGGA }) => {
   const [intervalId, setIntervalId] = useState(0);
   const gps = new GPS();
   const isEnabledRef = useRef(connectionSettings.isEnabled);

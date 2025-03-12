@@ -113,7 +113,6 @@ export default function App(): JSX.Element {
   const {
     createConnection,
     closeConnection,
-    messages,
     sendMessage,
     socket,
     rtcmNtrip,
@@ -200,7 +199,6 @@ export default function App(): JSX.Element {
             closeConnection={closeConnection}
             connectionSettings={connectionSettings}
             setConnectionSettings={setConnectionSettings}
-            messages={messages}
             sendMessage={sendMessage}
           />}
           {modalType.ntrip && <Ntrip getRtcmNtrip={getRtcmNtrip} lastGGA={lastGGA} startSendingNtripData={startSendingNtripData} socket={socket} />}
