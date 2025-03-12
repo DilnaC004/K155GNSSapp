@@ -127,6 +127,15 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastG
       });
       return;
     }
+    if (!checkNameAvailability(measurementSettings.nazev)) {
+      Snackbar.show({
+        text: 'Zadej nepoužité číslo bodu!',
+        duration: Snackbar.LENGTH_SHORT,
+        textColor: 'red',
+        marginBottom: 5,
+      });
+      return;
+    }
     if (!measurementSettings.startTime) {
       updateMeasurementSettings({
         startTime: new Date(),
@@ -282,6 +291,24 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastG
       updateData({measurementSettings: measurementSettings});
     };
   }, [nmeaParsed]);
+
+  const checkNameAvailability = (name) => {
+    if (projectSettings.projectId != null) {
+      const project = data.projects[projectSettings.projectId];
+      if(!project.points.some(point => point.title === name)) {
+        return name;
+      } else {
+        return false;
+      }
+    }
+    Snackbar.show({
+      text: 'Není zvolena zakázka!',
+      duration: Snackbar.LENGTH_SHORT,
+      textColor: 'red',
+      marginBottom: 5,
+    });
+    return false;
+  };
 
   return (
     <View style={styles.mereniContainer}>
