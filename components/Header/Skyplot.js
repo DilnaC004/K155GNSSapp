@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Dimensions, Animated, ScrollView } from 'react-native';
 import Svg, { Circle, Line, Text as SvgText } from 'react-native-svg';
 import { styles } from '../Styles/styles';
@@ -10,6 +10,11 @@ const plotSize = width - 40;
 const Skyplot = ({ satsVisible }) => {
   const plotCenter = plotSize / 2;
   const plotRadius = plotCenter - 20;
+
+  useEffect(() => {
+    // Rerender when satsVisible changes
+    // console.log('Skyplot sats: ', satsVisible);
+  }, [satsVisible]);
 
   return (
     <View style={styles.skyplotContainer}>
