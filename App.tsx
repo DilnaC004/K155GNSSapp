@@ -119,7 +119,7 @@ export default function App(): JSX.Element {
     rtcmNtrip,
     setRtcmNtrip,
     startSendingNtripData,
-  } = useWebSockets(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement, connectionSettings, setConnectedState);
+  } = useWebSockets(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement, connectionSettings, setConnectionSettings, setConnectedState);
 
   useEffect(() => {
     setConnectionSettings(prevSettings => ({

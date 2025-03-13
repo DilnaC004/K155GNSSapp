@@ -33,50 +33,14 @@ export default Communication = ({ getNmeaRead, createConnection, closeConnection
     }
   }, [connectionSettings.isEnabled]);
 
-  const checkSocket = (socket) => {
-    if (!socket) {
-      Snackbar.show({
-        text: 'Zadej IP adresu přijímače.',
-        duration: Snackbar.LENGTH_SHORT,
-        textColor: 'red',
-        marginBottom: 5,
-      });
-      return false;
-    }
-
-    if (!socket.match(/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/)) {
-      Snackbar.show({
-        text: 'Neplatná IP adresa.',
-        duration: Snackbar.LENGTH_SHORT,
-        textColor: 'red',
-        marginBottom: 5,
-      });
-      return false;
-    }
-
-    // Correct format, you can try to connect
-    return true;
-  }
-
   return (
     <View style={styles.nastContainer}>
       <Text style={styles.headline}>Nastavení spojení s přijímačem</Text>
-      <Text style={styles.title}>Zadej IP adresu přijímače:</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="XXX.XXX.XXX.XXX"
-        onChangeText={(text) => updateConnectionSettings({ hostIp: text })}
-        value={connectionSettings.hostIp}
-        keyboardType='numeric'
-      />
       <Button
         title={connectionSettings.isEnabled ? 'Stop' : 'Start'}
         onPress={() => {
           if (!connectionSettings.isEnabled) {
-            if (checkSocket(connectionSettings.hostIp)) {
-              console.log("Setting up connection.");
-              createConnection(connectionSettings.hostIp);
-            }
+            createConnection();
           } else {
             console.log("Closing connection.");
             closeConnection();

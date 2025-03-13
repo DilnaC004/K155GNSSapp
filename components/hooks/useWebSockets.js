@@ -6,17 +6,50 @@ import Snackbar from 'react-native-snackbar';
 import GPS from 'gps';
 import { NetworkInfo } from 'react-native-network-info';
 import { Buffer } from 'buffer';
+import dgram from 'react-native-udp';
 
-function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement, connectionSettings, setConnectedState) {
+
+function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement, connectionSettings, setConnectionSettings, setConnectedState) {
   const [rtcmNtrip, setRtcmNtrip] = useState(Buffer.alloc(0));
   let buffer = '';  // Buffer to store partial data
   const gps = new GPS();
   let intervalId = null;
   const [socket, setSocket] = useState(null);
 
-  const createConnection = (ip) => {
-    const wsUrl = `ws://${ip}:${connectionSettings.hostPort}`;
-    
+  updateConnectionSettings = (newSettings) => {
+    setConnectionSettings((prevSettings) => ({
+      ...prevSettings,
+      ...newSettings,
+    }));
+  }
+
+  const createConnection = async () => {
+    if (connectionSettings.hostIP == '') {
+      // First start the UDP listener
+      const udpClient = dgram.createSocket('udp4');
+
+      udpClient.bind(41234);
+
+      // Listen for responses from servers
+      udpClient.on('message', (message, rinfo) => {
+          console.log(`Received UDP message: ${message} from ${rinfo.address}`);
+
+          // Save the address of the server
+          updateConnectionSettings({ hostIP: message.toString() });
+
+          // Use the received IP to connect to WebSocket
+          const wsUrl = `ws://${message.toString()}:8080`;
+          connectToWebSocket(wsUrl);
+      });
+    } else {
+      // Use the stored IP to connect to WebSocket
+      console.log('Using stored IP to connect to WebSocket: ', connectionSettings.hostIP);
+      const wsUrl = `ws://${connectionSettings.hostIP}:8080`;
+      connectToWebSocket(wsUrl);
+    }
+  };
+
+  const connectToWebSocket = (wsUrl) => {    
     const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
@@ -26,7 +59,7 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
 
     ws.onmessage = (event) => {
       // Send the message to parsing
-      onNmeaUpdate(event.data);
+      onNmeaUpdate(event.data.toString());
       //console.log('Message received:', event.data);
     };
 
@@ -38,6 +71,7 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
     };
 
     ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
       if (error.message === 'Connection reset') {
         Snackbar.show({
           text: 'Server přestal odpovídat, zkontroluj přijímač.',
