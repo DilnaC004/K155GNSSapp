@@ -33,7 +33,9 @@ export default Project = ({ clearStorage, setPlacingSettings }) => {
       showFlatList: false,
       showCreatePoint: false,
       showCreateProject: false,
-      showPointFlatList: false
+      showPointFlatList: false,
+      showExportModal: false,
+      showImportModal: false
     });
   }
 
