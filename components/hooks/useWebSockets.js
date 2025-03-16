@@ -24,30 +24,23 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
   }
 
   const createConnection = async () => {
-    if (connectionSettings.hostIP == '') {
-      // First start the UDP listener
-      const udpClient = dgram.createSocket('udp4');
+    // First start the UDP listener
+    const udpClient = dgram.createSocket('udp4');
 
-      udpClient.bind(41234);
+    udpClient.bind(41234);
 
-      // Listen for responses from servers
-      udpClient.on('message', (message, rinfo) => {
-          console.log(`Received UDP message: ${message} from ${rinfo.address}`);
+    // Listen for responses from servers
+    udpClient.on('message', (message, rinfo) => {
+        console.log(`Received UDP message: ${message} from ${rinfo.address}`);
 
-          // Save the address of the server
-          // updateConnectionSettings({ hostIP: message.toString() });
+        // Save the address of the server
+        // updateConnectionSettings({ hostIP: message.toString() });
 
-          // Use the received IP to connect to WebSocket
-          const wsUrl = `ws://${message.toString()}:8080`;
-          udpClient.close();
-          connectToWebSocket(wsUrl);
-      });
-    } else {
-      // Use the stored IP to connect to WebSocket
-      console.log('Using stored IP to connect to WebSocket: ', connectionSettings.hostIP);
-      const wsUrl = `ws://${connectionSettings.hostIP}:8080`;
-      connectToWebSocket(wsUrl);
-    }
+        // Use the received IP to connect to WebSocket
+        const wsUrl = `ws://${message.toString()}:8080`;
+        udpClient.close();
+        connectToWebSocket(wsUrl);
+    });
   };
 
   const connectToWebSocket = (wsUrl) => {    
@@ -68,6 +61,12 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
     ws.onclose = () => {
       setConnectedState(false);
       console.log('WebSocket disconnected');
+      Snackbar.show({
+        text: 'Přijímač odpojen.',
+        duration: Snackbar.LENGTH_SHORT,
+        textColor: 'red',
+        marginBottom: 5,
+      });
       getLastGGA('');
       getLastGST('');
       // Restart the process
@@ -98,7 +97,7 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
     };
   };
 
-  const closeConnection = () => {
+  const closeConnection = async () => {
     if (socket) {
       socket.close();
       setSocket(null);

@@ -7,7 +7,7 @@ import { styles } from '../Styles/styles';
 import NmeaViewer from './NmeaViewer';
 import GPS from 'gps';
 
-export default Communication = ({ getNmeaRead, createConnection, closeConnection, connectionSettings, setConnectionSettings, sendMessage, rtcmNtrip, getLastGGA }) => {
+export default Communication = ({ getNmeaRead, resetConnection, connectionSettings, setConnectionSettings, sendMessage, rtcmNtrip, getLastGGA }) => {
   const [intervalId, setIntervalId] = useState(0);
   const gps = new GPS();
   const isEnabledRef = useRef(connectionSettings.isEnabled);
@@ -36,6 +36,13 @@ export default Communication = ({ getNmeaRead, createConnection, closeConnection
   return (
     <View style={styles.nastContainer}>
       <Text style={styles.headline}>Nastavení spojení s přijímačem</Text>
+      <Button
+        title={'Restartuj spojení'}
+        disabled={!connectionSettings.isEnabled}
+        onPress={() => {
+          resetConnection();
+        }}
+      />
     </View>
   );
 };

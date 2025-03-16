@@ -196,8 +196,7 @@ export default function App(): JSX.Element {
             getNmeaRead={getNmeaRead}
             rtcmNtrip={rtcmNtrip}
             getLastGGA={getLastGGA}
-            createConnection={createConnection}
-            closeConnection={closeConnection}
+            resetConnection={closeConnection}
             connectionSettings={connectionSettings}
             setConnectionSettings={setConnectionSettings}
             sendMessage={sendMessage}
