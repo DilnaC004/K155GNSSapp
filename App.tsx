@@ -136,7 +136,7 @@ export default function App(): JSX.Element {
     // Directly encode the received byte array to Base64
     //const encodedData = rtcmNtrip.toString('base64');
     setRtcmNtrip(rtcmNtrip);
-    console.log("Ntrip - rtcm -", rtcmNtrip);
+    //console.log("Ntrip - rtcm -", rtcmNtrip);
     //console.log(encodedData);
   };
 
@@ -174,7 +174,7 @@ export default function App(): JSX.Element {
     getDataStorage();
     // Force written GGA
     const appStateId = AppState.addEventListener('change', handleAppStateChange);
-
+    createConnection();
     return () => {
       setDataStorage(data);
       appStateId.remove();

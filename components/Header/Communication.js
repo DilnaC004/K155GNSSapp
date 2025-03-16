@@ -36,23 +36,6 @@ export default Communication = ({ getNmeaRead, createConnection, closeConnection
   return (
     <View style={styles.nastContainer}>
       <Text style={styles.headline}>Nastavení spojení s přijímačem</Text>
-      <Button
-        title={connectionSettings.isEnabled ? 'Stop' : 'Start'}
-        onPress={() => {
-          if (!connectionSettings.isEnabled) {
-            createConnection();
-          } else {
-            console.log("Closing connection.");
-            closeConnection();
-            Snackbar.show({
-              text: 'Odpojeno od zařízení.',
-              duration: Snackbar.LENGTH_SHORT,
-              textColor: 'red',
-              marginBottom: 5,
-            });
-          }
-        }}
-      />
     </View>
   );
 };

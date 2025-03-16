@@ -35,10 +35,11 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
           console.log(`Received UDP message: ${message} from ${rinfo.address}`);
 
           // Save the address of the server
-          updateConnectionSettings({ hostIP: message.toString() });
+          // updateConnectionSettings({ hostIP: message.toString() });
 
           // Use the received IP to connect to WebSocket
           const wsUrl = `ws://${message.toString()}:8080`;
+          udpClient.close();
           connectToWebSocket(wsUrl);
       });
     } else {
@@ -55,6 +56,7 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
     ws.onopen = () => {
       setConnectedState(true);
       console.log('WebSocket connected');
+      setSocket(ws);
     };
 
     ws.onmessage = (event) => {
@@ -68,6 +70,8 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
       console.log('WebSocket disconnected');
       getLastGGA('');
       getLastGST('');
+      // Restart the process
+      createConnection();
     };
 
     ws.onerror = (error) => {
@@ -79,7 +83,7 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
           textColor: 'red',
           marginBottom: 5,
         });
-      } else if (error.message.startsWith('failed to connect to /')) {
+      } else if (error.message?.startsWith('failed to connect to /')) {
         Snackbar.show({
           text: 'Nepodařilo se připojit k serveru, zkontroluj připojení.',
           duration: Snackbar.LENGTH_SHORT,
@@ -88,8 +92,6 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
         });
       }
     };
-
-    setSocket(ws);
 
     return () => {
       ws.close();
@@ -110,7 +112,7 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
   const sendMessage = (message) => {
     if (socket && connectionSettings.isEnabled) {
       socket.send(message);
-      console.log('Message sent:', message);
+      //console.log('Message sent:', message);
     } else {
       console.error('WebSocket is not connected');
     }
@@ -270,23 +272,6 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
     }
   };
 
-  const startStreamingData = (device) => {
-    console.log("Starting the data stream")
-    try {
-      if (device) {
-        device.monitorCharacteristicForService(
-          monitoredBleCharacteristic,
-          monitoredBleService,
-          onNmeaUpdate,
-        );
-      } else {
-        console.log('No Device Connected');
-      }
-    } catch (e) {
-      console.error('Failed to stream data', e);
-    }
-  };
-
   const startSendingNtripData = (device) => {
     console.log("Sending rtcm");
     //console.log(rtcmNtrip);  // Already Base64 encoded
@@ -304,8 +289,7 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
 
   // Watch for changes to rtcmNtrip and send data when it changes
   useEffect(() => {
-    if (socket && rtcmNtrip) {
-      //console.log(rtcmNtrip);
+    if (socket?.readyState == 1 && rtcmNtrip) {
       startSendingNtripData(socket);
     }
   }, [rtcmNtrip]);

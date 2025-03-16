@@ -153,7 +153,7 @@ export default configurationData = {
     showImportModal: false,
   },
   connectionSettings: {
-    isEnabled: false,
+    isEnabled: true,
     isConnected: false,
     connectedDeviceClassic: null,
     hostIP: '',
