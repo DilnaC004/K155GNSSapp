@@ -311,6 +311,7 @@ export const styles = {
     height: 500,
     padding: 10,
     backgroundColor: '#F5FCFF',
+    alignItems: 'center',
   },
   satelliteContainer: {
     borderBottomWidth: 1,

@@ -11,6 +11,27 @@ const Skyplot = ({ satsVisible }) => {
   const plotCenter = plotSize / 2;
   const plotRadius = plotCenter - 20;
 
+  const prnSystemToText = (satellite) => {
+    switch (satellite.system) {
+      case 'GPS':
+        return `G${satellite.prn}`;
+      case 'GLONASS':
+        return `R${satellite.prn-64}`;
+      case 'Galileo':
+        return `E${satellite.prn}`;
+      case 'BeiDou':
+        return `C${satellite.prn}`;
+      case 'QZSS':
+        return `J${satellite.prn-192}`;
+      case 'IRNSS':
+        return `I${satellite.prn}`;
+      case 'SBAS':
+        return `S${satellite.prn-87}`;
+      default:
+        return satellite.system;
+    }
+  }
+
   useEffect(() => {
     // Rerender when satsVisible changes
     // console.log('Skyplot sats: ', satsVisible);
@@ -50,8 +71,8 @@ const Skyplot = ({ satsVisible }) => {
           return (
             <React.Fragment key={index}>
               <Circle cx={x} cy={y} r={5} fill={satellite.snr !== null ? 'blue' : 'red'} />
-              <SvgText x={x} y={y - 10} fontSize="10" fill="#000" textAnchor="middle">
-                {satellite.prn}
+              <SvgText x={x} y={y+15} fontSize="10" fill="#000" textAnchor="middle">
+                {prnSystemToText(satellite)}
               </SvgText>
             </React.Fragment>
           );
