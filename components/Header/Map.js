@@ -33,7 +33,7 @@ const Map = ({ updateModalType, placingSettings, setPlacingSettings }) => {
       point: false,
       placing: true,
       skyplot: false,
-      bluetooth: false,
+      connection: false,
       ntrip: false,
       project: false,
       map: false,
