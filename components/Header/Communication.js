@@ -36,13 +36,22 @@ export default Communication = ({ getNmeaRead, resetConnection, connectionSettin
   return (
     <View style={styles.nastContainer}>
       <Text style={styles.headline}>Nastavení spojení s přijímačem</Text>
-      <Button
-        title={'Restartuj spojení'}
-        disabled={!connectionSettings.isEnabled}
-        onPress={() => {
-          resetConnection();
-        }}
-      />
+      <View style={styles.refreshButton}>
+        <Button
+          title={'Restartuj spojení'}
+          disabled={!connectionSettings.isEnabled}
+          onPress={() => {
+            resetConnection();
+          }}
+        />
+      </View>
+      <Text style={styles.description}>Aby se přijímač připojil, v nastavení telefonu nastav hotspot:</Text>
+      <Text style={styles.headline}>Název: K155GNSSAppX</Text>
+      <Text style={styles.headline}>Heslo: K155GNSSAppX</Text>
+      <Text style={styles.description}>Kde číslo X bude číslo přijímače (na krabičce).</Text>
+      <Text style={styles.description}>Poté spusť hotspot a vrať se do aplikace.</Text>
+      <Text style={styles.description}>Nyní je vše nastaveno a po chvíli by se měl přijímač sám připojit.</Text>
+      <Text style={styles.description}>Na iOS nelze měnit název hotspotu, je třeba změnit název zařízení.</Text>
     </View>
   );
 };

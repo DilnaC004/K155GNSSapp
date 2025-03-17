@@ -93,8 +93,8 @@ export const styles = {
     marginBottom: 8,
   },
   refreshButton: {
-    marginRight: 8,
     padding: 8,
+    marginBottom: 20
   },
   refreshIcon: {
     width: 24,
@@ -344,5 +344,10 @@ export const styles = {
     fontWeight: 'bold',
     fontSize: 18,
     marginBottom: 20,
+  },
+  description: {
+    fontWeight: 'bold',
+    fontSize: 14,
+    marginBottom: 5,
   },
 };
