@@ -45,6 +45,7 @@ const Ntrip = ({ getRtcmNtrip, lastGGA, startSendingNtripData, socket }) => {
   const switchConnect = ntripSettings.ntripConnect ? 'Odpoj se' : 'Připoj se k Ntrip serveru';
 
   const handleMntpSelectChange = () => {
+    let buffer = '';
     console.log('Zkouším se připojit k Czepos');
     const options = {
       host: ntripSettings.ntripIp,
@@ -70,21 +71,26 @@ const Ntrip = ({ getRtcmNtrip, lastGGA, startSendingNtripData, socket }) => {
     });
 
     client.on('data', function (data) {
+      buffer += data.toString();
       console.log('message was received', data.toString());
-      const mountpoints = [];
-      const sourceData = data.toString().split('\r\n');
 
-      for (let i = 0; i < sourceData.length; i++) {
-        if (sourceData[i].startsWith('STR')) {
-          mountpoints.push(new Mountpoint(sourceData[i]));
+      if (buffer.includes('ENDSOURCETABLE')) {
+        console.log('Got full table');
+        const mountpoints = [];
+        const sourceData = buffer.toString().split('\r\n');
+
+        for (let i = 0; i < sourceData.length; i++) {
+          if (sourceData[i].startsWith('STR')) {
+            mountpoints.push(new Mountpoint(sourceData[i]));
+          }
         }
+
+        SoundPlayer.playAsset(require("../Sounds/success.mp3"));
+
+        updateNtripSettings({
+          mountpoints: mountpoints,
+        });
       }
-
-      SoundPlayer.playAsset(require("../Sounds/success.mp3"));
-
-      updateNtripSettings({
-        mountpoints: mountpoints,
-      });
       
     });
 
