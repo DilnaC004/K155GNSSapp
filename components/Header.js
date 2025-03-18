@@ -55,7 +55,7 @@ export default Header = ({ connectedState, lastGGA, modalType, updateModalType, 
     if (!data.ntripSettings.ntripConnect) {
       setNtripStatus("black")
     } else {
-      setNtripStatus("orange")
+      setNtripStatus("green")
     }
 
     //console.log(`Header.js: useEffect() ${connectedState}`);
@@ -191,7 +191,7 @@ export default Header = ({ connectedState, lastGGA, modalType, updateModalType, 
           color={'black'}
         />
         {/* May show incorrect sat count */}
-        <Text style={styles.headerInfoText}>{(lastGGA != null && connectedState) ? `${nmeaParsed.satsActive.length} / ${nmeaParsed.satsVisible.length}` : "" }</Text>
+        <Text style={styles.headerInfoText}>{(lastGGA != null && connectedState) ? `${nmeaParsed.satsActive?.length ?? 0} / ${nmeaParsed.satsVisible?.length ?? 0}` : "" }</Text>
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => {

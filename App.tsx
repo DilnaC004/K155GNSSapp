@@ -84,10 +84,12 @@ export default function App(): JSX.Element {
     if (parsed.lon !== checkParsedLon) { // Update only if lon change
       //console.log(parsed);
       setNmeaParsed(prevState => ({
-        ...prevState,             // Keep other properties the same
+        ...prevState,
+        fix: parsed.fix,             // Keep other properties the same
         lon: parsed.lon,          // Update lon
         lat: parsed.lat,          // Update lat
         alt: parsed.alt,           // Update alt
+        satsActive: parsed.satsActive,
         pdop: parsed.pdop,
         hdop: parsed.hdop,
         quality: parsed.quality,
@@ -215,7 +217,7 @@ export default function App(): JSX.Element {
           )}
           {modalType.placing && <Placing nmeaParsed={nmeaParsed} placingSettings={placingSettings} setPlacingSettings={setPlacingSettings} />}
           {modalType.map && <Map updateModalType={updateModalType} placingSettings={placingSettings} setPlacingSettings={setPlacingSettings} />}
-          {modalType.skyplot && <Skyplot satsVisible={nmeaParsed.satsVisible} />}
+          {modalType.skyplot && <Skyplot satsVisible={nmeaParsed.satsVisible} satsActive={nmeaParsed.satsActive} />}
           {modalType.learn && <Learn />}
           {modalType.calculate && <Calculate />}
         </View>

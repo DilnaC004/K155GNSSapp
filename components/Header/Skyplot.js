@@ -7,7 +7,7 @@ import { polarToCartesian2D } from '../Calculations/transformation';
 const { height, width } = Dimensions.get('window');
 const plotSize = width - 40;
 
-const Skyplot = ({ satsVisible }) => {
+const Skyplot = ({ satsVisible, satsActive }) => {
   const plotCenter = plotSize / 2;
   const plotRadius = plotCenter - 20;
 
@@ -30,6 +30,10 @@ const Skyplot = ({ satsVisible }) => {
       default:
         return satellite.system;
     }
+  }
+
+  const isActive = (satellite) => {
+    return satsActive.includes(satellite.prn);
   }
 
   useEffect(() => {
@@ -70,7 +74,7 @@ const Skyplot = ({ satsVisible }) => {
           const { x, y } = polarToCartesian2D(plotCenter, plotRadius, satellite.azimuth, satellite.elevation);
           return (
             <React.Fragment key={index}>
-              <Circle cx={x} cy={y} r={5} fill={satellite.snr !== null ? 'blue' : 'red'} />
+              <Circle cx={x} cy={y} r={5} fill={isActive(satellite) ? 'blue' : 'red'} />
               <SvgText x={x} y={y+15} fontSize="10" fill="#000" textAnchor="middle">
                 {prnSystemToText(satellite)}
               </SvgText>
