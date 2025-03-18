@@ -160,7 +160,7 @@ export default configurationData = {
     hostPort: '8080',
   },
   measurementSettings: {
-    nazev: 1,
+    nazev: '1',
     etrs: {
       b: 0,
       l: 0,

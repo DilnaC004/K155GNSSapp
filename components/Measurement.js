@@ -172,7 +172,7 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastG
         sumCoordB: 0,
         sumCoordL: 0,
         sumCoordH: 0,
-        nazev: Number(measurementSettings.nazev) + 1,
+        nazev: (Number(measurementSettings.nazev) + 1).toString(),
       });
     }
   };
@@ -297,11 +297,13 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastG
   const checkNameAvailability = (name) => {
     if (projectSettings.projectId != null) {
       const project = data.projects[projectSettings.projectId];
-      if(!project.points.some(point => point.title === name)) {
-        return name;
-      } else {
+      const existingPoints = [...project.points];
+
+      if (existingPoints.some(point => point.title === name)) {
         return false;
       }
+
+      return name;
     }
     Snackbar.show({
       text: 'Není zvolena zakázka!',
@@ -315,17 +317,17 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastG
   return (
     <View style={styles.mereniContainer}>
       <Text style={styles.headline}>Měření</Text>
-      {(lastGST == '' && !connectedState) && (
+      {(!connectedState) && (
         <View>
           <Text style={styles.headline}>Připoj přijímač, abys mohl měřit.</Text>
         </View>
       )}
-      {(lastGST == '' && connectedState) && (
+      {(nmeaParsed.fix == null && connectedState) && (
         <View>
           <Text style={styles.headline}>Čekám na fixaci...</Text>
         </View>
       )}
-      {(lastGST != '' && connectedState) && (
+      {(nmeaParsed.fix != null && connectedState) && (
         <View>
           <TextInput
             style={styles.input}
