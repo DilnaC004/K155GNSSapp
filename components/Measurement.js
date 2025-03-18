@@ -5,6 +5,7 @@ import RNFS from 'react-native-fs';
 import {etrs2jtsk} from './Calculations/transformation';
 import {DataContext} from './Functions/DataContext';
 import {styles} from './Styles/styles';
+import SoundPlayer from 'react-native-sound-player';
 
 export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastGST}) => {
   const {data, updateData} = useContext(DataContext);
@@ -92,6 +93,9 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastG
     };
 
     console.log(newPoint, measurementSettings);
+
+    // Give feedback
+    SoundPlayer.playAsset(require('././Sounds/point_saved.mp3'));
     Snackbar.show({
       text: `Uložen bod ${newPoint.title}`,
       duration: Snackbar.LENGTH_SHORT,
@@ -129,6 +133,8 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastG
       return;
     }
     if (!checkNameAvailability(measurementSettings.nazev)) {
+      // Give feedback
+      SoundPlayer.playAsset(require('././Sounds/error.mp3'));
       Snackbar.show({
         text: 'Zadej nepoužité číslo bodu!',
         duration: Snackbar.LENGTH_SHORT,
@@ -142,6 +148,14 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastG
         startTime: new Date(),
         boolRtk: !measurementSettings.boolRtk,
         endTime: null,
+      });
+      // Give feedback
+      SoundPlayer.playAsset(require('././Sounds/measurement_start.mp3'));
+      Snackbar.show({
+        text: 'Začínám měřit.',
+        duration: Snackbar.LENGTH_SHORT,
+        textColor: 'green',
+        marginBottom: 5,
       });
       console.log('start');
     } else {
@@ -305,6 +319,8 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastG
 
       return name;
     }
+    // Give feedback
+    SoundPlayer.playAsset(require('././Sounds/error.mp3'));
     Snackbar.show({
       text: 'Není zvolena zakázka!',
       duration: Snackbar.LENGTH_SHORT,

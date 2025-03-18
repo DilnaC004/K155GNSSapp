@@ -3,6 +3,7 @@ import RNFS from 'react-native-fs';
 import { PERMISSIONS, request } from 'react-native-permissions';
 import Snackbar from 'react-native-snackbar';
 import { DataContext } from '../Functions/DataContext';
+import SoundPlayer from 'react-native-sound-player';
 
 const showSnackbar = (text, textColor = 'green') => {
   Snackbar.show({
@@ -124,8 +125,11 @@ export const useExport = () => {
       await RNFS.writeFile(filePath, exportContent, 'utf8');
       console.log('File saved successfully');
 
+      SoundPlayer.playAsset(require('../Sounds/export_success.mp3'));
+
     } catch (error) {
       console.error('Export failed:', error);
+      SoundPlayer.playAsset(require('../Sounds/failure.mp3'));
       throw error;
     }
   };

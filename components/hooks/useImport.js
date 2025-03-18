@@ -3,8 +3,9 @@ import RNFS from 'react-native-fs';
 import { DataContext } from '../Functions/DataContext';
 import { etrs2jtsk, jtsk2etrs } from '../Calculations/transformation';
 import Snackbar from 'react-native-snackbar';
+import SoundPlayer from 'react-native-sound-player';
 
-export const useImport = () => {
+export const useImport = (giveFeedback) => {
     const { data, updateData } = useContext(DataContext);
 
     const handleImport = async (file) => {
@@ -131,10 +132,7 @@ export const useImport = () => {
                 }
             });
 
-            Snackbar.show({
-                text: `Úspěšně nahráno ${newPoints.length} bodů`,
-                duration: Snackbar.LENGTH_LONG,
-            });
+            giveFeedback(newPointCount);
 
         } catch (error) {
             console.error('Chyba ve čtení/rozklíčování souboru:', error);

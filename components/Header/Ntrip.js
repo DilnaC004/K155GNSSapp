@@ -9,6 +9,7 @@ import TcpSocket from 'react-native-tcp-socket';
 import { DataContext } from '../Functions/DataContext';
 import { styles } from '../Styles/styles';
 import FlatListMountpoint from './ProjectComponents/FlatListMountpoint';
+import SoundPlayer from 'react-native-sound-player';
 
 class Mountpoint {
   constructor(sourceTableString) {
@@ -79,14 +80,18 @@ const Ntrip = ({ getRtcmNtrip, lastGGA, startSendingNtripData, socket }) => {
         }
       }
 
+      SoundPlayer.playAsset(require("../Sounds/success.mp3"));
+
       updateNtripSettings({
         mountpoints: mountpoints,
       });
+      
     });
 
     client.on('error', function (error) {
       console.log(error);
       updateNtripSettings({ mountpoints: [], selectedMntp: null });
+      SoundPlayer.playAsset(require("../Sounds/error.mp3"));
       Snackbar.show({
         text: `Chyba komunikace se serverem \r\nhttp://${ntripSettings.ntripIp}:${ntripSettings.ntripPort}`,
         duration: Snackbar.LENGTH_SHORT,
@@ -102,6 +107,7 @@ const Ntrip = ({ getRtcmNtrip, lastGGA, startSendingNtripData, socket }) => {
 
   const onNtripConnect = () => {
     if (!selectedMntp) {
+      SoundPlayer.playAsset(require("../Sounds/failure.mp3"));
       Snackbar.show({
         text: "Před připojením vyber mountpoint.",
         duration: Snackbar.LENGTH_SHORT,
@@ -160,7 +166,7 @@ const Ntrip = ({ getRtcmNtrip, lastGGA, startSendingNtripData, socket }) => {
           marginBottom: 5,
         });
       }
-
+      SoundPlayer.playAsset(require("../Sounds/ntrip_connected.mp3"));
       updateNtripSettings({ ntripConnect: true });
     });
 
@@ -177,6 +183,7 @@ const Ntrip = ({ getRtcmNtrip, lastGGA, startSendingNtripData, socket }) => {
     client.on('close', function () {
       console.log('Connection closed!');
       getRtcmNtrip(""); // clear RTCM ntrip
+      SoundPlayer.playAsset(require("../Sounds/ntrip_disconnected.mp3"));
       Snackbar.show({
         text: `Ukončena komunikace se serverem \r\nhttp://${ntripSettings.ntripIp}:${ntripSettings.ntripPort}`,
         duration: Snackbar.LENGTH_SHORT,

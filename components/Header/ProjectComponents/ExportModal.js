@@ -5,6 +5,7 @@ import { useExport } from '../../hooks/useExport';
 import { DataContext } from '../../Functions/DataContext';
 import RNFS from 'react-native-fs';
 import Snackbar from 'react-native-snackbar';
+import SoundPlayer from 'react-native-sound-player';
 
 
 export default ExportModal = ({
@@ -42,9 +43,6 @@ export default ExportModal = ({
                                     textColor: 'green',
                                     marginBottom: 5,
                                   });
-                                updateProjectSettings({
-                                    showExportModal: false,
-                                })
                             } catch (error){
                                 console.error(`Export button error: ${error}`);
                                 Snackbar.show({
@@ -64,9 +62,12 @@ export default ExportModal = ({
                             console.log('All project settings:', data.projectSettings);
                             try {
                                 await handleExport("protocol");
-                                updateProjectSettings({
-                                    showExportModal: false,
-                                })
+                                Snackbar.show({
+                                    text: `Soubor uložen do \r\n${path}`,
+                                    duration: Snackbar.LENGTH_SHORT,
+                                    textColor: 'green',
+                                    marginBottom: 5,
+                                  });
                             } catch (error){
                                 console.error(`Export button error: ${error}`);
                             }
@@ -80,9 +81,13 @@ export default ExportModal = ({
                             console.log('All project settings:', data.projectSettings);
                             try {
                                 await handleExport("coordinates");
-                                updateProjectSettings({
-                                    showExportModal: false,
-                                })
+                                SoundPlayer.playAsset(require("../../Sounds/export_success.mp3"));
+                                Snackbar.show({
+                                    text: `Soubor uložen do \r\n${path}`,
+                                    duration: Snackbar.LENGTH_SHORT,
+                                    textColor: 'green',
+                                    marginBottom: 5,
+                                  });
                             } catch (error){
                                 console.error(`Export button error: ${error}`);
                             }

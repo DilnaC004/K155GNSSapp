@@ -6051,6 +6051,11 @@ react-native-snackbar@^2.6.2:
   resolved "https://registry.npmjs.org/react-native-snackbar/-/react-native-snackbar-2.6.2.tgz"
   integrity sha512-edAubZJiBowwQUXJV5oXbMqitQ9vw7JzWUCczeTPVo6lRa+FzsUjiCQBHdWBbCw/N8/Q7jgKg4juNXU/bXZdXg==
 
+react-native-sound-player@^0.14.5:
+  version "0.14.5"
+  resolved "https://registry.npmjs.org/react-native-sound-player/-/react-native-sound-player-0.14.5.tgz"
+  integrity sha512-/fCP91KNNCJ8RindTMERklLCbQ+Vjbd6aGY7ZX2W92mRNvAkbPCQ99PZkvYqJsC7VgUn18rxvGmneZbhb7LnxQ==
+
 react-native-svg-transformer@^1.5.0:
   version "1.5.0"
   resolved "https://registry.npmjs.org/react-native-svg-transformer/-/react-native-svg-transformer-1.5.0.tgz"

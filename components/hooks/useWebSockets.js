@@ -7,6 +7,7 @@ import GPS from 'gps';
 import { NetworkInfo } from 'react-native-network-info';
 import { Buffer } from 'buffer';
 import dgram from 'react-native-udp';
+import SoundPlayer from "react-native-sound-player";
 
 
 function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement, connectionSettings, setConnectionSettings, setConnectedState) {
@@ -49,6 +50,16 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
     ws.onopen = () => {
       setConnectedState(true);
       console.log('WebSocket connected');
+
+      // Give feedback
+      SoundPlayer.playAsset(require("../Sounds/connection_success.mp3"));
+      Snackbar.show({
+        text: 'Přijímač připojen.',
+        duration: Snackbar.LENGTH_SHORT,
+        textColor: 'green',
+        marginBottom: 5,
+      });
+
       setSocket(ws);
     };
 
@@ -60,7 +71,10 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
 
     ws.onclose = () => {
       setConnectedState(false);
+
+      // Give feedback
       console.log('WebSocket disconnected');
+      SoundPlayer.playAsset(require("../Sounds/disconnect.mp3"));
       Snackbar.show({
         text: 'Přijímač odpojen.',
         duration: Snackbar.LENGTH_SHORT,

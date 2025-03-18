@@ -1,19 +1,25 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext, useRef } from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { DataContext } from './Functions/DataContext';
 import { styles } from './Styles/styles';
 import Icon from 'react-native-vector-icons/FontAwesome5';
+import SoundPlayer from 'react-native-sound-player';
 
 export default Header = ({ connectedState, lastGGA, modalType, updateModalType, nmeaParsed }) => {
   const { data, updateData } = useContext(DataContext);
   const [coordStatus, setCoordStatus] = useState('black');
   const [connectionStatus, setConnectionStatus] = useState('black');
   const [ntripStatus, setNtripStatus] = useState('black');
+  const prevLastGGA = useRef(lastGGA);
 
   useEffect(() => {
-    if(lastGGA) {
+    if (lastGGA) {
       switch (lastGGA.quality) {
         case 'fix':
+          if (lastGGA.quality !== prevLastGGA.current.quality) {
+            console.log("Playing fix sound");
+            SoundPlayer.playAsset(require("./Sounds/fix.mp3"));
+          }
           setCoordStatus('red');
           break;
         case 'float':
@@ -26,9 +32,17 @@ export default Header = ({ connectedState, lastGGA, modalType, updateModalType, 
           setCoordStatus('white');
           break;
         case 'rtk':
+          if (lastGGA.quality !== prevLastGGA.current.quality) {
+            console.log("Playing rtk fix sound");
+            SoundPlayer.playAsset(require("./Sounds/rtk_fix.mp3"));
+          }
           setCoordStatus('green');
           break;
         case 'rtk-float':
+          if (lastGGA.quality !== prevLastGGA.current.quality) {
+            console.log("Playing rtk float sound");
+            SoundPlayer.playAsset(require("./Sounds/rtk_float.mp3"));
+          }
           setCoordStatus('orange');
           break;
         case 'estimated':
@@ -58,6 +72,8 @@ export default Header = ({ connectedState, lastGGA, modalType, updateModalType, 
       setNtripStatus("green")
     }
 
+    prevLastGGA.current = lastGGA;
+    
     //console.log(`Header.js: useEffect() ${connectedState}`);
   }, [lastGGA, connectedState, data.ntripSettings.ntripConnect]);
 

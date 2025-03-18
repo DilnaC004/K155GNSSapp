@@ -10,6 +10,7 @@ import DocumentPicker, {
 import Snackbar from 'react-native-snackbar';
 import { DataContext } from '../../Functions/DataContext';
 import {styles} from '../../Styles/styles';
+import SoundPlayer from 'react-native-sound-player';
 
 export default CreateProject = ({updateProjectSettings}) => {
   const { data, updateData} = useContext(DataContext);
@@ -39,6 +40,7 @@ export default CreateProject = ({updateProjectSettings}) => {
         textColor: 'red',
         marginBottom: 5,
       });
+      SoundPlayer.playAsset(require('../../Sounds/error.mp3'));
     } else {
       const projectToAdd = {
         ...newProject,
@@ -62,6 +64,7 @@ export default CreateProject = ({updateProjectSettings}) => {
       });
 
       console.log('Save new project:', projectToAdd);
+      SoundPlayer.playAsset(require('../../Sounds/success.mp3'));
     }
   };
 

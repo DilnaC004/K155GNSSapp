@@ -13,6 +13,7 @@ import DocumentPicker, {
   types,
   pick,
 } from 'react-native-document-picker';
+import SoundPlayer from 'react-native-sound-player';
 
 
 export default ImportModal = ({
@@ -20,7 +21,18 @@ export default ImportModal = ({
     updateProjectSettings,
 }) => {
     const { data } = useContext(DataContext);
-    const { handleImport } = useImport();
+    
+    const giveFeedback = (pointCount) => {
+        SoundPlayer.playAsset(pointCount > 0 ? require("../../Sounds/export_success.mp3") : require("../../Sounds/error.mp3"));
+        Snackbar.show({
+            text: `Nahráno ${pointCount} bodů`,
+            duration: Snackbar.LENGTH_SHORT,
+            textColor: pointCount > 0 ? 'green' : 'red',
+            marginBottom: 5,
+        });
+    };
+
+    const { handleImport } = useImport(giveFeedback);
     const [ pickedFile, setPickedFile ] = useState(null);
 
     const pickDocument = async () => {
@@ -32,7 +44,8 @@ export default ImportModal = ({
           });
 
           setPickedFile(result[0]);
-          
+
+          SoundPlayer.playAsset(require("../../Sounds/success.mp3"));
           Snackbar.show({
             text: `Soubor nalezen: ${result[0].name}`,         // using result here because set is async
             duration: Snackbar.LENGTH_SHORT,
@@ -54,6 +67,7 @@ export default ImportModal = ({
           }
           
           console.error('Document picker error:', error);
+          SoundPlayer.playAsset(require("../../Sounds/failure.mp3"));
           Snackbar.show({
             text: `Chyba: ${error.message || 'Nepodařilo se načíst soubor'}`,
             duration: Snackbar.LENGTH_SHORT,
@@ -90,9 +104,6 @@ export default ImportModal = ({
                             console.log('All project settings:', data.projectSettings);
                             try {            
                                 await handleImport(pickedFile);
-                                updateProjectSettings({
-                                    showImportModal: false,
-                                })
                             } catch (error) {
                                 console.error(`Import button error: ${error}`);
                             }
