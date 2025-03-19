@@ -282,10 +282,9 @@ export const styles = {
   },
   mapContainer: {
     ...StyleSheet.absoluteFillObject,
-    height: Dimensions.get('window').height-50,
-    width: Dimensions.get('window').width,
+    height: Dimensions.get('screen').height,
+    width: Dimensions.get('screen').width,
     justifyContent: 'flex-end',
-    alignItems: 'center',
   },
   map: {
     ...StyleSheet.absoluteFillObject,

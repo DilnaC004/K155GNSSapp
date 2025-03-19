@@ -1,4 +1,6 @@
-    export default MapScript = `
+// Mapscript template edited from: https://leafletjs.com/examples/quick-start/example.html
+    
+const MapScript = `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -6,7 +8,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         
-        <title>Quick Start - Leaflet</title>
+        <title>Leeaflet for K155GNSSapp</title>
         
         <link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />
 
@@ -19,8 +21,8 @@
                 margin: 0;
             }
             .leaflet-container {
-                height: 400px;
-                width: 600px;
+                height: 83%;
+                width: 100%;
                 max-width: 100%;
                 max-height: 100%;
             }
@@ -32,31 +34,15 @@
 
 
 
-    <div id="map" style="width: 600px; height: 400px;"></div>
+    <div id="map" style="flex: 1"></div>
     <script>
 
-        const map = L.map('map').setView([51.505, -0.09], 13);
+        var map = L.map('map').setView([49.74375000, 15.33863889], 7);
 
         const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(map);
-
-        const marker = L.marker([51.5, -0.09]).addTo(map);
-
-        const circle = L.circle([51.508, -0.11], {
-            color: 'red',
-            fillColor: '#f03',
-            fillOpacity: 0.5,
-            radius: 500
-        }).addTo(map);
-
-        const polygon = L.polygon([
-            [51.509, -0.08],
-            [51.503, -0.06],
-            [51.51, -0.047]
-        ]).addTo(map);
-
 
     </script>
 
@@ -65,3 +51,5 @@
     </body>
     </html>
 `
+
+export default MapScript;
