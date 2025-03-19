@@ -70,11 +70,25 @@ const Ntrip = ({ getRtcmNtrip, lastGGA, startSendingNtripData, socket }) => {
       // }, 10000);
     });
 
+    const timeoutId = setTimeout(() => {
+      console.log(`Chyba komunikace se serverem \r\nhttp://${ntripSettings.ntripIp}:${ntripSettings.ntripPort}`);
+      updateNtripSettings({ mountpoints: [], selectedMntp: null });
+      client.end();
+      SoundPlayer.playAsset(require("../Sounds/error.mp3"));
+      Snackbar.show({
+        text: `Chyba komunikace se serverem \r\nhttp://${ntripSettings.ntripIp}:${ntripSettings.ntripPort}`,
+        duration: Snackbar.LENGTH_SHORT,
+        textColor: 'red',
+        marginBottom: 5,
+      });
+    }, 5000);
+  
     client.on('data', function (data) {
       buffer += data.toString();
       console.log('message was received', data.toString());
 
       if (buffer.includes('ENDSOURCETABLE')) {
+        clearTimeout(timeoutId); // Clear the timeout if ENDSOURCETABLE is found
         console.log('Got full table');
         const mountpoints = [];
         const sourceData = buffer.toString().split('\r\n');
@@ -91,20 +105,21 @@ const Ntrip = ({ getRtcmNtrip, lastGGA, startSendingNtripData, socket }) => {
           mountpoints: mountpoints,
         });
       }
-      
+
     });
 
-    client.on('error', function (error) {
-      console.log(error);
-      updateNtripSettings({ mountpoints: [], selectedMntp: null });
-      SoundPlayer.playAsset(require("../Sounds/error.mp3"));
-      Snackbar.show({
-        text: `Chyba komunikace se serverem \r\nhttp://${ntripSettings.ntripIp}:${ntripSettings.ntripPort}`,
-        duration: Snackbar.LENGTH_SHORT,
-        textColor: 'red',
-        marginBottom: 5,
-      });
-    });
+    // Don't throw an error, there's a timer for that now
+    // client.on('error', function (error) {
+    //   console.log(error);
+    //   updateNtripSettings({ mountpoints: [], selectedMntp: null });
+    //   SoundPlayer.playAsset(require("../Sounds/error.mp3"));
+    //   Snackbar.show({
+    //     text: `Chyba komunikace se serverem \r\nhttp://${ntripSettings.ntripIp}:${ntripSettings.ntripPort}`,
+    //     duration: Snackbar.LENGTH_SHORT,
+    //     textColor: 'red',
+    //     marginBottom: 5,
+    //   });
+    // });
 
     client.on('close', function () {
       console.log('Connection closed!');
