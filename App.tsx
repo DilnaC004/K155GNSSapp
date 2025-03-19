@@ -23,7 +23,7 @@ export default function App(): JSX.Element {
   const [nmeaParsed, setNmeaParsed] = useState({
     "alt": 390.506,
     "errors": 4,
-    "fix": "3D",
+    "fix": null,
     "hdop": 0.93,
     "lat": 49.48724413833333,
     "lon": 16.672643175,

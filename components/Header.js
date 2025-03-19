@@ -157,7 +157,7 @@ export default Header = ({ connectedState, ntripConnectedState, lastGGA, modalTy
           size={30}
           color={coordStatus}
         />
-        <Text style={styles.headerInfoText}>{(lastGGA != null) ? lastGGA.quality : ""}</Text>
+        <Text style={styles.headerInfoText}>{(lastGGA != '') ? lastGGA.quality : ""}</Text>
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => {
@@ -207,7 +207,7 @@ export default Header = ({ connectedState, ntripConnectedState, lastGGA, modalTy
           color={'black'}
         />
         {/* May show incorrect sat count */}
-        <Text style={styles.headerInfoText}>{(lastGGA != null && connectedState) ? `${nmeaParsed.satsActive?.length ?? 0} / ${nmeaParsed.satsVisible?.length ?? 0}` : "" }</Text>
+        <Text style={styles.headerInfoText}>{(lastGGA != '' && connectedState) ? `${nmeaParsed.satsActive?.length ?? 0} / ${nmeaParsed.satsVisible?.length ?? 0}` : "" }</Text>
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => {
