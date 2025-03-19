@@ -113,6 +113,7 @@ export default function App(): JSX.Element {
 
   const [connectionSettings, setConnectionSettings] = useState(data.connectionSettings);
   const [connectedState, setConnectedState] = useState(false);
+  const [ntripConnectedState, setNtripConnectedState] = useState(false);
 
   const {
     createConnection,
@@ -189,6 +190,7 @@ export default function App(): JSX.Element {
       <DataContext.Provider value={valueContext}>
         <Header
           connectedState={connectedState}
+          ntripConnectedState={ntripConnectedState}
           lastGGA={lastGGA}
           modalType={modalType}
           updateModalType={updateModalType}
@@ -204,7 +206,7 @@ export default function App(): JSX.Element {
             setConnectionSettings={setConnectionSettings}
             sendMessage={sendMessage}
           />}
-          {modalType.ntrip && <Ntrip getRtcmNtrip={getRtcmNtrip} lastGGA={lastGGA} startSendingNtripData={startSendingNtripData} socket={socket} />}
+          {modalType.ntrip && <Ntrip getRtcmNtrip={getRtcmNtrip} lastGGA={lastGGA} startSendingNtripData={startSendingNtripData} socket={socket} setNtripConnectedState={setNtripConnectedState} />}
           {modalType.project && <Project clearStorage={clearDataStorage} setPlacingSettings={setPlacingSettings} />}
           {modalType.point && <Point />}
           {modalType.measurement && (

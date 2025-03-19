@@ -29,7 +29,7 @@ class Mountpoint {
   }
 }
 
-const Ntrip = ({ getRtcmNtrip, lastGGA, startSendingNtripData, socket }) => {
+const Ntrip = ({ getRtcmNtrip, lastGGA, startSendingNtripData, socket, setNtripConnectedState }) => {
   const [intervalLastGGA, setIntervalLastGGA] = useState(0);
   const { data, updateData } = useContext(DataContext);
   const [ntripSettings, setNtripSettings] = useState(data.ntripSettings);
@@ -189,6 +189,7 @@ const Ntrip = ({ getRtcmNtrip, lastGGA, startSendingNtripData, socket }) => {
       }
       SoundPlayer.playAsset(require("../Sounds/ntrip_connected.mp3"));
       updateNtripSettings({ ntripConnect: true });
+      setNtripConnectedState(true);
     });
 
     client.on('data', function (data) {
@@ -218,6 +219,7 @@ const Ntrip = ({ getRtcmNtrip, lastGGA, startSendingNtripData, socket }) => {
     ntripSettings.clientWrapper.end();
     clearInterval(intervalLastGGA);
     updateNtripSettings({ ntripConnect: false });
+    setNtripConnectedState(false);
     setIntervalLastGGA(0); // Ensure the interval state is reset
   }
   

@@ -5,7 +5,7 @@ import { styles } from './Styles/styles';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import SoundPlayer from 'react-native-sound-player';
 
-export default Header = ({ connectedState, lastGGA, modalType, updateModalType, nmeaParsed }) => {
+export default Header = ({ connectedState, ntripConnectedState, lastGGA, modalType, updateModalType, nmeaParsed }) => {
   const { data, updateData } = useContext(DataContext);
   const [coordStatus, setCoordStatus] = useState('black');
   const [connectionStatus, setConnectionStatus] = useState('black');
@@ -66,7 +66,7 @@ export default Header = ({ connectedState, lastGGA, modalType, updateModalType, 
     } else {
       setConnectionStatus("black")
     }
-    if (!data.ntripSettings.ntripConnect) {
+    if (!ntripConnectedState) {
       setNtripStatus("black")
     } else {
       setNtripStatus("green")
@@ -75,7 +75,7 @@ export default Header = ({ connectedState, lastGGA, modalType, updateModalType, 
     prevLastGGA.current = lastGGA;
     
     //console.log(`Header.js: useEffect() ${connectedState}`);
-  }, [lastGGA, connectedState, data.ntripSettings.ntripConnect]);
+  }, [lastGGA, connectedState, ntripConnectedState]);
 
   const closeAll = () => {
     updateModalType({
