@@ -9,13 +9,12 @@ import { Buffer } from 'buffer';
 import dgram from 'react-native-udp';
 import SoundPlayer from "react-native-sound-player";
 
-
 function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement, connectionSettings, setConnectionSettings, setConnectedState) {
   const [rtcmNtrip, setRtcmNtrip] = useState(Buffer.alloc(0));
   let buffer = '';  // Buffer to store partial data
   const gps = new GPS();
-  let intervalId = null;
   const [socket, setSocket] = useState(null);
+  let serverIp = null;
 
   updateConnectionSettings = (newSettings) => {
     setConnectionSettings((prevSettings) => ({
@@ -24,112 +23,154 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
     }));
   }
 
-  const createConnection = async () => {
-    // First start the UDP listener
+  const getBroadcastIp = (ip, netmask) => {
+      const ipParts = ip.split('.').map(Number);
+      const netmaskParts = netmask.split('.').map(Number);
+
+      const ipBinary = ipParts.map(part => part.toString(2).padStart(8, '0')).join('');
+      const netmaskBinary = netmaskParts.map(part => part.toString(2).padStart(8, '0')).join('');
+
+      const inverseNetmaskBinary = netmaskBinary.split('').map(bit => bit === '1' ? '0' : '1').join('');
+
+      const broadcastBinary = ipBinary.split('')
+          .map((bit, index) => bit === '1' || inverseNetmaskBinary[index] === '1' ? '1' : '0')
+          .join('');
+
+      const broadcastParts = [];
+      for (let i = 0; i < 4; i++) {
+          broadcastParts.push(parseInt(broadcastBinary.slice(i * 8, i * 8 + 8), 2));
+      }
+
+      return broadcastParts.join('.');
+  }
+
+  const getBroadcastAddress = async () => {
+    try {
+        const ip = await NetworkInfo.getIPAddress(); // Get the device's IP address
+        const netmask = await NetworkInfo.getSubnet(); // Get the device's subnet mask
+
+        if (ip && netmask) {
+            const broadcastIp = getBroadcastIp(ip, netmask);
+            console.log('Broadcast IP:', broadcastIp);
+            return broadcastIp;
+        } else {
+            console.error('Failed to retrieve IP or netmask');
+            return null;
+        }
+    } catch (error) {
+        console.error('Error getting broadcast IP:', error);
+        return null;
+    }
+  };
+
+  const listenForData = () => {
     const udpClient = dgram.createSocket('udp4');
+    let feedbackTimeout = null;
+    let isConnected = false;
 
     udpClient.bind(41234);
 
-    // Listen for responses from servers
     udpClient.on('message', (message, rinfo) => {
-        console.log(`Received UDP message: ${message} from ${rinfo.address}`);
+        console.log(`Received UDP message: ${message} from ${rinfo.address}:${rinfo.port}`);
 
-        // Save the address of the server
-        // updateConnectionSettings({ hostIP: message.toString() });
+        // Handle first connection and extract server IP
+        if (!isConnected) {
+            isConnected = true;
+            serverIp = rinfo.address; // Store server IP
+            setConnectedState(true);
+            SoundPlayer.playAsset(require("../Sounds/connection_success.mp3"));
+            Snackbar.show({
+                text: 'Přijímač připojen.',
+                duration: Snackbar.LENGTH_SHORT,
+                textColor: 'green',
+                marginBottom: 5,
+            });
+            setSocket(udpClient);
+        }
 
-        // Use the received IP to connect to WebSocket
-        const wsUrl = `ws://${message.toString()}:8080`;
+        // Reset the inactivity timeout
+        if (feedbackTimeout) {
+            clearTimeout(feedbackTimeout);
+        }
+
+        feedbackTimeout = setTimeout(() => {
+            if (isConnected) {
+                console.log("No messages received for 5 seconds. Closing UDP connection.");
+                isConnected = false;
+                setConnectedState(false);
+                SoundPlayer.playAsset(require("../Sounds/disconnect.mp3"));
+                Snackbar.show({
+                    text: 'Žádná data nepřijata déle než 5 sekund, zkontroluj přijímač.',
+                    duration: Snackbar.LENGTH_SHORT,
+                    textColor: 'red',
+                    marginBottom: 5,
+                });
+                getLastGGA('');
+                getLastGST('');
+                udpClient.close();
+            }
+        }, 5000); // 5 seconds
+
+        // Process received data
+        onNmeaUpdate(message.toString());
+    });
+
+    udpClient.on('error', (err) => {
+        console.error(`UDP error: ${err}`);
+        Snackbar.show({
+            text: 'Chyba spojení, zkontroluj připojení.',
+            duration: Snackbar.LENGTH_SHORT,
+            textColor: 'red',
+        });
+        setSocket(null);
         udpClient.close();
-        connectToWebSocket(wsUrl);
+    });
+
+    udpClient.on('close', () => {
+        if (isConnected) {
+            isConnected = false;
+            setConnectedState(false);
+            setSocket(null);
+            console.log('UDP socket disconnected');
+            SoundPlayer.playAsset(require("../Sounds/disconnect.mp3"));
+            Snackbar.show({
+                text: 'Přijímač odpojen.',
+                duration: Snackbar.LENGTH_SHORT,
+                textColor: 'red',
+            });
+            getLastGGA('');
+            getLastGST('');
+        }
+        setTimeout(listenForData, 1500); // Restart listener
     });
   };
 
-  const connectToWebSocket = (wsUrl) => {    
-    const ws = new WebSocket(wsUrl);
-
-    ws.onopen = () => {
-      setConnectedState(true);
-      console.log('WebSocket connected');
-
-      // Give feedback
-      SoundPlayer.playAsset(require("../Sounds/connection_success.mp3"));
-      Snackbar.show({
-        text: 'Přijímač připojen.',
-        duration: Snackbar.LENGTH_SHORT,
-        textColor: 'green',
-        marginBottom: 5,
-      });
-
-      setSocket(ws);
-    };
-
-    ws.onmessage = (event) => {
-      // Send the message to parsing
-      onNmeaUpdate(event.data.toString());
-      //console.log('Message received:', event.data);
-    };
-
-    ws.onclose = () => {
-      setConnectedState(false);
-
-      // Give feedback
-      console.log('WebSocket disconnected');
-      SoundPlayer.playAsset(require("../Sounds/disconnect.mp3"));
-      Snackbar.show({
-        text: 'Přijímač odpojen.',
-        duration: Snackbar.LENGTH_SHORT,
-        textColor: 'red',
-        marginBottom: 5,
-      });
-      getLastGGA('');
-      getLastGST('');
-      // Restart the process
-      createConnection();
-    };
-
-    ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
-      if (error.message === 'Connection reset') {
-        Snackbar.show({
-          text: 'Server přestal odpovídat, zkontroluj přijímač.',
-          duration: Snackbar.LENGTH_SHORT,
-          textColor: 'red',
-          marginBottom: 5,
-        });
-      } else if (error.message?.startsWith('failed to connect to /')) {
-        Snackbar.show({
-          text: 'Nepodařilo se připojit k serveru, zkontroluj připojení.',
-          duration: Snackbar.LENGTH_SHORT,
-          textColor: 'red',
-          marginBottom: 5,
-        });
-      }
-    };
-
-    return () => {
-      ws.close();
-    };
-  };
-
   const closeConnection = async () => {
-    if (socket) {
-      socket.close();
+    if (udpClient) {
+      udpClient.close();
       setSocket(null);
       setConnectedState(false);
       getLastGGA('');
       getLastGST('');
-      console.log('WebSocket connection closed');
+      console.log('UDP connection closed');
     }
   };
 
-  const sendMessage = (message) => {
-    if (socket && connectionSettings.isEnabled) {
-      socket.send(message);
-      //console.log('Message sent:', message);
-    } else {
-      console.error('WebSocket is not connected');
+  const sendMessage = async (message) => {
+    if (!serverIp) {
+        console.error("Server IP not known. Cannot send message.");
+        return;
     }
+
+    socket.send(message, 0, message.length, 8080, serverIp, (err) => {
+        if (err) {
+            console.error('Failed to send message:', err);
+        } else {
+            console.log('Message sent:', message);
+        }
+    });
   };
+
 
   // const onNmeaUpdate = (
   //   error: BleError | null,
@@ -302,16 +343,15 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
 
   // Watch for changes to rtcmNtrip and send data when it changes
   useEffect(() => {
-    if (socket?.readyState == 1 && rtcmNtrip) {
+    if (socket && rtcmNtrip) {
       startSendingNtripData(socket);
     }
   }, [rtcmNtrip]);
 
   return {
-    createConnection,
+    listenForData,
     closeConnection,
     sendMessage,
-    socket,
     rtcmNtrip,
     setRtcmNtrip,
     startSendingNtripData,

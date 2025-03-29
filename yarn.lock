@@ -6024,6 +6024,11 @@ react-native-fs@^2.20.0:
     base-64 "^0.1.0"
     utf8 "^3.0.0"
 
+react-native-network-info@^5.2.1:
+  version "5.2.1"
+  resolved "https://registry.npmjs.org/react-native-network-info/-/react-native-network-info-5.2.1.tgz"
+  integrity sha512-iam74xXtrSqqZurCl1/bSjZ9jXcsJY84g7brx1/4uVGCY26c6m+4CArHNSHOsz5ATg2NQT+81sjNy0KlCPyK4g==
+
 react-native-permissions@^4.1.5:
   version "4.1.5"
   resolved "https://registry.npmjs.org/react-native-permissions/-/react-native-permissions-4.1.5.tgz"
@@ -6100,7 +6105,7 @@ react-native-webview@^13.12.3:
     escape-string-regexp "^4.0.0"
     invariant "2.2.4"
 
-react-native@*, "react-native@^0.0.0-0 || >=0.60 <1.0", react-native@^0.72.17, react-native@>=0.59.0, react-native@>=0.60, react-native@>=0.60.0, react-native@>=0.70.0:
+react-native@*, "react-native@^0.0.0-0 || >=0.60 <1.0", react-native@^0.72.17, react-native@>=0.47, react-native@>=0.59.0, react-native@>=0.60, react-native@>=0.60.0, react-native@>=0.70.0:
   version "0.72.17"
   resolved "https://registry.npmjs.org/react-native/-/react-native-0.72.17.tgz"
   integrity sha512-k3dNe0XqoYCGGWTenbupWSj+ljW3GIfmYS5P4s3if4j0csx2YbenKgH1aJNWLp+UP7ONwfId6G+uBoUJfyMxXg==

@@ -29,7 +29,7 @@ class Mountpoint {
   }
 }
 
-const Ntrip = ({ getRtcmNtrip, lastGGA, startSendingNtripData, socket, setNtripConnectedState }) => {
+const Ntrip = ({ getRtcmNtrip, lastGGA, startSendingNtripData, setNtripConnectedState }) => {
   const [intervalLastGGA, setIntervalLastGGA] = useState(0);
   const { data, updateData } = useContext(DataContext);
   const [ntripSettings, setNtripSettings] = useState(data.ntripSettings);

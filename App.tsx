@@ -116,10 +116,9 @@ export default function App(): JSX.Element {
   const [ntripConnectedState, setNtripConnectedState] = useState(false);
 
   const {
-    createConnection,
+    listenForData,
     closeConnection,
     sendMessage,
-    socket,
     rtcmNtrip,
     setRtcmNtrip,
     startSendingNtripData,
@@ -178,7 +177,7 @@ export default function App(): JSX.Element {
     getDataStorage();
     // Force written GGA
     const appStateId = AppState.addEventListener('change', handleAppStateChange);
-    createConnection();
+    listenForData();
     return () => {
       setDataStorage(data);
       appStateId.remove();
@@ -206,7 +205,7 @@ export default function App(): JSX.Element {
             setConnectionSettings={setConnectionSettings}
             sendMessage={sendMessage}
           />}
-          {modalType.ntrip && <Ntrip getRtcmNtrip={getRtcmNtrip} lastGGA={lastGGA} startSendingNtripData={startSendingNtripData} socket={socket} setNtripConnectedState={setNtripConnectedState} />}
+          {modalType.ntrip && <Ntrip getRtcmNtrip={getRtcmNtrip} lastGGA={lastGGA} startSendingNtripData={startSendingNtripData} setNtripConnectedState={setNtripConnectedState} />}
           {modalType.project && <Project clearStorage={clearDataStorage} setPlacingSettings={setPlacingSettings} />}
           {modalType.point && <Point />}
           {modalType.measurement && (
