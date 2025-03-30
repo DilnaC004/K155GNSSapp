@@ -38,7 +38,7 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
         // updateConnectionSettings({ hostIP: message.toString() });
 
         // Use the received IP to connect to WebSocket
-        const wsUrl = `ws://${message.toString()}:8080`;
+        const wsUrl = `ws://${rinfo.address}:8080`;
         udpClient.close();
         connectToWebSocket(wsUrl);
     });
@@ -69,14 +69,14 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
       //console.log('Message received:', event.data);
     };
 
-    ws.onclose = () => {
+    ws.onclose = (event) => {
       setConnectedState(false);
 
       // Give feedback
       console.log('WebSocket disconnected');
       SoundPlayer.playAsset(require("../Sounds/disconnect.mp3"));
       Snackbar.show({
-        text: 'Přijímač odpojen.',
+        text: `Přijímač odpojen. ${event.code}`,
         duration: Snackbar.LENGTH_SHORT,
         textColor: 'red',
         marginBottom: 5,
@@ -88,7 +88,7 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
     };
 
     ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
+      console.error('WebSocket error:', error.message);
       if (error.message === 'Connection reset') {
         Snackbar.show({
           text: 'Server přestal odpovídat, zkontroluj přijímač.',
