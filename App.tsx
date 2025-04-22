@@ -215,6 +215,7 @@ export default function App(): JSX.Element {
               rawMeasurement={rawMeasurement}
               connectedState={connectedState}
               lastGST={lastGST}
+              lastGGA={lastGGA}
             />
           )}
           {modalType.placing && <Placing nmeaParsed={nmeaParsed} placingSettings={placingSettings} setPlacingSettings={setPlacingSettings} />}

@@ -27,6 +27,7 @@ const ItemInfo = ({ item, textColor }) => (
     <Text style={[styles.title, { color: textColor }]}>Přesnost B/X: {item.accuB.toFixed(3)}m</Text>
     <Text style={[styles.title, { color: textColor }]}>Přesnost L/Y: {item.accuL.toFixed(3)}m</Text>
     <Text style={[styles.title, { color: textColor }]}>Přesnost H/Hbpv: {item.accuH.toFixed(3)}m</Text>
+    <Text style={[styles.title, { color: textColor }]}>Fixace: {item.fix}</Text>
     <Text style={[styles.title, { color: textColor }]}>PDOP: {item.pdop}</Text>
     <Text style={[styles.title, { color: textColor }]}>HDOP: {item.hdop}</Text>
     <Text style={[styles.title, { color: textColor }]}>Výška antény: {item.height}m</Text>

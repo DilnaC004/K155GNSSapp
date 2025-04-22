@@ -7,7 +7,7 @@ import {DataContext} from './Functions/DataContext';
 import {styles} from './Styles/styles';
 import SoundPlayer from 'react-native-sound-player';
 
-export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastGST}) => {
+export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastGST, lastGGA}) => {
   const {data, updateData} = useContext(DataContext);
   const [measurementSettings, setMeasurementSettings] = useState(
     data.measurementSettings,
@@ -90,18 +90,11 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastG
       height: pointSettings.height,
       offset: pointSettings.offset,
       code: pointSettings.code,
+      fix: measurementSettings.fix,
     };
 
     console.log(newPoint, measurementSettings);
 
-    // Give feedback
-    SoundPlayer.playAsset(require('././Sounds/point_saved.mp3'));
-    Snackbar.show({
-      text: `Uložen bod ${newPoint.title}`,
-      duration: Snackbar.LENGTH_SHORT,
-      textColor: 'green',
-      marginBottom: 5,
-    });
     // Log the received values
     if (projectSettings.projectId != null) {
       console.log(
@@ -117,6 +110,15 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastG
         return project;
       });
       updateData({projects: updatedData});
+      
+      // Give feedback
+      SoundPlayer.playAsset(require('././Sounds/point_saved.mp3'));
+      Snackbar.show({
+        text: `Uložen bod ${newPoint.title}`,
+        duration: Snackbar.LENGTH_SHORT,
+        textColor: 'green',
+        marginBottom: 5,
+      });
     } else {
       Alert.alert('Vyber zakázku');
     }
@@ -174,6 +176,7 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastG
           sumCoordB: 0,
           sumCoordL: 0,
           sumCoordH: 0,
+          fix: '',
         });
         return;
       };
@@ -187,6 +190,7 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastG
         sumCoordL: 0,
         sumCoordH: 0,
         nazev: (Number(measurementSettings.nazev) + 1).toString(),
+        fix: '',
       });
     }
   };
@@ -253,6 +257,18 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastG
     }
   };
 
+  const fixPriority = {
+    rtk: 1,
+    'rtk-float': 2,
+    'dgps-fix': 3,
+    fix: 4,
+    float: 5,
+    estimated: 6,
+    manual: 7,
+    simulated: 8,
+    default: 9,
+  };
+
   // Use useEffect to start and stop the timer
   useEffect(() => {
     let measuredTime = 0;
@@ -290,6 +306,17 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastG
       }
       if (lastGST.heightError > measurementSettings.coordAccuZ) {
         updateMeasurementSettings({coordAccuZ: lastGST.heightError});
+      }
+
+      // Save the worst fix quality
+      if (lastGGA) {
+        // Update worstFix based on priority
+        if (
+          !worstFix || // If no worstFix is set yet
+          (fixPriority[lastGGA.quality] || fixPriority.default) > (fixPriority[worstFix] || fixPriority.default)
+        ) {
+          updateMeasurementSettings({fix: lastGGA.quality});
+        }
       }
 
       //Measure RTK point

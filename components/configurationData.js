@@ -23,6 +23,7 @@ export default configurationData = {
           height: 0,
           offset: 0,
           code: 'test',
+          fix: 'rtk-fix',
         }, {
           title: 'Test2',
           b: 51.000000000,
@@ -41,6 +42,7 @@ export default configurationData = {
           height: 0,
           offset: 0,
           code: 'test',
+          fix: 'rtk-fix',
         }, {
           title: 'Test3',
           b: 49.000000000,
@@ -59,6 +61,7 @@ export default configurationData = {
           height: 0,
           offset: 0,
           code: 'test',
+          fix: 'rtk-fix',
         },
       ],
       pointCount: 3,
@@ -85,6 +88,7 @@ export default configurationData = {
           height: 0,
           offset: 0,
           code: 'test',
+          fix: 'rtk-fix',
         }, {
           title: 'Test2',
           b: 50.000000000,      // untransformed
@@ -103,6 +107,7 @@ export default configurationData = {
           height: 0,
           offset: 0,
           code: 'test',
+          fix: 'rtk-fix',
         },
       ],
       pointCount: 2,
@@ -188,6 +193,7 @@ export default configurationData = {
     startTime: null,
     endTime: null,
     intervalRawMeasurement: 0,
+    fix: '',
   },
   placingSettings: {
     points: null,
