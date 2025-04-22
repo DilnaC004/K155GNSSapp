@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FlatList, View, Text, TouchableOpacity, Modal, Button, Image } from 'react-native';
 import { styles } from '../../Styles/styles';
+import Icon from 'react-native-vector-icons/FontAwesome5';
 
 const Item = ({ item, onSelect, onInfoPress, isSelected }) => (
     <View style={styles.buttonContainer}>
@@ -10,9 +11,11 @@ const Item = ({ item, onSelect, onInfoPress, isSelected }) => (
       </Text>
     </TouchableOpacity>
     <TouchableOpacity onPress={() => onInfoPress(item)}>
-      <Image
-        source={require('../../Images/info.png')}
-        style={styles.icon}
+      <Icon
+        name='info'
+        size={30}
+        paddingRight={20}
+        color={'black'}
       />
     </TouchableOpacity>
   </View>
