@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useCallback } from 'react';
+import React, { useContext, useEffect, useCallback, useState } from 'react';
 import {
   FlatList,
   View,
@@ -8,7 +8,8 @@ import {
   PermissionsAndroid,
   Platform,
   Image,
-  Dimensions
+  Dimensions,
+  Modal
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import { DataContext } from '../../Functions/DataContext';
@@ -30,6 +31,7 @@ export default FlatListProject = ({
   setPlacingSettings
 }) => {
   const { data, updateData } = useContext(DataContext);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(null);
 
   const updatePlacingSettings = useCallback(
     (newSettings) => {
@@ -67,7 +69,7 @@ export default FlatListProject = ({
         />
         <TouchableOpacity
           onPress={() => {
-            deleteProject(item.title);
+            setDeleteModalVisible(item.title);
           }}>
           <Icon
             name='trash'
@@ -76,6 +78,39 @@ export default FlatListProject = ({
             color={'black'}
           />
         </TouchableOpacity>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={deleteModalVisible === item.title} // Show the modal only for the specific project
+          onRequestClose={() => {
+            setDeleteModalVisible(null); // Close the modal
+          }}>
+          <View style={{ marginTop: 270 }}>
+            <View style={styles.modalView}>
+              <Text style={styles.title}>
+                Opravdu chcete smazat tuto zakázku?
+              </Text>
+              <Button
+                title="Zpět"
+                onPress={() => {
+                  setDeleteModalVisible(null); // Close the modal
+                }}
+              />
+              <TouchableOpacity
+                onPress={() => {
+                  deleteProject(item.title);
+                  setDeleteModalVisible(null); // Close the modal after deletion
+                }}>
+                <Icon
+                  name='trash'
+                  size={30}
+                  paddingTop={20}
+                  color={'black'}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
       </View>
     );
   };
