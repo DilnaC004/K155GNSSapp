@@ -4,6 +4,7 @@ import { DataContext } from './Functions/DataContext';
 import { styles } from './Styles/styles';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 import SoundPlayer from 'react-native-sound-player';
+import Snackbar from 'react-native-snackbar';
 
 export default Header = ({ connectedState, ntripConnectedState, lastGGA, modalType, updateModalType, nmeaParsed }) => {
   const { data, updateData } = useContext(DataContext);
@@ -92,6 +93,44 @@ export default Header = ({ connectedState, ntripConnectedState, lastGGA, modalTy
     });
   };
 
+  const checkNmeaState = (modalType) => {
+    if (!connectedState) {
+      Snackbar.show({
+        text: 'Pro tuto akci připoj přijímač.',
+        duration: Snackbar.LENGTH_SHORT,
+        textColor: 'red',
+        marginBottom: 5,
+      });
+    } else if (connectedState && nmeaParsed.fix == null) {
+      Snackbar.show({
+        text: 'Čekám na fixaci...',
+        duration: Snackbar.LENGTH_SHORT,
+        textColor: 'red',
+        marginBottom: 5,
+      });
+    } else if (connectedState && nmeaParsed.fix != null) {
+      closeAll();
+
+      switch (modalType) {
+        case 'placing':
+          if (!modalType.placing) {
+            updateModalType({
+              placing: true,
+              measurement: false,
+            });
+          }
+
+        case 'skyplot':
+          if (!modalType.skyplot) {
+            updateModalType({
+              skyplot: true,
+              measurement: false,
+            });
+          }
+      }
+    }
+  }
+
   return (
     <View style={styles.headerContainer}>
       <TouchableOpacity
@@ -161,13 +200,7 @@ export default Header = ({ connectedState, ntripConnectedState, lastGGA, modalTy
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => {
-          closeAll();
-          if (!modalType.placing) {
-            updateModalType({
-              placing: true,
-              measurement: false,
-            });
-          }
+          checkNmeaState('placing');
         }}>
         <Icon
           name='flag'
@@ -193,13 +226,7 @@ export default Header = ({ connectedState, ntripConnectedState, lastGGA, modalTy
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => {
-          closeAll();
-          if (!modalType.skyplot) {
-            updateModalType({
-              skyplot: true,
-              measurement: false,
-            });
-          }
+          checkNmeaState('skyplot');
         }}>
         <Icon
           name='satellite'
