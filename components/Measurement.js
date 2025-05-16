@@ -312,8 +312,8 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastG
       if (lastGGA) {
         // Update worstFix based on priority
         if (
-          !worstFix || // If no worstFix is set yet
-          (fixPriority[lastGGA.quality] || fixPriority.default) > (fixPriority[worstFix] || fixPriority.default)
+          measurementSettings.fix == '' || // If no worstFix is set yet
+          (fixPriority[lastGGA.quality] || fixPriority.default) > (fixPriority[measurementSettings.fix] || fixPriority.default)
         ) {
           updateMeasurementSettings({fix: lastGGA.quality});
         }

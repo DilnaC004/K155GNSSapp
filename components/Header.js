@@ -93,7 +93,7 @@ export default Header = ({ connectedState, ntripConnectedState, lastGGA, modalTy
     });
   };
 
-  const checkNmeaState = (modalType) => {
+  const checkNmeaState = (modal) => {
     if (!connectedState) {
       Snackbar.show({
         text: 'Pro tuto akci připoj přijímač.',
@@ -109,24 +109,28 @@ export default Header = ({ connectedState, ntripConnectedState, lastGGA, modalTy
         marginBottom: 5,
       });
     } else if (connectedState && nmeaParsed.fix != null) {
-      closeAll();
-
-      switch (modalType) {
+      switch (modal) {
         case 'placing':
+          closeAll();
           if (!modalType.placing) {
             updateModalType({
               placing: true,
               measurement: false,
             });
           }
+          break;
 
         case 'skyplot':
+          closeAll();
           if (!modalType.skyplot) {
             updateModalType({
               skyplot: true,
               measurement: false,
             });
           }
+          break;
+        default:
+          break;
       }
     }
   }
