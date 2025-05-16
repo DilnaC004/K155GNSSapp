@@ -73,3 +73,8 @@ Packages can be found in the node_modules folder
 - dodelat preposilani RTK korekci do GNSS - moznost vypnuti, restartu, ukladani mnozstvi stazenych dat
 - implement a cap for RTCM data
 - divide receiver settings into measurement and general settings (dark theme, font size, i18n - localization)
+- polish the exports to match the collumns
+ 
+# Rozšíření vývoje GNSS aplikace - František Gurecký
+Přílohy bakalářské práce jsou k nalezení ve složce **thesis**.
+Attachments related to the bachelor's thesis are located in the **thesis** folder.
