@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { FlatList, View, Text, TouchableOpacity, Modal, Button, Image } from 'react-native';
 import { styles } from '../../Styles/styles';
 import Icon from 'react-native-vector-icons/FontAwesome5';
 
-const Item = ({ item, onSelect, onInfoPress, isSelected }) => (
-    <View style={styles.buttonContainer}>
+const Item = React.memo(({ item, onSelect, onInfoPress, isSelected }) => (
+  <View style={styles.buttonContainer}>
     <TouchableOpacity onPress={() => onSelect(item)}>
       <Text style={[styles.title, isSelected && { color: 'red' }]}>
         {item.name}
@@ -19,25 +19,32 @@ const Item = ({ item, onSelect, onInfoPress, isSelected }) => (
       />
     </TouchableOpacity>
   </View>
-);
+));
 
 const FlatListMountpoint = ({ mountpoints, onSelectMountpoint }) => {
   const [selectedMountpoint, setSelectedMountpoint] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
 
-  const renderItem = ({ item }) => (
-    <Item
-      item={item}
-      onSelect={(selected) => {
-        setSelectedMountpoint(selected);
-        onSelectMountpoint(selected);
-      }}
-      onInfoPress={(item) => {
-        setSelectedMountpoint(item);
-        setModalVisible(true);
-      }}
-      isSelected={selectedMountpoint && selectedMountpoint.id === item.id}
-    />
+  const handleSelect = useCallback((item) => {
+    setSelectedMountpoint(item);
+    onSelectMountpoint(item);
+  }, [onSelectMountpoint]);
+
+  const handleInfoPress = useCallback((item) => {
+    setSelectedMountpoint(item);
+    setModalVisible(true);
+  }, []);
+
+  const renderItem = useCallback(
+    ({ item }) => (
+      <Item
+        item={item}
+        onSelect={handleSelect}
+        onInfoPress={handleInfoPress}
+        isSelected={selectedMountpoint && selectedMountpoint.id === item.id}
+      />
+    ),
+    [selectedMountpoint, handleSelect, handleInfoPress]
   );
 
   const getCarrierText = (carrier) => {

@@ -16,6 +16,7 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
   const gps = new GPS();
   let intervalId = null;
   const [socket, setSocket] = useState(null);
+  let localMessageBuffer = [];
   let messageCounter = 0;
   let epochCounter = 0;
 
@@ -275,7 +276,7 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
 
       // Add the message to the NMEA messages
 
-      setNmeaMessages(prevMessages => [...prevMessages, `${epochCounter}: ${nmeaSentence}`]);
+      localMessageBuffer.push(`${epochCounter}: ${nmeaSentence}`);
       messageCounter++;
 
       gps.update(nmeaSentence);
@@ -286,6 +287,8 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
       if (nmeaSentence.includes('GNGST')) {
         getLastGST(GPS.Parse(nmeaSentence));
         
+        setNmeaMessages(prevMessages => [...prevMessages, ...localMessageBuffer]);
+        localMessageBuffer = [];
         epochCounter++;
 
         if (epochCounter >= 3) {
