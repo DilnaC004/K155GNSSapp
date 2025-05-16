@@ -7,7 +7,7 @@ import { styles } from '../Styles/styles';
 import NmeaViewer from './NmeaViewer';
 import GPS from 'gps';
 
-export default Communication = ({ getNmeaRead, resetConnection, connectionSettings, setConnectionSettings, sendMessage, rtcmNtrip, getLastGGA }) => {
+export default Communication = ({ getNmeaRead, resetConnection, connectionSettings, setConnectionSettings, sendMessage, rtcmNtrip, getLastGGA, nmeaMessages }) => {
   const [intervalId, setIntervalId] = useState(0);
   const gps = new GPS();
   const isEnabledRef = useRef(connectionSettings.isEnabled);
@@ -52,6 +52,8 @@ export default Communication = ({ getNmeaRead, resetConnection, connectionSettin
       <Text style={styles.description}>Poté spusť hotspot a vrať se do aplikace.</Text>
       <Text style={styles.description}>Nyní je vše nastaveno a po chvíli by se měl přijímač sám připojit.</Text>
       <Text style={styles.description}>Na iOS nelze měnit název hotspotu, je třeba změnit název zařízení.</Text>
+      <Text style={styles.headline}>Příchozí NMEA zprávy:</Text>
+      <NmeaViewer nmeaMessages={nmeaMessages}/>
     </View>
   );
 };

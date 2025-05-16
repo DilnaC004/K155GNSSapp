@@ -68,6 +68,7 @@ export default function App(): JSX.Element {
   const [lastGGA, setLastGGA] = useState('');
   const [lastGST, setLastGST] = useState('');
   const [data, setData] = useState(configurationData);
+  const [nmeaMessages, setNmeaMessages] = useState([]);
   let checkParsedLon = 0;
 
 
@@ -123,7 +124,7 @@ export default function App(): JSX.Element {
     rtcmNtrip,
     setRtcmNtrip,
     startSendingNtripData,
-  } = useWebSockets(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement, connectionSettings, setConnectionSettings, setConnectedState);
+  } = useWebSockets(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement, connectionSettings, setConnectionSettings, setConnectedState, setNmeaMessages);
 
   useEffect(() => {
     setConnectionSettings(prevSettings => ({
@@ -205,6 +206,7 @@ export default function App(): JSX.Element {
             connectionSettings={connectionSettings}
             setConnectionSettings={setConnectionSettings}
             sendMessage={sendMessage}
+            nmeaMessages={nmeaMessages}
           />}
           {modalType.ntrip && <Ntrip getRtcmNtrip={getRtcmNtrip} lastGGA={lastGGA} startSendingNtripData={startSendingNtripData} socket={socket} setNtripConnectedState={setNtripConnectedState} />}
           {modalType.project && <Project clearStorage={clearDataStorage} setPlacingSettings={setPlacingSettings} />}

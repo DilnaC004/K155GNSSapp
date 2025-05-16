@@ -10,12 +10,14 @@ import dgram from 'react-native-udp';
 import SoundPlayer from "react-native-sound-player";
 
 
-function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement, connectionSettings, setConnectionSettings, setConnectedState) {
+function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement, connectionSettings, setConnectionSettings, setConnectedState, setNmeaMessages) {
   const [rtcmNtrip, setRtcmNtrip] = useState(Buffer.alloc(0));
   let buffer = '';  // Buffer to store partial data
   const gps = new GPS();
   let intervalId = null;
   const [socket, setSocket] = useState(null);
+  let messageCounter = 0;
+  let epochCounter = 0;
 
   updateConnectionSettings = (newSettings) => {
     setConnectionSettings((prevSettings) => ({
@@ -83,6 +85,12 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
       });
       getLastGGA('');
       getLastGST('');
+
+      // Also clear the nmea messages
+      setNmeaMessages([]);
+      messageCounter = 0;
+      epochCounter = 0;
+
       // Restart the process
       createConnection();
     };
@@ -264,6 +272,12 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
 
       // Process the valid NMEA sentence
       //console.log('Valid NMEA Sentence:', nmeaSentence);
+
+      // Add the message to the NMEA messages
+
+      setNmeaMessages(prevMessages => [...prevMessages, `${epochCounter}: ${nmeaSentence}`]);
+      messageCounter++;
+
       gps.update(nmeaSentence);
       if (nmeaSentence.includes('GNGGA')) {
         getLastGGA(GPS.Parse(nmeaSentence));
@@ -271,6 +285,16 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
 
       if (nmeaSentence.includes('GNGST')) {
         getLastGST(GPS.Parse(nmeaSentence));
+        
+        epochCounter++;
+
+        if (epochCounter >= 3) {
+          setNmeaMessages(prevMessages => {
+            sliceCount = (messageCounter/3).toFixed(0);
+            messageCounter = 2*(messageCounter/3).toFixed(0);
+            return [...prevMessages.slice(sliceCount)];
+          });
+        }
       }
 
       gps.on('data', parsed => {
@@ -278,7 +302,7 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
       });
 
       if (nmeaSentence.includes('GLL')) {
-        //console.log('Complete NMEA data for the second:', latestState);
+        //console.log('Complete NMEA data for the second:', latestState);        
         getNmeaRead(latestState);
         latestState = null;
       }
