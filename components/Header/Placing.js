@@ -51,8 +51,9 @@ export const Placing = ({ nmeaParsed, placingSettings, setPlacingSettings }) => 
   }, []);
 
   useEffect(() => {
+    // No project selected yet, there is nothing to stake out
     updatePlacingSettings({
-      points: data.projects[data.projectSettings.projectId].points,
+      points: data.projects?.[data.projectSettings.projectId]?.points ?? null,
     });
   }, [data.projects, data.projectSettings.projectId]);
 
@@ -64,7 +65,13 @@ export const Placing = ({ nmeaParsed, placingSettings, setPlacingSettings }) => 
 
   const calculate = useCallback(() => {
     // Have to use the data directly because useEffect triggers late
-    const point = data.projects[data.projectSettings.projectId].points[placingSettings.selectedPoint];
+    const point =
+      data.projects?.[data.projectSettings.projectId]?.points?.[placingSettings.selectedPoint];
+
+    if (!point) {
+      return;
+    }
+
     const positionJtsk = etrs2jtsk(nmeaParsed.lat, nmeaParsed.lon, nmeaParsed.alt);
     const placingJtsk = {
       X: point.x,

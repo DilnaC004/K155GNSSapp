@@ -29,6 +29,19 @@ export default Project = ({ clearStorage, setPlacingSettings, connectionSettings
     }));
   };
 
+  // Nothing exists until the user makes a project, so every button that reaches
+  // into data.projects has to check first
+  const hasProject = data.projects?.[projectSettings.projectId] != null;
+
+  const warnNoProject = () => {
+    Snackbar.show({
+      text: 'Zvol zakázku!',
+      duration: Snackbar.LENGTH_SHORT,
+      textColor: 'red',
+      marginBottom: 5,
+    });
+  };
+
   const closeAll = () => {
     updateProjectSettings({
       showFlatList: false,
@@ -89,27 +102,31 @@ export default Project = ({ clearStorage, setPlacingSettings, connectionSettings
           title="Zobraz uložené body"
           onPress={() => {
             closeAll();
-            if (projectSettings.projectId != 'null') {
-              updateProjectSettings({
-                showPointFlatList: !projectSettings.showPointFlatList,
-              });
+            if (!hasProject) {
+              warnNoProject();
+              return;
             }
+            updateProjectSettings({
+              showPointFlatList: !projectSettings.showPointFlatList,
+            });
           }}
         />
         <Button
           title="Vlož bod"
           onPress={() => {
             closeAll();
-            if (projectSettings.projectId != 'null') {
-              updateProjectSettings({
-                showCreatePoint: !projectSettings.showCreatePoint,
-              });
+            if (!hasProject) {
+              warnNoProject();
+              return;
             }
+            updateProjectSettings({
+              showCreatePoint: !projectSettings.showCreatePoint,
+            });
           }}
         />
       </View>
       {projectSettings.showPointFlatList &&
-        data.projects != null && ( // conditional rendering based on the new piece of state
+        hasProject && ( // conditional rendering based on the new piece of state
           <FlatListPoint
             projectSettings={projectSettings}
             updateProjectSettings={updateProjectSettings}
@@ -128,47 +145,37 @@ export default Project = ({ clearStorage, setPlacingSettings, connectionSettings
           title="Export"
           onPress={() => {
             closeAll();
-            if (projectSettings.projectId != 'null') {
-              updateProjectSettings({
-                showExportModal: !projectSettings.showExportModal,
-              });
-            } else {
-              Snackbar.show({
-                text: 'Zvol zakázku!',
-                duration: Snackbar.LENGTH_SHORT,
-                textColor: 'red',
-                marginBottom: 5,
-              });
+            if (!hasProject) {
+              warnNoProject();
+              return;
             }
+            updateProjectSettings({
+              showExportModal: !projectSettings.showExportModal,
+            });
           }}
         />
         <Button
           title="Import"
           onPress={() => {
             closeAll();
-            if (projectSettings.projectId != 'null') {
-              updateProjectSettings({
-                showImportModal: !projectSettings.showImportModal,
-              });
-            } else {
-              Snackbar.show({
-                text: 'Zvol zakázku!',
-                duration: Snackbar.LENGTH_SHORT,
-                textColor: 'red',
-                marginBottom: 5,
-              });
+            if (!hasProject) {
+              warnNoProject();
+              return;
             }
+            updateProjectSettings({
+              showImportModal: !projectSettings.showImportModal,
+            });
           }}
         />
         {projectSettings.showExportModal &&
-          data.projects != null && (
+          hasProject && (
             <ExportModal
               projectSettings={projectSettings}
               updateProjectSettings={updateProjectSettings}
             />
           )}
         {projectSettings.showImportModal &&
-          data.projects != null && (
+          hasProject && (
             <ImportModal
               projectSettings={projectSettings}
               updateProjectSettings={updateProjectSettings}

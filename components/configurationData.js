@@ -145,7 +145,7 @@ export default configurationData = {
   },
   projectSettings: {
     title: '',
-    projectId: 0,
+    projectId: null,
     date: '',
     description: '',
     projectPointCount: '',

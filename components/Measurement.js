@@ -48,6 +48,8 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastG
     }));
   };
   const [projectSettings, setProjectSettings] = useState(data.projectSettings);
+  // Whether a project is selected at all, checked before anything reads it
+  const selectedProject = data.projects?.[projectSettings.projectId];
 
   // Follow the shared data until the user edits the antenna height or the code
   useEffect(() => {
@@ -137,11 +139,8 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastG
     console.log(newPoint, measurementSettings);
 
     // Log the received values
-    if (projectSettings.projectId != null) {
-      console.log(
-        'Point saved into project: ' +
-          data.projects[projectSettings.projectId].title,
-      );
+    if (selectedProject) {
+      console.log('Point saved into project: ' + selectedProject.title);
       const updatedData = data.projects.map((project, index) => {
         if (index === projectSettings.projectId) {
           const updatedPoints = [...project.points, newPoint];
@@ -169,6 +168,17 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastG
     if (!connectedState) {
       Snackbar.show({
         text: 'Před měřením se připoj k přijímači!',
+        duration: Snackbar.LENGTH_SHORT,
+        textColor: 'red',
+        marginBottom: 5,
+      });
+      return;
+    }
+    if (!selectedProject) {
+      // Give feedback
+      SoundPlayer.playAsset(require('././Sounds/error.mp3'));
+      Snackbar.show({
+        text: 'Není zvolena zakázka!',
         duration: Snackbar.LENGTH_SHORT,
         textColor: 'red',
         marginBottom: 5,
@@ -432,26 +442,15 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastG
     };
   }, [nmeaParsed]);
 
+  // Only answers whether the name is free, the caller reports a missing project
   const checkNameAvailability = (name) => {
-    if (projectSettings.projectId != null) {
-      const project = data.projects[projectSettings.projectId];
-      const existingPoints = [...project.points];
+    const existingPoints = [...selectedProject.points];
 
-      if (existingPoints.some(point => point.title === name)) {
-        return false;
-      }
-
-      return name;
+    if (existingPoints.some(point => point.title === name)) {
+      return false;
     }
-    // Give feedback
-    SoundPlayer.playAsset(require('././Sounds/error.mp3'));
-    Snackbar.show({
-      text: 'Není zvolena zakázka!',
-      duration: Snackbar.LENGTH_SHORT,
-      textColor: 'red',
-      marginBottom: 5,
-    });
-    return false;
+
+    return name;
   };
 
   return (

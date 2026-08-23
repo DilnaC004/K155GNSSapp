@@ -8,7 +8,9 @@ import MapScript from './MapScript';
 
 const Map = ({ updateModalType, placingSettings, setPlacingSettings }) => {
   const { data, updateData } = useContext(DataContext);
-  const point = data.projects[data.projectSettings.projectId].points;
+  // No project selected means no points to draw, the screen says so below
+  const project = data.projects?.[data.projectSettings.projectId];
+  const point = project?.points ?? [];
   const webViewRef = useRef(null);
   const [isEnabled, setIsEnabled] = useState(false);
 

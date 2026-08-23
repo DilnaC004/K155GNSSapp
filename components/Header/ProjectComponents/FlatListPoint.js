@@ -95,10 +95,14 @@ export default FlatListPoint = ({
 
   };
 
+  // Placing renders this without checking, so an empty project list has to be
+  // survivable here too
+  const project = data.projects?.[projectSettings.projectId];
+
   return (
     <View style={{ height: Dimensions.get("window").height / 4 }}>
       <FlatList
-        data={data.projects[projectSettings.projectId].points}
+        data={project?.points ?? []}
         renderItem={renderItemID}
         keyExtractor={item => item.title}
       />
@@ -156,7 +160,7 @@ export default FlatListPoint = ({
             {!placing &&
               <TouchableOpacity
                 onPress={() => {
-                  deletePoint(selectedPoint.title, data.projects[projectSettings.projectId].title);
+                  deletePoint(selectedPoint.title, project.title);
                   setModalVisible1(!modalVisible1);
                   setModalVisible2(!modalVisible2);
                 }}>
