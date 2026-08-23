@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useContext} from 'react';
+import React, {useState, useEffect, useContext, useRef} from 'react';
 import {View, Text, TextInput, Button, Switch, Alert} from 'react-native';
 import Snackbar from 'react-native-snackbar';
 import {etrs2jtsk} from './Calculations/transformation';
@@ -10,6 +10,17 @@ import {formatBytes, formatDuration, locationText} from './Functions/serverForma
 
 // How often the server is asked whether the static recording is still growing
 const STATIC_POLL_MS = 3000;
+
+// Bumps the trailing number of a point name, keeping any prefix and padding:
+// '1' -> '2', 'B09' -> 'B10', 'Bod' stays as it is
+const nextPointName = name => {
+  const match = name?.toString().match(/^(.*?)(\d+)$/);
+  if (!match) {
+    return name;
+  }
+  const [, prefix, digits] = match;
+  return prefix + String(Number(digits) + 1).padStart(digits.length, '0');
+};
 
 export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastGST, lastGGA, connectionSettings}) => {
   const {data, updateData} = useContext(DataContext);
@@ -26,13 +37,35 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastG
     }));
   };
   const [pointSettings, setPointSettings] = useState(data.pointSettings);
+  // This screen is mounted before the stored data is loaded, so it must not
+  // write its starting values back over what came out of the storage
+  const pointSettingsEdited = useRef(false);
   const updatePointSettings = newSettings => {
+    pointSettingsEdited.current = true;
     setPointSettings(prevSettings => ({
       ...prevSettings,
       ...newSettings,
     }));
   };
   const [projectSettings, setProjectSettings] = useState(data.projectSettings);
+
+  // Follow the shared data until the user edits the antenna height or the code
+  useEffect(() => {
+    if (!pointSettingsEdited.current) {
+      setPointSettings(data.pointSettings);
+    }
+  }, [data.pointSettings]);
+
+  // The antenna height and code are edited here, keep them in the shared data
+  useEffect(() => {
+    return () => {
+      if (pointSettingsEdited.current) {
+        updateData({
+          pointSettings: pointSettings,
+        });
+      }
+    };
+  }, [pointSettings]);
 
   const [isEnabled, setIsEnabled] = useState(false);
   const toggleSwitch = () => setIsEnabled(previousState => !previousState);
@@ -197,7 +230,7 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastG
         sumCoordB: 0,
         sumCoordL: 0,
         sumCoordH: 0,
-        nazev: (Number(measurementSettings.nazev) + 1).toString(),
+        nazev: nextPointName(measurementSettings.nazev),
         fix: '',
       });
     }
@@ -241,6 +274,7 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastG
         const stopped = await api.staticStop();
         setStaticState({recording: false});
         refreshStorage();
+        updateMeasurementSettings({nazev: nextPointName(measurementSettings.nazev)});
         SoundPlayer.playAsset(require('././Sounds/point_saved.mp3'));
         Snackbar.show({
           text: `Statické měření uloženo: ${stopped.raw_file} (${formatDuration(stopped.duration_s)}, ${formatBytes(stopped.bytes_written)})`,
@@ -431,6 +465,7 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastG
       )}
       {(nmeaParsed.fix != null && connectedState) && (
         <View>
+          <Text style={styles.title}>Číslo bodu</Text>
           <TextInput
             style={styles.input}
             value={measurementSettings.nazev.toString()}
@@ -439,6 +474,26 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastG
               updateMeasurementSettings({nazev: value});
             }}
             keyboardType="numeric" // Set the keyboard to numeric mode
+          />
+          <Text style={styles.title}>Výška antény [m]</Text>
+          <TextInput
+            style={styles.input}
+            value={pointSettings.height.toString()}
+            onChangeText={value => {
+              updatePointSettings({height: value});
+            }}
+            placeholder="Výška antény [m]"
+            maxLength={5} // Set the maximum number of characters allowed
+            keyboardType="numeric" // Set the keyboard to numeric mode
+          />
+          <Text style={styles.title}>Kód</Text>
+          <TextInput
+            style={styles.input}
+            value={pointSettings.code.toString()}
+            onChangeText={value => {
+              updatePointSettings({code: value});
+            }}
+            placeholder="Kód"
           />
           <View style={styles.buttonContainer}>
             <Button title={switchRtk} onPress={handleRtkPress} />
