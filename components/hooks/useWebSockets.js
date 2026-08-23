@@ -37,8 +37,8 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
     udpClient.on('message', (message, rinfo) => {
         console.log(`Received UDP message: ${message} from ${rinfo.address}`);
 
-        // Save the address of the server
-        // updateConnectionSettings({ hostIP: message.toString() });
+        // Save the address of the server, the HTTP API uses the same host
+        updateConnectionSettings({ hostIP: rinfo.address });
 
         // Use the received IP to connect to WebSocket
         const wsUrl = `ws://${rinfo.address}:8080`;

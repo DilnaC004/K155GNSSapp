@@ -77,6 +77,10 @@ export const styles = {
     paddingHorizontal: 16,
     paddingVertical: 8,
   },
+  // Bottom padding so the last row of a scrolled settings page is reachable
+  nastContent: {
+    paddingBottom: 24,
+  },
   appVersion: {
     fontWeight: 'bold',
     marginBottom: 8,

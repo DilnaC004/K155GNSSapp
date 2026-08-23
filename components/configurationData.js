@@ -156,6 +156,7 @@ export default configurationData = {
     showCreatePoint: false,
     showExportModal: false,
     showImportModal: false,
+    showStaticPoints: false,
   },
   connectionSettings: {
     isEnabled: true,

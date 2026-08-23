@@ -187,7 +187,7 @@ export default function App(): JSX.Element {
   }, []);
 
   return (
-    <SafeAreaView>
+    <SafeAreaView style={{flex: 1}}>
       <DataContext.Provider value={valueContext}>
         <Header
           connectedState={connectedState}
@@ -197,7 +197,7 @@ export default function App(): JSX.Element {
           updateModalType={updateModalType}
           nmeaParsed={nmeaParsed}
         />
-        <View>
+        <View style={{flex: 1}}>
           {modalType.communication && <Communication
             getNmeaRead={getNmeaRead}
             rtcmNtrip={rtcmNtrip}
@@ -209,8 +209,8 @@ export default function App(): JSX.Element {
             nmeaMessages={nmeaMessages}
           />}
           {modalType.ntrip && <Ntrip getRtcmNtrip={getRtcmNtrip} lastGGA={lastGGA} startSendingNtripData={startSendingNtripData} socket={socket} setNtripConnectedState={setNtripConnectedState} />}
-          {modalType.project && <Project clearStorage={clearDataStorage} setPlacingSettings={setPlacingSettings} />}
-          {modalType.point && <Point />}
+          {modalType.project && <Project clearStorage={clearDataStorage} setPlacingSettings={setPlacingSettings} connectionSettings={connectionSettings} />}
+          {modalType.point && <Point connectionSettings={connectionSettings} connectedState={connectedState} />}
           {modalType.measurement && (
             <Measurement
               nmeaParsed={nmeaParsed}
@@ -218,6 +218,7 @@ export default function App(): JSX.Element {
               connectedState={connectedState}
               lastGST={lastGST}
               lastGGA={lastGGA}
+              connectionSettings={connectionSettings}
             />
           )}
           {modalType.placing && <Placing nmeaParsed={nmeaParsed} placingSettings={placingSettings} setPlacingSettings={setPlacingSettings} />}

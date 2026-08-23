@@ -1,14 +1,21 @@
 import React, {useState, useEffect, useContext} from 'react';
-import {View, Text, TextInput, Button, Switch} from 'react-native';
+import {View, Text, TextInput, Button, Switch, Alert} from 'react-native';
 import Snackbar from 'react-native-snackbar';
-import RNFS from 'react-native-fs';
 import {etrs2jtsk} from './Calculations/transformation';
 import {DataContext} from './Functions/DataContext';
 import {styles} from './Styles/styles';
 import SoundPlayer from 'react-native-sound-player';
+import useServerApi, {serverErrorText} from './hooks/useServerApi';
+import {formatBytes, formatDuration, locationText} from './Functions/serverFormat';
 
-export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastGST, lastGGA}) => {
+// How often the server is asked whether the static recording is still growing
+const STATIC_POLL_MS = 3000;
+
+export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastGST, lastGGA, connectionSettings}) => {
   const {data, updateData} = useContext(DataContext);
+  const api = useServerApi(connectionSettings);
+  const [staticState, setStaticState] = useState({recording: false});
+  const [writingTo, setWritingTo] = useState(null);
   const [measurementSettings, setMeasurementSettings] = useState(
     data.measurementSettings,
   );
@@ -31,7 +38,8 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastG
   const toggleSwitch = () => setIsEnabled(previousState => !previousState);
   const switchCoordinates = isEnabled ? 'ETRS89' : 'S-JTSK';
   const switchRtk = measurementSettings.boolRtk ? 'ulož' : 'měř RTK';
-  const switchRaw = measurementSettings.boolRaw ? 'ulož' : 'měř RAW';
+  // The static recording state comes from the server, not from local state
+  const switchRaw = staticState.recording ? 'ulož RAW' : 'měř RAW';
   const switchX = isEnabled ? 'B [°]' : 'X [m]';
   const switchY = isEnabled ? 'L [°]' : 'Y [m]';
   const switchZ = isEnabled ? 'H [m]' : 'H [m]';
@@ -195,68 +203,119 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastG
     }
   };
 
-  const handleRawPress = () => {
-    if (!measurementSettings.startTime) {
-      updateMeasurementSettings({
-        startTime: new Date(),
-        boolRaw: !measurementSettings.boolRaw,
-        endTime: null,
+  // Static measurement is recorded by the server, not by the phone. It runs
+  // independently of the RTK averaging above and survives a disconnect.
+  const refreshStaticStatus = async () => {
+    try {
+      const status = await api.staticStatus();
+      setStaticState(status);
+      return status;
+    } catch (error) {
+      console.log('Static status failed:', serverErrorText(error));
+      return null;
+    }
+  };
+
+  const refreshStorage = async () => {
+    try {
+      const storage = await api.storageStatus();
+      setWritingTo(storage.writing_to);
+    } catch (error) {
+      console.log('Storage status failed:', serverErrorText(error));
+    }
+  };
+
+  const handleRawPress = async () => {
+    if (!api.hasServer) {
+      Snackbar.show({
+        text: 'Adresa serveru není známa, počkej na připojení.',
+        duration: Snackbar.LENGTH_SHORT,
+        textColor: 'red',
+        marginBottom: 5,
       });
-      storeRawData();
+      return;
+    }
+
+    if (staticState.recording) {
+      try {
+        const stopped = await api.staticStop();
+        setStaticState({recording: false});
+        refreshStorage();
+        SoundPlayer.playAsset(require('././Sounds/point_saved.mp3'));
+        Snackbar.show({
+          text: `Statické měření uloženo: ${stopped.raw_file} (${formatDuration(stopped.duration_s)}, ${formatBytes(stopped.bytes_written)})`,
+          duration: Snackbar.LENGTH_LONG,
+          textColor: 'green',
+          marginBottom: 5,
+        });
+      } catch (error) {
+        // The server may have stopped on its own, resync either way
+        refreshStaticStatus();
+        SoundPlayer.playAsset(require('././Sounds/error.mp3'));
+        Snackbar.show({
+          text: serverErrorText(error),
+          duration: Snackbar.LENGTH_SHORT,
+          textColor: 'red',
+          marginBottom: 5,
+        });
+      }
+      return;
+    }
+
+    const pointId = measurementSettings.nazev?.toString().trim();
+    if (!pointId) {
+      SoundPlayer.playAsset(require('././Sounds/error.mp3'));
+      Snackbar.show({
+        text: 'Zadej název bodu!',
+        duration: Snackbar.LENGTH_SHORT,
+        textColor: 'red',
+        marginBottom: 5,
+      });
+      return;
+    }
+
+    try {
+      const started = await api.staticStart(pointId);
+      setStaticState(started);
+      SoundPlayer.playAsset(require('././Sounds/measurement_start.mp3'));
+      Snackbar.show({
+        text: `Statické měření běží, soubor ${started.raw_file} na ${locationText(started.location ?? writingTo)}.`,
+        duration: Snackbar.LENGTH_LONG,
+        textColor: 'green',
+        marginBottom: 5,
+      });
+    } catch (error) {
+      // A recording started before the app reconnected shows up as 409
+      refreshStaticStatus();
+      SoundPlayer.playAsset(require('././Sounds/error.mp3'));
+      Snackbar.show({
+        text: serverErrorText(error),
+        duration: Snackbar.LENGTH_SHORT,
+        textColor: 'red',
+        marginBottom: 5,
+      });
+    }
+  };
+
+  // Pick up a recording that kept running while the app was away
+  useEffect(() => {
+    if (connectedState && api.hasServer) {
+      refreshStaticStatus();
+      refreshStorage();
     } else {
-      updateMeasurementSettings({
-        startTime: null,
-        boolRaw: !measurementSettings.boolRaw,
-        endTime: new Date(),
-        formattedTime: '00:00:00',
-      });
-      updateMeasurementSettings({
-        coordAccuX: 0,
-        coordAccuY: 0,
-        coordAccuZ: 0,
-        sumCoordB: 0,
-        sumCoordL: 0,
-        sumCoordH: 0,
-        nazev: measurementSettings.nazev + 1,
-      });
-      clearInterval(measurementSettings.intervalRawMeasurement);
+      setStaticState({recording: false});
+      setWritingTo(null);
     }
-  };
+  }, [connectedState, api.baseUrl]);
 
-  const storeRawData = () => {
-    const filePath =
-      RNFS.DownloadDirectoryPath + '/raw_' + `${data.measurementSettings.nazev}.txt`; // Works only on Android
-  
-    let storeData = [];
-  
-    // Check if raw measurement storage is enabled
-    if (!measurementSettings.boolRaw) {
-      storeData.push(rawMeasurement);
-  
-      // Save data to the file every 20 seconds
-      const interval = setInterval(() => {
-        if (storeData.length > 0) {
-          const dataToWrite = storeData.join('\n') + '\n';
-          RNFS.appendFile(filePath, dataToWrite, 'utf8')
-            .then(() => {
-              console.log('Data written to file:', filePath);
-            })
-            .catch(err => {
-              console.log('Error writing to file:', err.message);
-            });
-  
-          // Clear the storeData array after writing to file
-          storeData = [];
-        }
-      }, 20000);
-  
-      // Save the interval reference to stop it later if needed
-      updateMeasurementSettings({
-        intervalRawMeasurement: interval,
-      });
+  // bytes_written climbing is the only proof data is really arriving
+  useEffect(() => {
+    if (!staticState.recording || !api.hasServer) {
+      return;
     }
-  };
-
+    const pollId = setInterval(refreshStaticStatus, STATIC_POLL_MS);
+    return () => clearInterval(pollId);
+  }, [staticState.recording, api.baseUrl]);
   const fixPriority = {
     rtk: 1,
     'rtk-float': 2,
@@ -385,6 +444,49 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastG
             <Button title={switchRtk} onPress={handleRtkPress} />
             <Button title={switchRaw} onPress={handleRawPress} />
           </View>
+          {staticState.recording ? (
+            <View style={styles.tableContainer}>
+              <View style={styles.tableRow}>
+                <Text style={styles.tableHeader}>Statické měření :</Text>
+                <Text style={styles.tableData}>běží</Text>
+              </View>
+              <View style={styles.tableRow}>
+                <Text style={styles.tableHeader}>Soubor :</Text>
+                <Text style={styles.tableData}>{staticState.raw_file}</Text>
+              </View>
+              <View style={styles.tableRow}>
+                <Text style={styles.tableHeader}>Uloženo na :</Text>
+                <Text style={styles.tableData}>
+                  {locationText(staticState.location ?? writingTo)}
+                </Text>
+              </View>
+              <View style={styles.tableRow}>
+                <Text style={styles.tableHeader}>Doba statiky :</Text>
+                <Text style={styles.tableData}>
+                  {formatDuration((Date.now() - staticState.start_ns / 1e6) / 1000)}
+                </Text>
+              </View>
+              <View style={styles.tableRow}>
+                <Text style={styles.tableHeader}>Zapsáno :</Text>
+                <Text style={styles.tableData}>
+                  {formatBytes(staticState.bytes_written)}
+                </Text>
+              </View>
+              {staticState.last_error != null && (
+                <View style={styles.tableRow}>
+                  <Text style={styles.tableHeader}>Chyba :</Text>
+                  <Text style={styles.tableData}>{staticState.last_error}</Text>
+                </View>
+              )}
+            </View>
+          ) : (
+            writingTo != null && (
+              <View style={styles.tableRow}>
+                <Text style={styles.tableHeader}>Statika se uloží na :</Text>
+                <Text style={styles.tableData}>{locationText(writingTo)}</Text>
+              </View>
+            )
+          )}
           <View style={styles.tableContainer}>
             <View style={styles.buttonContainer}>
               <View>

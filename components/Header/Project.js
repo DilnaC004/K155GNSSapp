@@ -10,8 +10,9 @@ import FlatListPoint from './ProjectComponents/FlatListPoint';
 import ProjectDescription from './ProjectComponents/ProjectDescription';
 import ExportModal from './ProjectComponents/ExportModal';
 import ImportModal from './ProjectComponents/ImportModal';
+import FlatListStaticPoints from './ProjectComponents/FlatListStaticPoints';
 
-export default Project = ({ clearStorage, setPlacingSettings }) => {
+export default Project = ({ clearStorage, setPlacingSettings, connectionSettings }) => {
   const { data, updateData } = useContext(DataContext);
   const [pointSettings, setPointSettings] = useState(data.pointSettings);
   const updatePointSettings = newSettings => {
@@ -35,7 +36,8 @@ export default Project = ({ clearStorage, setPlacingSettings }) => {
       showCreateProject: false,
       showPointFlatList: false,
       showExportModal: false,
-      showImportModal: false
+      showImportModal: false,
+      showStaticPoints: false
     });
   }
 
@@ -173,6 +175,20 @@ export default Project = ({ clearStorage, setPlacingSettings }) => {
             />
           )}
       </View>
+      <View style={styles.buttonContainer}>
+        <Button
+          title="Statická měření na přijímači"
+          onPress={() => {
+            closeAll();
+            updateProjectSettings({
+              showStaticPoints: !projectSettings.showStaticPoints,
+            });
+          }}
+        />
+      </View>
+      {projectSettings.showStaticPoints && (
+        <FlatListStaticPoints connectionSettings={connectionSettings} />
+      )}
     </View>
   );
 };

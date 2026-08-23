@@ -1,19 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, FlatList } from 'react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
 
+// A plain ScrollView, not a FlatList. The window only ever holds the last few
+// epochs of sentences, so there is nothing to virtualise, and a FlatList here
+// would sit inside the scrolled Communication page and break its windowing.
 const NmeaViewer = ({ nmeaMessages }) => {
   return (
     <View style={styles.container}>
-      <FlatList
-        data={nmeaMessages}
-        keyExtractor={(_, index) => index.toString()}
-        renderItem={({ item }) => (
-          <View style={styles.messageContainer}>
-            <Text style={styles.messageText}>{item}</Text>
-          </View>
-        )}
+      <ScrollView
         contentContainerStyle={styles.scrollViewContent}
-      />
+        nestedScrollEnabled>
+        {nmeaMessages.map((message, index) => (
+          <View style={styles.messageContainer} key={index}>
+            <Text style={styles.messageText}>{message}</Text>
+          </View>
+        ))}
+      </ScrollView>
     </View>
   );
 };
