@@ -164,6 +164,9 @@ export default configurationData = {
     connectedDeviceClassic: null,
     hostIP: '',
     hostPort: '8080',
+    // Handed to the receiver over Bluetooth so it can join the phone hotspot
+    hotspotSsid: '',
+    hotspotPassword: '',
   },
   measurementSettings: {
     nazev: '1',

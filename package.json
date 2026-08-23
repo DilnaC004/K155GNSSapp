@@ -19,6 +19,7 @@
     "react": "18.2.0",
     "react-native": "^0.72.17",
     "react-native-base64": "^0.2.1",
+    "react-native-bluetooth-classic": "^1.60.0-rc.31",
     "react-native-compass-heading": "^1.5.0",
     "react-native-device-info": "^10.13.1",
     "react-native-document-picker": "^9.1.1",
@@ -31,7 +32,6 @@
     "react-native-svg-transformer": "^1.5.0",
     "react-native-svg-uri": "^0.0.1",
     "react-native-tcp-socket": "^6.0.6",
-    "react-native-udp": "^4.1.7",
     "react-native-vector-icons": "^10.2.0",
     "react-native-webview": "^13.12.3",
     "text-encoding": "^0.7.0"

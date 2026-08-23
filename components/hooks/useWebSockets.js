@@ -1,13 +1,16 @@
 /* eslint-disable no-bitwise */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { PermissionsAndroid, Platform } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import Snackbar from 'react-native-snackbar';
 import GPS from 'gps';
 import { NetworkInfo } from 'react-native-network-info';
 import { Buffer } from 'buffer';
-import dgram from 'react-native-udp';
 import SoundPlayer from "react-native-sound-player";
+
+
+// How long to wait before retrying an address that was connected and dropped
+const RECONNECT_DELAY_MS = 5000;
 
 
 function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement, connectionSettings, setConnectionSettings, setConnectedState, setNmeaMessages) {
@@ -16,6 +19,10 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
   const gps = new GPS();
   let intervalId = null;
   const [socket, setSocket] = useState(null);
+  // The live socket is also kept in a ref, the callbacks below outlive the
+  // render that created them
+  const socketRef = useRef(null);
+  const reconnectTimerRef = useRef(null);
   let localMessageBuffer = [];
   let messageCounter = 0;
   let epochCounter = 0;
@@ -27,30 +34,36 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
     }));
   }
 
-  const createConnection = async () => {
-    // First start the UDP listener
-    const udpClient = dgram.createSocket('udp4');
+  const cancelReconnect = () => {
+    if (reconnectTimerRef.current) {
+      clearTimeout(reconnectTimerRef.current);
+      reconnectTimerRef.current = null;
+    }
+  };
 
-    udpClient.bind(41234);
+  /** Connects to the address the Bluetooth handshake handed back. That is the
+   * only way in, the receiver is told where to go rather than announcing
+   * itself.
+   */
+  const connectToAddress = (hostIP) => {
+    if (socketRef.current || !hostIP) {
+      return;
+    }
 
-    // Listen for responses from servers
-    udpClient.on('message', (message, rinfo) => {
-        console.log(`Received UDP message: ${message} from ${rinfo.address}`);
-
-        // Save the address of the server, the HTTP API uses the same host
-        updateConnectionSettings({ hostIP: rinfo.address });
-
-        // Use the received IP to connect to WebSocket
-        const wsUrl = `ws://${rinfo.address}:8080`;
-        udpClient.close();
-        connectToWebSocket(wsUrl);
-    });
+    cancelReconnect();
+    updateConnectionSettings({ hostIP: hostIP });
+    connectToWebSocket(`ws://${hostIP}:${connectionSettings.hostPort}`);
   };
 
   const connectToWebSocket = (wsUrl) => {    
     const ws = new WebSocket(wsUrl);
+    // Only a socket that really opened is worth reconnecting to, a failed
+    // attempt is left to the Bluetooth handshake on the connection screen
+    let wasOpen = false;
 
     ws.onopen = () => {
+      socketRef.current = ws;
+      wasOpen = true;
       setConnectedState(true);
       console.log('WebSocket connected');
 
@@ -73,6 +86,7 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
     };
 
     ws.onclose = (event) => {
+      socketRef.current = null;
       setConnectedState(false);
 
       // Give feedback
@@ -92,8 +106,15 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
       messageCounter = 0;
       epochCounter = 0;
 
-      // Restart the process
-      createConnection();
+      // The receiver stays on the hotspot after a dropped socket, so the same
+      // address is worth another try before asking Bluetooth again
+      if (wasOpen) {
+        cancelReconnect();
+        reconnectTimerRef.current = setTimeout(() => {
+          reconnectTimerRef.current = null;
+          connectToWebSocket(wsUrl);
+        }, RECONNECT_DELAY_MS);
+      }
     };
 
     ws.onerror = (error) => {
@@ -121,8 +142,10 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
   };
 
   const closeConnection = async () => {
+    cancelReconnect();
     if (socket) {
       socket.close();
+      socketRef.current = null;
       setSocket(null);
       setConnectedState(false);
       getLastGGA('');
@@ -335,7 +358,7 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
   }, [rtcmNtrip]);
 
   return {
-    createConnection,
+    connectToAddress,
     closeConnection,
     sendMessage,
     socket,

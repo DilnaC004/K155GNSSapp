@@ -117,7 +117,7 @@ export default function App(): JSX.Element {
   const [ntripConnectedState, setNtripConnectedState] = useState(false);
 
   const {
-    createConnection,
+    connectToAddress,
     closeConnection,
     sendMessage,
     socket,
@@ -146,17 +146,19 @@ export default function App(): JSX.Element {
   };
 
 
+  // The app opens on the connection screen, that is where the user pairs the
+  // receiver over Bluetooth and hands it the hotspot credentials
   const [modalType, setmodalType] = useState({
     point: false,
     placing: false,
     skyplot: false,
-    communication: false,
+    communication: true,
     ntrip: false,
     project: false,
     map: false,
     learn: false,
     calculate: false,
-    measurement: true,
+    measurement: false,
   });
 
   const updateModalType = (newSettings: any) => {
@@ -179,7 +181,6 @@ export default function App(): JSX.Element {
     getDataStorage();
     // Force written GGA
     const appStateId = AppState.addEventListener('change', handleAppStateChange);
-    createConnection();
     return () => {
       setDataStorage(data);
       appStateId.remove();
@@ -207,6 +208,8 @@ export default function App(): JSX.Element {
             setConnectionSettings={setConnectionSettings}
             sendMessage={sendMessage}
             nmeaMessages={nmeaMessages}
+            connectToAddress={connectToAddress}
+            connectedState={connectedState}
           />}
           {modalType.ntrip && <Ntrip getRtcmNtrip={getRtcmNtrip} lastGGA={lastGGA} startSendingNtripData={startSendingNtripData} socket={socket} setNtripConnectedState={setNtripConnectedState} />}
           {modalType.project && <Project clearStorage={clearDataStorage} setPlacingSettings={setPlacingSettings} connectionSettings={connectionSettings} />}
