@@ -309,7 +309,11 @@ export default Measurement = ({nmeaParsed, rawMeasurement, connectedState, lastG
     }
 
     try {
-      const started = await api.staticStart(pointId);
+      const started = await api.staticStart(pointId, {
+        height: pointSettings.height,
+        offset: pointSettings.offset,
+        code: pointSettings.code,
+      });
       setStaticState(started);
       SoundPlayer.playAsset(require('././Sounds/measurement_start.mp3'));
       Snackbar.show({

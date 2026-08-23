@@ -65,8 +65,22 @@ function useServerApi(connectionSettings) {
   };
 
   // Static measurement
-  const staticStart = pointId =>
-    request('post', `/static/start?point_id=${encodeURIComponent(pointId)}`);
+  const staticStart = (pointId, antenna = {}) => {
+    const params = [`point_id=${encodeURIComponent(pointId)}`];
+
+    Object.entries({
+      antenna_height: antenna.height,
+      antenna_offset: antenna.offset,
+      code: antenna.code,
+    }).forEach(([name, value]) => {
+      const text = value?.toString().trim();
+      if (text) {
+        params.push(`${name}=${encodeURIComponent(text)}`);
+      }
+    });
+
+    return request('post', `/static/start?${params.join('&')}`);
+  };
   const staticStop = () => request('post', '/static/stop');
   const staticStatus = () => request('get', '/static/status');
 
