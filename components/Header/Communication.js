@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, forwardRef, useRef } from 'react';
-import { View, Text, Button, TextInput, StatusBar, PermissionsAndroid, Platform, Switch, ScrollView, AppState } from 'react-native';
+import { View, Text, Button, TextInput, StatusBar, PermissionsAndroid, Platform, Switch, ScrollView } from 'react-native';
 import { DataContext } from '../Functions/DataContext';
 import SelectDropdown from 'react-native-select-dropdown';
 import Snackbar from 'react-native-snackbar';
@@ -13,13 +13,10 @@ import GPS from 'gps';
 // How often the server diagnostics are refreshed while this screen is open
 const STATUS_POLL_MS = 5000;
 
-// How long to wait before trying the Bluetooth handshake again while the
-// receiver is still not connected
-const HANDSHAKE_RETRY_MS = 20000;
-
 // What the user is told about the handshake, keyed by the state the hook is in
 const handshakeTexts = {
-  [HANDSHAKE_STATE.idle]: 'Čekám na přijímač.',
+  [HANDSHAKE_STATE.idle]:
+    'Vyplň údaje o hotspotu a stiskni tlačítko níže.',
   [HANDSHAKE_STATE.unsupported]: 'Bluetooth handshake funguje jen na Androidu.',
   [HANDSHAKE_STATE.noPermission]: 'Aplikace nemá povolení k Bluetooth.',
   [HANDSHAKE_STATE.bluetoothOff]: 'Zapni Bluetooth v nastavení telefonu.',
@@ -47,13 +44,6 @@ export default Communication = ({ getNmeaRead, resetConnection, connectionSettin
   const [serverState, setServerState] = useState(null);
   const [serverError, setServerError] = useState(null);
   const bluetooth = useBluetoothHandshake();
-  // The retry timer and the AppState listener both need the current values
-  const handshakeInputs = useRef({});
-  handshakeInputs.current = {
-    connectedState,
-    ssid: connectionSettings.hotspotSsid,
-    password: connectionSettings.hotspotPassword,
-  };
 
   updateConnectionSettings = (newSettings) => {
     setConnectionSettings((prevSettings) => ({
@@ -98,39 +88,22 @@ export default Communication = ({ getNmeaRead, resetConnection, connectionSettin
     return () => clearInterval(pollId);
   }, [api.baseUrl]);
 
+  // Only ever runs from the button. Nothing is sent to the receiver until the
+  // user says so, editing the fields must not trigger anything.
   const runHandshake = async () => {
-    const { connectedState: connected, ssid, password } = handshakeInputs.current;
-
-    // Nothing to do once the receiver is streaming, the beacon took over
-    if (connected || bluetooth.isRunning() || !ssid) {
+    if (connectedState || bluetooth.isRunning()) {
       return;
     }
 
-    const answer = await bluetooth.handshake(ssid, password);
+    const answer = await bluetooth.handshake(
+      connectionSettings.hotspotSsid,
+      connectionSettings.hotspotPassword,
+    );
 
     if (answer?.ip) {
       connectToAddress(answer.ip);
     }
   };
-
-  // The user pairs the receiver in the phone settings and comes back, so try
-  // on the way in and again whenever the app returns to the foreground
-  useEffect(() => {
-    runHandshake();
-
-    const appStateId = AppState.addEventListener('change', nextState => {
-      if (nextState === 'active') {
-        runHandshake();
-      }
-    });
-
-    const retryId = setInterval(runHandshake, HANDSHAKE_RETRY_MS);
-
-    return () => {
-      appStateId.remove();
-      clearInterval(retryId);
-    };
-  }, []);
 
   const subsystems = serverState?.subsystems;
 
