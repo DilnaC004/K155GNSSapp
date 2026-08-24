@@ -23,6 +23,9 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
   // render that created them
   const socketRef = useRef(null);
   const reconnectTimerRef = useRef(null);
+  // Set while the user is hanging up on purpose, such a close must not be
+  // followed by a reconnect to the address we are leaving
+  const forgetRef = useRef(false);
   let localMessageBuffer = [];
   let messageCounter = 0;
   let epochCounter = 0;
@@ -57,6 +60,7 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
 
   const connectToWebSocket = (wsUrl) => {    
     const ws = new WebSocket(wsUrl);
+    forgetRef.current = false;
     // Only a socket that really opened is worth reconnecting to, a failed
     // attempt is left to the Bluetooth handshake on the connection screen
     let wasOpen = false;
@@ -108,7 +112,7 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
 
       // The receiver stays on the hotspot after a dropped socket, so the same
       // address is worth another try before asking Bluetooth again
-      if (wasOpen) {
+      if (wasOpen && !forgetRef.current) {
         cancelReconnect();
         reconnectTimerRef.current = setTimeout(() => {
           reconnectTimerRef.current = null;
@@ -141,8 +145,15 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
     };
   };
 
-  const closeConnection = async () => {
+  /** Closes the socket. With forget the address goes too, nothing dials the
+   * receiver again until a Bluetooth handshake hands over a new one.
+   */
+  const closeConnection = async (forget = false) => {
+    forgetRef.current = forget;
     cancelReconnect();
+    if (forget) {
+      updateConnectionSettings({ hostIP: '' });
+    }
     if (socket) {
       socket.close();
       socketRef.current = null;

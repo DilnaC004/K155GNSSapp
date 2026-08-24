@@ -129,6 +129,15 @@ export default Communication = ({ getNmeaRead, resetConnection, connectionSettin
           }}
         />
       </View>
+      <View style={styles.refreshButton}>
+        <Button
+          title={'Odpoj se a zapomeň adresu'}
+          disabled={!connectionSettings.isEnabled}
+          onPress={() => {
+            resetConnection(true);
+          }}
+        />
+      </View>
       <Text style={styles.headline}>Předání hotspotu přes Bluetooth</Text>
       <Text style={styles.description}>
         Zapni na telefonu hotspot a vyplň jeho název a heslo. Přijímač K155GNSS
