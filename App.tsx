@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { SafeAreaView, View, AppState } from 'react-native';
 import useAsyncStorage from './components/hooks/useAsyncStorage';
 import Header from './components/Header';
@@ -79,7 +79,27 @@ export default function App(): JSX.Element {
     }));
   };
 
+  // The listeners below are registered once and would otherwise keep saving
+  // the data from the first render
+  const dataRef = useRef(data);
+  dataRef.current = data;
+  // Nothing may be written before the stored data is read back, the defaults
+  // would overwrite it
+  const loadedRef = useRef(false);
+  const saveTimerRef = useRef<any>(null);
+
   const { setDataStorage, getDataStorage, clearDataStorage } = useAsyncStorage(updateData);
+
+  const saveNow = () => {
+    if (!loadedRef.current) {
+      return;
+    }
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = null;
+    }
+    setDataStorage(dataRef.current);
+  };
 
   const getNmeaRead = (parsed: any) => {
     if (parsed.lon !== checkParsedLon) { // Update only if lon change
@@ -171,21 +191,41 @@ export default function App(): JSX.Element {
   const [placingSettings, setPlacingSettings] = useState(data.placingSettings);
 
   const handleAppStateChange = (nextAppState: any) => {
-    if (nextAppState === 'background') {
+    if (nextAppState === 'background' || nextAppState === 'inactive') {
       console.log('the app is closed');
-      setDataStorage(data);
+      saveNow();
     }
   };
 
   useEffect(() => {
-    getDataStorage();
+    getDataStorage().then(() => {
+      loadedRef.current = true;
+    });
     // Force written GGA
     const appStateId = AppState.addEventListener('change', handleAppStateChange);
     return () => {
-      setDataStorage(data);
+      saveNow();
       appStateId.remove();
     };
   }, []);
+
+  // Points and projects live in data, so every edit is written out. Waiting
+  // for the app to go to background would lose everything on a crash or a
+  // force stop.
+  useEffect(() => {
+    if (!loadedRef.current) {
+      return;
+    }
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
+    }
+    // A measurement can rewrite data several times in a row, one write per
+    // burst is enough
+    saveTimerRef.current = setTimeout(() => {
+      saveTimerRef.current = null;
+      setDataStorage(dataRef.current);
+    }, 1000);
+  }, [data]);
 
   return (
     <SafeAreaView style={{flex: 1}}>

@@ -4,11 +4,12 @@ export default function useAsyncStorage(updateData) {
 
  const setDataStorage = async (value) => {
     const jsonValue = JSON.stringify(value);
-    AsyncStorage.setItem('key', jsonValue)
-      .then(() => console.log("Save data to storage"))
-      .catch(e => {
-        console.error('Error saving data:', e);
-      });
+    try {
+      await AsyncStorage.setItem('key', jsonValue);
+      console.log("Save data to storage");
+    } catch (e) {
+      console.error('Error saving data:', e);
+    }
   };
  const getDataStorage = async () => {
     try {
