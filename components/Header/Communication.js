@@ -22,6 +22,13 @@ const handshakeTexts = {
   [HANDSHAKE_STATE.bluetoothOff]: 'Zapni Bluetooth v nastavení telefonu.',
   [HANDSHAKE_STATE.notPaired]:
     'Přijímač K155GNSS není spárovaný. Spáruj ho v nastavení Bluetooth a vrať se sem.',
+  [HANDSHAKE_STATE.noAnswer]:
+    'Spárovaný přijímač se našel, ale žádný neodpovídá. Zkontroluj, jestli je zapnutý a v dosahu.',
+  [HANDSHAKE_STATE.busy]:
+    'K přijímači je připojený jiný telefon. Odpoj ho a zkus to znovu.',
+  [HANDSHAKE_STATE.tokenRequired]:
+    'Přijímač vyžaduje token, tahle verze aplikace ho neumí poslat. Použij novější aplikaci.',
+  [HANDSHAKE_STATE.searching]: 'Hledám spárovaný přijímač...',
   [HANDSHAKE_STATE.connecting]: 'Připojuji se k přijímači přes Bluetooth...',
   [HANDSHAKE_STATE.waiting]:
     'Předávám údaje o hotspotu, přijímač se připojuje. Může to trvat půl minuty.',
@@ -125,8 +132,8 @@ export default Communication = ({ getNmeaRead, resetConnection, connectionSettin
       <Text style={styles.headline}>Předání hotspotu přes Bluetooth</Text>
       <Text style={styles.description}>
         Zapni na telefonu hotspot a vyplň jeho název a heslo. Přijímač K155GNSS
-        spáruj v nastavení Bluetooth telefonu. Po návratu do aplikace mu sama
-        předá tyto údaje a přijímač se k hotspotu připojí.
+        spáruj v nastavení Bluetooth telefonu. Po návratu do aplikace stiskni tlačítko
+        předej přijímači a přijímač se s nimi k hotspotu připojí.
       </Text>
       <Text style={styles.title}>Název hotspotu</Text>
       <TextInput
