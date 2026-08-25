@@ -110,11 +110,12 @@ export default function App(): JSX.Element {
         lon: parsed.lon,          // Update lon
         lat: parsed.lat,          // Update lat
         alt: parsed.alt,           // Update alt
-        satsActive: parsed.satsActive,
+        // The receiver need not send GSA/GSV at all, keep the arrays arrays
+        satsActive: parsed.satsActive ?? [],
         pdop: parsed.pdop,
         hdop: parsed.hdop,
         quality: parsed.quality,
-        satsVisible: parsed.satsVisible,
+        satsVisible: parsed.satsVisible ?? [],
       }));
       checkParsedLon = parsed.lon;
     }

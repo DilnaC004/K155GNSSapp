@@ -11,6 +11,11 @@ const Skyplot = ({ satsVisible, satsActive }) => {
   const plotCenter = plotSize / 2;
   const plotRadius = plotCenter - 20;
 
+  // The receiver may send no GSV/GSA sentences at all, in that case the parser
+  // leaves these keys undefined and we still have to draw an empty plot
+  const visible = Array.isArray(satsVisible) ? satsVisible : [];
+  const active = Array.isArray(satsActive) ? satsActive : [];
+
   const prnSystemToText = (satellite) => {
     switch (satellite.system) {
       case 'GPS':
@@ -33,13 +38,13 @@ const Skyplot = ({ satsVisible, satsActive }) => {
   }
 
   const isActive = (satellite) => {
-    return satsActive.includes(satellite.prn);
+    return active.includes(satellite.prn);
   }
 
   useEffect(() => {
     // Rerender when satsVisible changes
-    // console.log('Skyplot sats: ', satsVisible);
-  }, [satsVisible]);
+    // console.log('Skyplot sats: ', visible);
+  }, [visible]);
 
   return (
     <View style={styles.skyplotContainer}>
@@ -70,7 +75,7 @@ const Skyplot = ({ satsVisible, satsActive }) => {
         <SvgText x={10} y={plotCenter+3} fontSize="12" fill="#000" textAnchor="middle">Z</SvgText>
 
         {/* plot satellites */}
-        {satsVisible.map((satellite, index) => {
+        {visible.map((satellite, index) => {
           const { x, y } = polarToCartesian2D(plotCenter, plotRadius, satellite.azimuth, satellite.elevation);
           return (
             <React.Fragment key={index}>
@@ -82,6 +87,9 @@ const Skyplot = ({ satsVisible, satsActive }) => {
           );
         })}
       </Svg>
+      {visible.length === 0 && (
+        <Text style={styles.description}>Přijímač neposílá žádné viditelné družice.</Text>
+      )}
     </View>
   );
 };
