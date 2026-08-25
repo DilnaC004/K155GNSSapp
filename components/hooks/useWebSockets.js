@@ -313,7 +313,11 @@ function useCommunication(getNmeaRead, getLastGGA, getLastGST, getRawMeasurement
       localMessageBuffer.push(`${epochCounter}: ${nmeaSentence}`);
       messageCounter++;
 
-      gps.update(nmeaSentence);
+      try {
+        gps.update(nmeaSentence);
+      } catch (e) {
+        console.log('Dropping unparsable NMEA sentence:', nmeaSentence, e.message);
+      }
       if (nmeaSentence.includes('GNGGA')) {
         getLastGGA(GPS.Parse(nmeaSentence));
       }
